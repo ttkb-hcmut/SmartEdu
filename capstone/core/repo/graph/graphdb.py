@@ -2,6 +2,7 @@ import os
 import logging
 from typing import List, Dict, Optional
 from neo4j import GraphDatabase
+from neo4j.exceptions import ClientError
 from time import time
 
 from core.config import Neo
@@ -78,7 +79,7 @@ class GraphDB:
     def _insert_edges(tx, edges: List[Dict]):
         edges = [e for e in edges if e.get('source_name') and e.get('target_name')]
         query = """
-        UNWIND $edges AS edge_item
+        UNWIND $edges AS edge_item  
         MATCH (s:Entity {name: edge_item.source_name})
         MATCH (t:Entity {name: edge_item.target_name})
         WITH s, t, edge_item
@@ -165,14 +166,24 @@ class GraphDB:
         """
         tx.run(q, passages=passages, uri=book_uri)
 
-    def anchor_search(self, emb: List[float], top_k: int = 5, db_name=None) -> List[Dict]:
-        ## top-k passages by vector similarity (anchor target lookup)
+    def anchor_search(self, emb: List[float], top_k: int = 5, db_name=None,
+                      uri_prefix: Optional[str] = None) -> List[Dict]:
+        ## top-k by vec (anchor target lookup)
         db_name = db_name or self.db_name
         q = """
-        CALL db.index.vector.queryNodes('passage_vec_index', $k, $emb) YIELD node, score
+        CALL db.index.vector.queryNodes('passage_vec_index', $probe, $emb) YIELD node, score
+        WHERE $prefix IS NULL OR node.uri STARTS WITH $prefix
         RETURN node.id AS passage_id, score
+        LIMIT $k
         """
-        return self.run_query(db_name, q, {"k": top_k, "emb": emb})
+        ## vec index cannot pre-filter, probe wide then trim
+        probe = top_k * 4 if uri_prefix else top_k
+        try:
+            return self.run_query(db_name, q, {"probe": probe, "k": top_k,
+                                               "emb": emb, "prefix": uri_prefix})
+        except ClientError:
+            ## index absent on slide-only db
+            return []
 
     def write_anchors(self, links: List[Dict], db_name=None):
         ## batch concept->passage anchors in one UNWIND MERGE (idempotent)
@@ -201,15 +212,18 @@ class GraphDB:
 
     def passage_search(self, emb: List[float], query_text: str = "", top_k: int = 5,
                        db_name=None) -> List[Dict]:
-        ## hybrid textbook retrieval: vector ANN + fulltext, merged by max score
+        ## hybrid textbook retrieval: vector ANN + fulltext, RRF merge
         db_name = db_name or self.db_name
         vec_q = """
         CALL db.index.vector.queryNodes('passage_vec_index', $k, $emb) YIELD node, score
         RETURN node.id AS id, node.text AS text, node.uri AS uri,
                node.p_lo AS p_lo, node.p_hi AS p_hi, score
         """
-        rows = self.run_query(db_name, vec_q, {"k": top_k, "emb": emb})
-        merged = {r["id"]: dict(r) for r in rows}
+        try:
+            vec_rows = self.run_query(db_name, vec_q, {"k": top_k, "emb": emb})
+        except ClientError:
+            vec_rows = []
+        ft_rows = []
         if query_text:
             ft_q = """
             CALL db.index.fulltext.queryNodes('passage_text_index', $q) YIELD node, score
@@ -217,10 +231,16 @@ class GraphDB:
                    node.p_lo AS p_lo, node.p_hi AS p_hi, score
             LIMIT $k
             """
-            for r in self.run_query(db_name, ft_q, {"q": query_text, "k": top_k}):
-                cur = merged.get(r["id"])
-                if cur is None or r["score"] > cur["score"]:
-                    merged[r["id"]] = dict(r)
+            try:
+                ft_rows = self.run_query(db_name, ft_q, {"q": query_text, "k": top_k})
+            except ClientError:
+                ft_rows = []
+        ## RRF, raw merge lets Lucene beat cosine
+        merged: Dict[str, Dict] = {}
+        for rows in (vec_rows, ft_rows):
+            for rank, r in enumerate(rows, start=1):
+                cur = merged.setdefault(r["id"], {**dict(r), "score": 0.0})
+                cur["score"] += 1.0 / (60 + rank)
         out = sorted(merged.values(), key=lambda x: x["score"], reverse=True)
         return out[:top_k]
 
