@@ -98,8 +98,16 @@ class Mongo_conf:
     user: str = os.getenv("MONGO_USER", "admin")
     passw: str = os.getenv("MONGO_PASS", "password123")
     host: str = os.getenv("MONGO_HOST", "localhost:27017")
-    uri: str = f"mongodb://{user}:{passw}@{host}/?authSource=admin"   
+    uri: str = f"mongodb://{user}:{passw}@{host}/?authSource=admin"
     db_name: str = os.getenv("MONGO_DB_NAME", DB_NAME)
+
+@dataclass
+class MySQL_conf:
+    host: str = os.getenv("MYSQL_HOST", "localhost")
+    port: int = int(os.getenv("MYSQL_PORT", 3307))
+    user: str = os.getenv("MYSQL_USER", "root")
+    password: str = os.getenv("MYSQL_ROOT_PASSWORD", "")
+    db_name: str = os.getenv("MYSQL_DATABASE", "capstone_db")
 
 # TA module
 ## Logic Layer
