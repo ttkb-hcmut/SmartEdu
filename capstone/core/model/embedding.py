@@ -17,3 +17,16 @@ class Embedder:
             outputs = self.model(**inputs)
         embeddings = outputs.last_hidden_state.mean(dim=1)
         return embeddings[0].tolist()
+
+    def get_embeddings(self, texts: List[str], batch_size: int = 32) -> List[List[float]]:
+        out = []
+        for i in range(0, len(texts), batch_size):
+            inputs = self.tokenizer(texts[i:i + batch_size], return_tensors="pt",
+                                    padding=True, truncation=True, max_length=512).to(self.device)
+            with torch.no_grad():
+                outputs = self.model(**inputs)
+            ## masked mean, plain mean averages pad tokens in
+            mask = inputs["attention_mask"].unsqueeze(-1)
+            emb = (outputs.last_hidden_state * mask).sum(dim=1) / mask.sum(dim=1)
+            out.extend(emb.tolist())
+        return out

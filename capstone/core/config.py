@@ -42,6 +42,7 @@ class Ingest_param:
     path: str = "data/"
     PAGE_PER_TB: int = 10
     PAGE_PER_SLIDE: int = 15
+    slide_overlap: int = 2
 
     # textbook is primitive anchor, slides/papers updatable
     textbook_first: bool = True
