@@ -1,7 +1,8 @@
 # Utis
-from typing import List, Dict
+from typing import List, Dict, Optional
 import os
 import uuid
+import logging
 import tempfile
 from time import time
 import re
@@ -55,6 +56,7 @@ class CourseIngestionService:
         self.embedder : Embedder = embedder
         self.db_name = DB_NAME
         self.ocr_sem = asyncio.Semaphore(1)
+        self.last_report: Optional[Dict] = None
 
         self.config = Ingest_param()
 
@@ -79,7 +81,8 @@ class CourseIngestionService:
         try:
             async with self.ocr_sem:
                 chunks: List[Dict[str, str]] = await asyncio.to_thread(
-                    extract_pdf, tmp.name, pages_per_batch=self.config.PAGE_PER_SLIDE
+                    extract_pdf, tmp.name, pages_per_batch=self.config.PAGE_PER_SLIDE,
+                    step=self.config.PAGE_PER_SLIDE - self.config.slide_overlap
                 )
         finally:
             try:
@@ -167,7 +170,7 @@ class CourseIngestionService:
                 pass
 
         if not tree.get("items"):
-            return
+            return {"file": name, "sections": 0, "passages": 0}
 
         passages = await asyncio.to_thread(
             group_passages, tree["items"], self.embedder.get_embedding, self.config
@@ -176,19 +179,27 @@ class CourseIngestionService:
             self.graph_db.write_textbook_tree,
             tree["sections"], passages, raw_obj, self.db_name, Emb_conf().dim
         )
+        return {"file": name, "sections": len(tree["sections"]), "passages": len(passages)}
 
-    async def _anchor_concepts(self, concept_nodes: List[Dict]):
-        ## linked-after: each taught concept -> passage by vector ANN, one batched write
-        seen, links = set(), []
+    async def _anchor_concepts(self, concept_nodes: List[Dict], course_name: str) -> int:
+        ## linked-after: concept -> passage by vector ANN, scoped to own course
+        seen, names, texts = set(), [], []
         for c in concept_nodes:
             name = c.get("name")
             if not name or name.lower() in seen:
                 continue
             seen.add(name.lower())
-            text = f"{name}. {c.get('content', '')}".strip()
-            emb = await asyncio.to_thread(self.embedder.get_embedding, text)
+            names.append(name)
+            texts.append(f"{name}. {c.get('content', '')}".strip())
+        if not names:
+            return 0
+
+        embs = await asyncio.to_thread(self.embedder.get_embeddings, texts)
+        links = []
+        for name, emb in zip(names, embs):
             hits = await asyncio.to_thread(
-                self.graph_db.anchor_search, emb, self.config.anchor_top_k, self.db_name
+                self.graph_db.anchor_search, emb, self.config.anchor_top_k,
+                self.db_name, f"{course_name}/"
             )
             for h in hits:
                 if h.get("score", 0) >= self.config.anchor_score_min:
@@ -196,6 +207,7 @@ class CourseIngestionService:
                                   "score": h["score"], "justification": ""})
         if links:
             await asyncio.to_thread(self.graph_db.write_anchors, links, self.db_name)
+        return len(links)
 
     async def _process_textbook_legacy(self, name: str, course_name, num_workers: int = 3):
         # pull raw textbook from minio staging, temp-file for docling, then remove
@@ -257,39 +269,53 @@ class CourseIngestionService:
         self.milvus_db.reset()
     async def run(self, req):
         start = time()
+        report = {"course": req.course_name, "textbooks": [], "slides": [],
+                  "anchors": 0, "errors": []}
         if req.reset:
             self.reset_db()
 
         # textbook first: build the anchor substrate before slides
         if self.config.textbook_first and req.textbook_files:
-            await asyncio.gather(*[
+            tb_results = await asyncio.gather(*[
                 self._process_textbook(f, req.course_name) for f in req.textbook_files
-            ])
+            ], return_exceptions=True)
+            for f, res in zip(req.textbook_files, tb_results):
+                if isinstance(res, BaseException):
+                    report["errors"].append({"file": f, "error": str(res)})
+                elif res:
+                    report["textbooks"].append(res)
 
         # slides -> taught concepts
         results = await asyncio.gather(*[
             self._process_slide(f, req.course_name) for f in req.slide_files
-        ])
+        ], return_exceptions=True)
 
         concept_nodes = []
-        for res in results:
+        for f, res in zip(req.slide_files, results):
+            if isinstance(res, BaseException):
+                report["errors"].append({"file": f, "error": str(res)})
+                continue
             if res is None:
                 continue
             nodes, edges, clusters = res
             self.graph_db.import_data(db_name=self.db_name, nodes=nodes, edges=edges, clusters=clusters)
             self.milvus_db.insert_data(nodes=nodes, embedder=self.embedder)
             concept_nodes += [n for n in nodes if n.get("typeNode") == "Concept"]
+            report["slides"].append({"file": f, "nodes": len(nodes), "edges": len(edges)})
 
         # anchor concepts into passages, or fall back to legacy link-after
         if self.config.textbook_first:
             if req.textbook_files:
-                await self._anchor_concepts(concept_nodes)
+                report["anchors"] = await self._anchor_concepts(concept_nodes, req.course_name)
         else:
             await asyncio.gather(*[
                 self._process_textbook_legacy(f, req.course_name) for f in req.textbook_files
             ])
 
-        print(f" ====>  All finished and takes {time()-start}")
+        report["duration_s"] = round(time() - start, 1)
+        logging.info(f"[ingest] {report}")
+        self.last_report = report
+        return report
 
     def validate_files(self, course_name: str, names: List[str]):
  

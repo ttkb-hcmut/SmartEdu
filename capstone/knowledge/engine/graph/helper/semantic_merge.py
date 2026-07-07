@@ -78,13 +78,15 @@ def group_passages(items: List[dict], embed: Callable[[str], List[float]],
             groups = _split(sec_items, cuts)
 
         for g in groups:
-            v = np.asarray([embs[it["id"]] for it in g], dtype=float)
+            text = "\n".join(it["text"] for it in g)
+            ## mean of members blurs, re-embed merged text (512-token truncation)
+            emb = embs[g[0]["id"]] if len(g) == 1 else embed(text)
             passages.append({
                 "id": f"{sec_id}_p{pc}",
                 "section_id": sec_id,
                 "p_num": (min(it["p_num"][0] for it in g), max(it["p_num"][1] for it in g)),
-                "text": "\n".join(it["text"] for it in g),
-                "emb": v.mean(axis=0).tolist(),
+                "text": text,
+                "emb": list(emb),
                 "member_ids": [it["id"] for it in g],
             })
             pc += 1

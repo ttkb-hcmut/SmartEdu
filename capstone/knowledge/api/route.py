@@ -1,5 +1,5 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Depends, Response
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import List
 
 from core.dependencies import get_ingestion_service
@@ -11,16 +11,25 @@ router = APIRouter(tags=["Knowledge"])
 
 ######### schemas
 
+def _canon_course(name: str) -> str:
+    ## casing drift breaks uri prefix match downstream
+    return " ".join(name.split()).title()
+
+
 class CourseIngestionRequest(BaseModel):
     course_name: str = "Machine Learning"
     slide_files: List[str]                         # finished files
     textbook_files: List[str]
     reset: bool = True
 
+    _canon = field_validator("course_name")(_canon_course)
+
 
 class UploadUrlRequest(BaseModel):
     course_name: str
     file_names: List[str]                # files needing a presigned upload url
+
+    _canon = field_validator("course_name")(_canon_course)
 
 
 class PresignedTarget(BaseModel):
@@ -71,6 +80,15 @@ async def ingest_course(
             "textbooks_count": len(req.textbook_files),
         },
     }
+
+
+@router.get("/ingest-report")
+async def ingest_report(
+    service=Depends(get_ingestion_service),
+    _: User = Depends(require_admin),
+):
+    # outcome of the last background ingestion run
+    return service.last_report or {"status": "no ingestion run yet"}
 
 
 ######### discovery + viewer (any logged-in student)
