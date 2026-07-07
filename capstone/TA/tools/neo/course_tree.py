@@ -7,6 +7,9 @@ from TA.tools.neo.base import NeoTool
 from TA.tools.neo.schema import CourseTreeInput
 from TA.tools.tool_config import PREREQUISITE_WEIGHT
 from TA.edu.helper.tree_order import topo_order
+from core.repo.graph.cypher.tools.course import (
+    CYPHER_course_tree_concept, CYPHER_course_tree_prereq,
+)
 
 
 def _assemble_tree(course: str, concepts: List[dict], prereqs: List[Tuple[str, str]],
@@ -85,21 +88,7 @@ class CourseTree(NeoTool):
             if cached.get("tree"):
                 return json.dumps(cached["tree"], ensure_ascii=False)
 
-        ## coalesce: closeness when Phase 7 lands, out_degree until then
-        concept_cypher = """
-        MATCH (course:Entity {name: $course_name})
-        MATCH (n:Entity)-[:BELONGS_TO|PART_OF*1..2]->(course)
-        WHERE n.rrole IS NULL AND n.id <> course.id AND n.typeNode <> 'Topic'
-        OPTIONAL MATCH (n)-[r]->(m:Entity)
-        WHERE type(r) <> 'CONTENT' AND m.rrole IS NULL
-        WITH course, n,
-             sum(CASE WHEN type(r) = 'PREREQUISITE' THEN $w ELSE 1.0 END) AS out_degree
-        OPTIONAL MATCH (n)-[:BELONGS_TO|PART_OF]->(t:Entity {typeNode: 'Topic'})
-        WHERE (t)-[:BELONGS_TO|PART_OF*0..1]->(course)
-        RETURN n.name AS name, n.typeNode AS type, n.content AS content,
-               coalesce(n.closeness, out_degree) AS score, t.name AS topic
-        """
-        rows = self.run_query(concept_cypher, {"course_name": course_name, "w": PREREQUISITE_WEIGHT})
+        rows = self.run_query(CYPHER_course_tree_concept, {"course_name": course_name, "w": PREREQUISITE_WEIGHT})
         if not rows:
             return f"INFO: No concept nodes found for course '{course_name}'."
 
@@ -107,13 +96,8 @@ class CourseTree(NeoTool):
                      "score": float(r.get("score") or 0.0),
                      "description": r.get("content") or ""} for r in rows]
 
-        prereq_cypher = """
-        MATCH (a:Entity)-[:PREREQUISITE]->(b:Entity)
-        WHERE a.name IN $names AND b.name IN $names
-        RETURN a.name AS pre, b.name AS post
-        """
         names = [c["name"] for c in concepts]
-        prereq_rows = self.run_query(prereq_cypher, {"names": names}) or []
+        prereq_rows = self.run_query(CYPHER_course_tree_prereq, {"names": names}) or []
         prereqs = [(r["pre"], r["post"]) for r in prereq_rows]
 
         tree = _assemble_tree(course_name, concepts, prereqs, max_per_topic, max_orphans)
