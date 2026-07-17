@@ -12,8 +12,7 @@ uv.lock
 
 # Other files
 Ref/
-test/
-test_*/
-!test/test_script/*.py
-data/
 
+# test/ runtime output only, test_script/ and eval/ fixtures stay tracked
+test/TA/
+test/eval/results/
