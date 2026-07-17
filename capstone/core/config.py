@@ -44,7 +44,7 @@ class Ingest_param:
     PAGE_PER_SLIDE: int = 15
     slide_overlap: int = 2
 
-    # textbook is primitive anchor, slides/papers updatable
+    # textbook primitive, slides/papers updatable
     textbook_first: bool = True
     use_section_tree: bool = True
     semantic_merge: bool = True
@@ -60,8 +60,8 @@ class Ingest_param:
 
     anchor_index: AnchorIdx = AnchorIdx.HYBRID
     anchor_top_k: int = 5
-    anchor_score_min: float = 0.55          # below -> no anchor
-    anchor_llm_rerank: bool = False         # off: anchoring stays pure retrieval
+    anchor_score_min: float = 0.55          
+    anchor_llm_rerank: bool = False         # off: anchoring pure retrieval
     extract_textbook_entities: bool = False  # off: concepts born from teaching, book = pure anchor
 
 ### Infratructure Layer
@@ -108,6 +108,43 @@ class MySQL_conf:
     user: str = os.getenv("MYSQL_USER", "root")
     password: str = os.getenv("MYSQL_ROOT_PASSWORD", "")
     db_name: str = os.getenv("MYSQL_DATABASE", "capstone_db")
+
+## frozen -> module singleton shared across sessions, mutate via from_preset only
+@dataclass(frozen=True)
+class Retrieve_param:
+    ## ablation study of harness components
+    use_rag: bool = True
+    use_graphrag: bool = True
+
+    # search params
+    top_k: int = 5
+    rrf_k: int = 60
+    per_component_k: int = 8
+
+    benchmark_course: str = ""   ## empty -> product corpus; set -> URI-prefix scope
+
+    def flag_set(self) -> dict:
+        return {"rag": self.use_rag, "graphrag": self.use_graphrag}
+
+    @property
+    def preset(self) -> str:
+        flags = self.flag_set()
+        if not any(flags.values()):
+            return "PLAIN"
+        if all(flags.values()):
+            return "FULL"
+        return "RAG" if self.use_rag else "CUSTOM"  ## CUSTOM = graphrag-only, hand-built
+
+    @classmethod
+    def from_preset(cls, name: str, **overrides) -> "Retrieve_param":
+        presets = {
+            "PLAIN": dict(use_rag=False, use_graphrag=False),
+            "RAG": dict(use_rag=True, use_graphrag=False),
+            "FULL": dict(use_rag=True, use_graphrag=True),
+        }
+        return cls(**{**presets[name.upper()], **overrides})
+
+retrieve_param = Retrieve_param()
 
 # TA module
 ## Logic Layer
