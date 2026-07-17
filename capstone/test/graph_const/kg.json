@@ -1,0 +1,1357 @@
+{
+  "nodes": {
+    "Q2539": {
+      "id": "Q2539",
+      "name": "machine learning",
+      "content": "scientific study of algorithms and statistical models that computer systems use to perform tasks without explicit instructions"
+    },
+    "Q7239673": {
+      "id": "Q7239673",
+      "name": "predictive modelling",
+      "content": "Statistical and machine learning modelling with the goal of predicting outcomes"
+    },
+    "Q7239673_Objective": {
+      "id": "Q7239673_Objective",
+      "name": "predictive modelling_Objective",
+      "content": "The objective of ML is to build a good predictive model.",
+      "concept_id": "Q7239673",
+      "rrole": "Objective",
+      "score": 1
+    },
+    "Q7239673_Definition": {
+      "id": "Q7239673_Definition",
+      "name": "predictive modelling_Definition",
+      "content": "By “good”, we mean that the model should predict well to new data.",
+      "concept_id": "Q7239673",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q331309": {
+      "id": "Q331309",
+      "name": "overfitting",
+      "content": "production of an analysis that corresponds too closely or exactly to a particular set of data, and may therefore fail to fit additional data or predict future observations reliably"
+    },
+    "Q331309_Definition": {
+      "id": "Q331309_Definition",
+      "name": "overfitting_Definition",
+      "content": "we say the model overfits",
+      "concept_id": "Q331309",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q331309_Problem": {
+      "id": "Q331309_Problem",
+      "name": "overfitting_Problem",
+      "content": "A more complex and flexible model has a higher risk of overfitting.",
+      "concept_id": "Q331309",
+      "rrole": "Problem",
+      "score": 1
+    },
+    "Q17003119": {
+      "id": "Q17003119",
+      "name": "bias–variance tradeoff",
+      "content": "property of a set of predictive models whereby models with a lower bias in parameter estimation have a higher variance of the parameter estimates across samples, and vice versa"
+    },
+    "Q17003119_Statement": {
+      "id": "Q17003119_Statement",
+      "name": "bias–variance tradeoff_Statement",
+      "content": "The trade-off between complexity and flexibility can be depicted by the bias-variance tradeoff (Box 3).",
+      "concept_id": "Q17003119",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "local_45eb685c": {
+      "id": "local_45eb685c",
+      "name": "Model Generalization",
+      "content": "so that the fitted model generalizes well to new data."
+    },
+    "local_45eb685c_Objective": {
+      "id": "local_45eb685c_Objective",
+      "name": "Model Generalization_Objective",
+      "content": "so that the fitted model generalizes well to new data.",
+      "concept_id": "local_45eb685c",
+      "rrole": "Objective",
+      "score": 1
+    },
+    "local_45eb685c_Solution": {
+      "id": "local_45eb685c_Solution",
+      "name": "Model Generalization_Solution",
+      "content": "adjust their parameters to the data (training), while simultaneously adapt its complexity by optimizing the bias-variance trade-off",
+      "concept_id": "local_45eb685c",
+      "rrole": "Solution",
+      "score": 1
+    },
+    "Q1152135": {
+      "id": "Q1152135",
+      "name": "unsupervised learning",
+      "content": "machine learning technique"
+    },
+    "Q1152135_Definition": {
+      "id": "Q1152135_Definition",
+      "name": "unsupervised learning_Definition",
+      "content": "In unsupervised learning it depends on the method, but a common approach is to use similarities between observations to decide if observations are grouped together or not",
+      "concept_id": "Q1152135",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q1068473": {
+      "id": "Q1068473",
+      "name": "educational technology",
+      "content": "use of technology in education to improve learning and teaching; not restricted to high technology"
+    },
+    "Q334384": {
+      "id": "Q334384",
+      "name": "supervised learning",
+      "content": "machine learning task of learning a function that maps an input to an output based on example input-output pairs"
+    },
+    "Q334384_Definition": {
+      "id": "Q334384_Definition",
+      "name": "supervised learning_Definition",
+      "content": "In supervised learning, the algorithm is presented with examples for the “correct” execution of the task, and the model is trained to minize the differences its own and the “correct” actions.",
+      "concept_id": "Q334384",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "local_f97dbffb": {
+      "id": "local_f97dbffb",
+      "name": "Classification Task",
+      "content": "if y is discrete (e.g., species classes), it is a classification task"
+    },
+    "local_f97dbffb_Definition": {
+      "id": "local_f97dbffb_Definition",
+      "name": "Classification Task_Definition",
+      "content": "if y is discrete (e.g., species classes), it is a classification task",
+      "concept_id": "local_f97dbffb",
+      "rrole": "Definition",
+      "score": 3
+    },
+    "Q3414877": {
+      "id": "Q3414877",
+      "name": "quest / mission",
+      "content": "task in video games that a player-controlled character may complete to gain a reward and/or progress the story"
+    },
+    "local_895268c6": {
+      "id": "local_895268c6",
+      "name": "Regression Task",
+      "content": "if y is a continuous variable (e.g. biomass), it is a regression task"
+    },
+    "local_895268c6_Definition": {
+      "id": "local_895268c6_Definition",
+      "name": "Regression Task_Definition",
+      "content": "if y is a continuous variable (e.g. biomass), it is a regression task",
+      "concept_id": "local_895268c6",
+      "rrole": "Definition",
+      "score": 3
+    },
+    "Q16766476": {
+      "id": "Q16766476",
+      "name": "decision tree learning",
+      "content": "machine learning algorithm"
+    },
+    "Q16766476_Application": {
+      "id": "Q16766476_Application",
+      "name": "decision tree learning_Application",
+      "content": "Decision tree to assist in task identification",
+      "concept_id": "Q16766476",
+      "rrole": "Application",
+      "score": 3
+    },
+    "Q334384_Statement": {
+      "id": "Q334384_Statement",
+      "name": "supervised learning_Statement",
+      "content": "Common supervised tasks are classification (e.g. labeling of images) and regression (prediction of a numeric variable).",
+      "concept_id": "Q334384",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "Q830687": {
+      "id": "Q830687",
+      "name": "reinforcement learning",
+      "content": "type of machine learning where an agent learns how to behave in an environment by performing actions and receiving rewards or penalties in return, aiming to maximize the cumulative reward over time"
+    },
+    "Q830687_Definition": {
+      "id": "Q830687_Definition",
+      "name": "reinforcement learning_Definition",
+      "content": "Finally, in reinforcement learning, the Machine Learning algorithm is trained by interacting with a (virtual) environment.",
+      "concept_id": "Q830687",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q830687_Application": {
+      "id": "Q830687_Application",
+      "name": "reinforcement learning_Application",
+      "content": "Reinforcement learning is used in tasks in which the learning depends on executed actions and their produced consequences, for instance, playing strategy computer games such as DOTA (OpenAI et al., 2019) or Starcraft (Vinyals et al., 2019).",
+      "concept_id": "Q830687",
+      "rrole": "Application",
+      "score": 1
+    },
+    "local_4117494a": {
+      "id": "local_4117494a",
+      "name": "ML Task Terminology",
+      "content": "In ML, the different use cases for the algorithms are called tasks."
+    },
+    "local_4117494a_Statement": {
+      "id": "local_4117494a_Statement",
+      "name": "ML Task Terminology_Statement",
+      "content": "In ML, the different use cases for the algorithms are called tasks.",
+      "concept_id": "local_4117494a",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "Q192776": {
+      "id": "Q192776",
+      "name": "artificial neural network",
+      "content": "computational model used in machine learning, based on connected, hierarchical functions"
+    },
+    "Q192776_Definition": {
+      "id": "Q192776_Definition",
+      "name": "artificial neural network_Definition",
+      "content": "neural networks (McCulloch & Pitts, 1943)",
+      "concept_id": "Q192776",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "local_ce744d64": {
+      "id": "local_ce744d64",
+      "name": "Regression Trees",
+      "content": "regression and classification trees"
+    },
+    "local_ce744d64_Definition": {
+      "id": "local_ce744d64_Definition",
+      "name": "Regression Trees_Definition",
+      "content": "regression and classification trees",
+      "concept_id": "local_ce744d64",
+      "rrole": "Definition",
+      "score": 3
+    },
+    "Q10884": {
+      "id": "Q10884",
+      "name": "tree",
+      "content": "perennial woody plant"
+    },
+    "local_049f0246": {
+      "id": "local_049f0246",
+      "name": "Classification Trees",
+      "content": "regression and classification trees"
+    },
+    "local_049f0246_Definition": {
+      "id": "local_049f0246_Definition",
+      "name": "Classification Trees_Definition",
+      "content": "regression and classification trees",
+      "concept_id": "local_049f0246",
+      "rrole": "Definition",
+      "score": 3
+    },
+    "local_8dbe36b7": {
+      "id": "local_8dbe36b7",
+      "name": "Distance-based Methods",
+      "content": "distance-based method"
+    },
+    "local_8dbe36b7_Definition": {
+      "id": "local_8dbe36b7_Definition",
+      "name": "Distance-based Methods_Definition",
+      "content": "distance-based method",
+      "concept_id": "local_8dbe36b7",
+      "rrole": "Definition",
+      "score": 3
+    },
+    "Q2695280": {
+      "id": "Q2695280",
+      "name": "technique",
+      "content": "sum of skills, methods, and processes used to accomplish objectives, such as scientific investigation or the production of goods or services"
+    },
+    "local_3b626c45": {
+      "id": "local_3b626c45",
+      "name": "Agglomerative Hierarchical Methods",
+      "content": "agglomerative hierarchical methods"
+    },
+    "local_3b626c45_Definition": {
+      "id": "local_3b626c45_Definition",
+      "name": "Agglomerative Hierarchical Methods_Definition",
+      "content": "agglomerative hierarchical methods",
+      "concept_id": "local_3b626c45",
+      "rrole": "Definition",
+      "score": 3
+    },
+    "Q310401": {
+      "id": "Q310401",
+      "name": "k-means clustering",
+      "content": "Vector quantization algorithm minimizing the sum of squared deviations"
+    },
+    "Q310401_Definition": {
+      "id": "Q310401_Definition",
+      "name": "k-means clustering_Definition",
+      "content": "k-means",
+      "concept_id": "Q310401",
+      "rrole": "Definition",
+      "score": 3
+    },
+    "Q25048582": {
+      "id": "Q25048582",
+      "name": "Loss functions for classification",
+      "content": "Concept in machine learning"
+    },
+    "Q25048582_Definition": {
+      "id": "Q25048582_Definition",
+      "name": "Loss functions for classification_Definition",
+      "content": "the definition of a loss function, which measures the current score (performance) of the algorithm in solving a certain task",
+      "concept_id": "Q25048582",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q6803654": {
+      "id": "Q6803654",
+      "name": "Mean squared prediction error",
+      "content": "statistics concept"
+    },
+    "Q6803654_Definition": {
+      "id": "Q6803654_Definition",
+      "name": "Mean squared prediction error_Definition",
+      "content": "mean squared error ... are common loss functions for regression",
+      "concept_id": "Q6803654",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "local_656c505e": {
+      "id": "local_656c505e",
+      "name": "Categorical Cross‑Entropy",
+      "content": "categorical cross‑entropy ... are common loss functions for ... classification tasks"
+    },
+    "local_656c505e_Definition": {
+      "id": "local_656c505e_Definition",
+      "name": "Categorical Cross‑Entropy_Definition",
+      "content": "categorical cross‑entropy ... are common loss functions for ... classification tasks",
+      "concept_id": "local_656c505e",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q7236587": {
+      "id": "Q7236587",
+      "name": "power optimizer",
+      "content": "electrical conversion technology"
+    },
+    "Q7236587_Definition": {
+      "id": "Q7236587_Definition",
+      "name": "power optimizer_Definition",
+      "content": "The second component is the optimizer, which updates parameters of the algorithm with the goal to increase its performance",
+      "concept_id": "Q7236587",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q2539_Definition": {
+      "id": "Q2539_Definition",
+      "name": "machine learning_Definition",
+      "content": "Machine Learning algorithms serve as a tool for AI systems to learn from data and make a decision based on data.",
+      "concept_id": "Q2539",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q245748": {
+      "id": "Q245748",
+      "name": "random forest",
+      "content": "statistical algorithm that is used to cluster points of data in functional groups"
+    },
+    "Q245748_Definition": {
+      "id": "Q245748_Definition",
+      "name": "random forest_Definition",
+      "content": "random forest (Breiman, 2001a)",
+      "concept_id": "Q245748",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "local_7c419040": {
+      "id": "local_7c419040",
+      "name": "Boosted Regression Trees",
+      "content": "There are many different ML algorithms such as Boosted Regression Trees (BRT) or Random Forest (RF)."
+    },
+    "local_7c419040_Definition": {
+      "id": "local_7c419040_Definition",
+      "name": "Boosted Regression Trees_Definition",
+      "content": "boosted regression trees (Friedman, 2001)",
+      "concept_id": "local_7c419040",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "local_471fd449": {
+      "id": "local_471fd449",
+      "name": "Distributional Assumptions",
+      "content": "the algorithmic nature of the new ML models slacked the necessary distributional assumptions for calculating p‑values and CIs"
+    },
+    "local_471fd449_Problem": {
+      "id": "local_471fd449_Problem",
+      "name": "Distributional Assumptions_Problem",
+      "content": "the algorithmic nature of the new ML models slacked the necessary distributional assumptions for calculating p‑values and CIs",
+      "concept_id": "local_471fd449",
+      "rrole": "Problem",
+      "score": 1
+    },
+    "local_0ae309bd": {
+      "id": "local_0ae309bd",
+      "name": "Non‑Parametric Approaches",
+      "content": "fuelled the development of non‑parametric approaches"
+    },
+    "local_0ae309bd_Statement": {
+      "id": "local_0ae309bd_Statement",
+      "name": "Non‑Parametric Approaches_Statement",
+      "content": "fuelled the development of non‑parametric approaches",
+      "concept_id": "local_0ae309bd",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "local_a6822706": {
+      "id": "local_a6822706",
+      "name": "Lower Predictive Errors",
+      "content": "abandoning the data‑generating model (connected to the ability to calculate p‑values, CIs and all that) in favour of generic algorithmic structures that can be trained to data often achieves lower errors for predictive tasks"
+    },
+    "local_a6822706_Objective": {
+      "id": "local_a6822706_Objective",
+      "name": "Lower Predictive Errors_Objective",
+      "content": "abandoning the data‑generating model (connected to the ability to calculate p‑values, CIs and all that) in favour of generic algorithmic structures that can be trained to data often achieves lower errors for predictive tasks",
+      "concept_id": "local_a6822706",
+      "rrole": "Objective",
+      "score": 1
+    },
+    "local_66688f1c": {
+      "id": "local_66688f1c",
+      "name": "Bootstrap Resampling",
+      "content": "bootstrap (Efron, 1992), a resampling technique that is often used for estimating CIs on the parameters and predictions of statistical or Machine Learning models."
+    },
+    "local_66688f1c_Definition": {
+      "id": "local_66688f1c_Definition",
+      "name": "Bootstrap Resampling_Definition",
+      "content": "bootstrap (Efron, 1992), a resampling technique that is often used for estimating CIs on the parameters and predictions of statistical or Machine Learning models.",
+      "concept_id": "local_66688f1c",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "local_66688f1c_Application": {
+      "id": "local_66688f1c_Application",
+      "name": "Bootstrap Resampling_Application",
+      "content": "estimating CIs on the parameters and predictions of statistical or Machine Learning models.",
+      "concept_id": "local_66688f1c",
+      "rrole": "Application",
+      "score": 1
+    },
+    "Q5188206": {
+      "id": "Q5188206",
+      "name": "Cross-validation",
+      "content": "method in analytical chemistry"
+    },
+    "Q5188206_Definition": {
+      "id": "Q5188206_Definition",
+      "name": "Cross-validation_Definition",
+      "content": "cross-validation, where a part of the data is used to train the model and the other part of the data is used to assess the error (Stone, 1974; see Roberts et al., 2017 for cross-validation strategies for structured ecological data).",
+      "concept_id": "Q5188206",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q5188206_Application": {
+      "id": "Q5188206_Application",
+      "name": "Cross-validation_Application",
+      "content": "used to assess the error (Stone, 1974; see Roberts et al., 2017 for cross-validation strategies for structured ecological data).",
+      "concept_id": "Q5188206",
+      "rrole": "Application",
+      "score": 1
+    },
+    "Q11660": {
+      "id": "Q11660",
+      "name": "artificial intelligence",
+      "content": "field of computer science that develops and studies software enabling machines to exhibit intelligent behavior"
+    },
+    "Q11660_Definition": {
+      "id": "Q11660_Definition",
+      "name": "artificial intelligence_Definition",
+      "content": "AI refers to algorithms that are capable of achieving similar to human performance in specific decision or recognition tasks.",
+      "concept_id": "Q11660",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "local_cae30b92": {
+      "id": "local_cae30b92",
+      "name": "intelligence",
+      "content": "General Concept"
+    },
+    "Q2264109": {
+      "id": "Q2264109",
+      "name": "artificial general intelligence",
+      "content": "theoretical class of AI able to perform any intelligence-based task humans can"
+    },
+    "Q2264109_Definition": {
+      "id": "Q2264109_Definition",
+      "name": "artificial general intelligence_Definition",
+      "content": "Artificial general intelligence (AGI), referring to AI algorithms that can perform a wide range of tasks and may display human-like abilities in cognitive tasks such as reasoning, logic or common sense.",
+      "concept_id": "Q2264109",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "local_7c419040_Statement": {
+      "id": "local_7c419040_Statement",
+      "name": "Boosted Regression Trees_Statement",
+      "content": "There are many different ML algorithms such as Boosted Regression Trees (BRT) or Random Forest (RF).",
+      "concept_id": "local_7c419040",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "Q245748_Statement": {
+      "id": "Q245748_Statement",
+      "name": "random forest_Statement",
+      "content": "There are many different ML algorithms such as Boosted Regression Trees (BRT) or Random Forest (RF).",
+      "concept_id": "Q245748",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "local_2f26ae52": {
+      "id": "local_2f26ae52",
+      "name": "Computational",
+      "content": "Extracted Parent Concept"
+    },
+    "local_2f26ae52_Problem": {
+      "id": "local_2f26ae52_Problem",
+      "name": "Computational_Problem",
+      "content": "their application would be unimageable without computers and can even today be computationally challenging for complex models",
+      "concept_id": "local_2f26ae52",
+      "rrole": "Problem",
+      "score": 1
+    }
+  },
+  "edges": {
+    "('Q2539', 'Q7239673', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q7239673",
+      "type": "RELATED"
+    },
+    "('Q7239673', 'Q7239673_Objective', 'CONTENT')": {
+      "source": "Q7239673",
+      "target": "Q7239673_Objective",
+      "name": "predictive modelling-OBJECTIVE",
+      "type": "CONTENT"
+    },
+    "('Q7239673', 'Q7239673_Definition', 'CONTENT')": {
+      "source": "Q7239673",
+      "target": "Q7239673_Definition",
+      "name": "predictive modelling-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'Q331309', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q331309",
+      "type": "RELATED"
+    },
+    "('Q331309', 'Q331309_Definition', 'CONTENT')": {
+      "source": "Q331309",
+      "target": "Q331309_Definition",
+      "name": "overfitting-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q331309', 'Q331309_Problem', 'CONTENT')": {
+      "source": "Q331309",
+      "target": "Q331309_Problem",
+      "name": "overfitting-PROBLEM",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'Q17003119', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q17003119",
+      "type": "RELATED"
+    },
+    "('Q17003119', 'Q17003119_Statement', 'CONTENT')": {
+      "source": "Q17003119",
+      "target": "Q17003119_Statement",
+      "name": "bias–variance tradeoff-STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'local_45eb685c', 'RELATED')": {
+      "source": "Q2539",
+      "target": "local_45eb685c",
+      "type": "RELATED"
+    },
+    "('local_45eb685c', 'local_45eb685c_Objective', 'CONTENT')": {
+      "source": "local_45eb685c",
+      "target": "local_45eb685c_Objective",
+      "name": "Model Generalization-OBJECTIVE",
+      "type": "CONTENT"
+    },
+    "('local_45eb685c', 'local_45eb685c_Solution', 'CONTENT')": {
+      "source": "local_45eb685c",
+      "target": "local_45eb685c_Solution",
+      "name": "Model Generalization-SOLUTION",
+      "type": "CONTENT"
+    },
+    "('Q7239673', 'local_45eb685c', 'SEMANTIC')": {
+      "source": "Q7239673",
+      "target": "local_45eb685c",
+      "name": "predictive modelling-RELATED_TO-Model Generalization",
+      "type": "SEMANTIC"
+    },
+    "('Q331309', 'Q7239673', 'SEMANTIC')": {
+      "source": "Q331309",
+      "target": "Q7239673",
+      "name": "overfitting-RELATED_TO-predictive modelling",
+      "type": "SEMANTIC"
+    },
+    "('Q331309', 'local_45eb685c', 'SEMANTIC')": {
+      "source": "Q331309",
+      "target": "local_45eb685c",
+      "name": "overfitting-CAUSES-Model Generalization",
+      "type": "SEMANTIC"
+    },
+    "('Q17003119', 'Q331309', 'SEMANTIC')": {
+      "source": "Q17003119",
+      "target": "Q331309",
+      "name": "bias–variance tradeoff-RELATED_TO-overfitting",
+      "type": "SEMANTIC"
+    },
+    "('Q17003119', 'local_45eb685c', 'SEMANTIC')": {
+      "source": "Q17003119",
+      "target": "local_45eb685c",
+      "name": "bias–variance tradeoff-CAUSES-Model Generalization",
+      "type": "SEMANTIC"
+    },
+    "('Q2539', 'Q1152135', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q1152135",
+      "type": "RELATED"
+    },
+    "('Q1152135', 'Q1152135_Definition', 'CONTENT')": {
+      "source": "Q1152135",
+      "target": "Q1152135_Definition",
+      "name": "unsupervised learning-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'Q1068473', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q1068473",
+      "type": "RELATED"
+    },
+    "('Q2539', 'Q334384', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q334384",
+      "type": "RELATED"
+    },
+    "('Q334384', 'Q334384_Definition', 'CONTENT')": {
+      "source": "Q334384",
+      "target": "Q334384_Definition",
+      "name": "supervised learning-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'local_f97dbffb', 'RELATED')": {
+      "source": "Q2539",
+      "target": "local_f97dbffb",
+      "type": "RELATED"
+    },
+    "('local_f97dbffb', 'local_f97dbffb_Definition', 'CONTENT')": {
+      "source": "local_f97dbffb",
+      "target": "local_f97dbffb_Definition",
+      "name": "Classification Task-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'Q3414877', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q3414877",
+      "type": "RELATED"
+    },
+    "('Q2539', 'local_895268c6', 'RELATED')": {
+      "source": "Q2539",
+      "target": "local_895268c6",
+      "type": "RELATED"
+    },
+    "('local_895268c6', 'local_895268c6_Definition', 'CONTENT')": {
+      "source": "local_895268c6",
+      "target": "local_895268c6_Definition",
+      "name": "Regression Task-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'Q16766476', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q16766476",
+      "type": "RELATED"
+    },
+    "('Q16766476', 'Q16766476_Application', 'CONTENT')": {
+      "source": "Q16766476",
+      "target": "Q16766476_Application",
+      "name": "decision tree learning-APPLICATION",
+      "type": "CONTENT"
+    },
+    "('local_f97dbffb', 'Q334384', 'SEMANTIC')": {
+      "source": "local_f97dbffb",
+      "target": "Q334384",
+      "name": "Classification Task-IS_A-supervised learning",
+      "type": "SEMANTIC"
+    },
+    "('local_895268c6', 'Q334384', 'SEMANTIC')": {
+      "source": "local_895268c6",
+      "target": "Q334384",
+      "name": "Regression Task-IS_A-supervised learning",
+      "type": "SEMANTIC"
+    },
+    "('Q1152135', 'Q334384', 'SEMANTIC')": {
+      "source": "Q1152135",
+      "target": "Q334384",
+      "name": "unsupervised learning-RELATED_TO-supervised learning",
+      "type": "SEMANTIC"
+    },
+    "('Q16766476', 'Q334384', 'SEMANTIC')": {
+      "source": "Q16766476",
+      "target": "Q334384",
+      "name": "decision tree learning-RELATED_TO-supervised learning",
+      "type": "SEMANTIC"
+    },
+    "('Q16766476', 'local_f97dbffb', 'SEMANTIC')": {
+      "source": "Q16766476",
+      "target": "local_f97dbffb",
+      "name": "decision tree learning-RELATED_TO-Classification Task",
+      "type": "SEMANTIC"
+    },
+    "('Q1152135', 'Q1068473', 'SEMANTIC')": {
+      "source": "Q1152135",
+      "target": "Q1068473",
+      "name": "unsupervised learning-PART_OF-educational technology",
+      "type": "SEMANTIC"
+    },
+    "('Q1068473', 'Q1152135', 'SEMANTIC')": {
+      "source": "Q1068473",
+      "target": "Q1152135",
+      "name": "educational technology-INCLUDES-unsupervised learning",
+      "type": "SEMANTIC"
+    },
+    "('Q334384', 'Q1068473', 'SEMANTIC')": {
+      "source": "Q334384",
+      "target": "Q1068473",
+      "name": "supervised learning-PART_OF-educational technology",
+      "type": "SEMANTIC"
+    },
+    "('Q1068473', 'Q334384', 'SEMANTIC')": {
+      "source": "Q1068473",
+      "target": "Q334384",
+      "name": "educational technology-INCLUDES-supervised learning",
+      "type": "SEMANTIC"
+    },
+    "('local_f97dbffb', 'Q3414877', 'SEMANTIC')": {
+      "source": "local_f97dbffb",
+      "target": "Q3414877",
+      "name": "Classification Task-PART_OF-quest / mission",
+      "type": "SEMANTIC"
+    },
+    "('Q3414877', 'local_f97dbffb', 'SEMANTIC')": {
+      "source": "Q3414877",
+      "target": "local_f97dbffb",
+      "name": "quest / mission-INCLUDES-Classification Task",
+      "type": "SEMANTIC"
+    },
+    "('local_895268c6', 'Q3414877', 'SEMANTIC')": {
+      "source": "local_895268c6",
+      "target": "Q3414877",
+      "name": "Regression Task-PART_OF-quest / mission",
+      "type": "SEMANTIC"
+    },
+    "('Q3414877', 'local_895268c6', 'SEMANTIC')": {
+      "source": "Q3414877",
+      "target": "local_895268c6",
+      "name": "quest / mission-INCLUDES-Regression Task",
+      "type": "SEMANTIC"
+    },
+    "('Q334384', 'Q334384_Statement', 'CONTENT')": {
+      "source": "Q334384",
+      "target": "Q334384_Statement",
+      "name": "supervised learning-STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'Q830687', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q830687",
+      "type": "RELATED"
+    },
+    "('Q830687', 'Q830687_Definition', 'CONTENT')": {
+      "source": "Q830687",
+      "target": "Q830687_Definition",
+      "name": "reinforcement learning-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q830687', 'Q830687_Application', 'CONTENT')": {
+      "source": "Q830687",
+      "target": "Q830687_Application",
+      "name": "reinforcement learning-APPLICATION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'local_4117494a', 'RELATED')": {
+      "source": "Q2539",
+      "target": "local_4117494a",
+      "type": "RELATED"
+    },
+    "('local_4117494a', 'local_4117494a_Statement', 'CONTENT')": {
+      "source": "local_4117494a",
+      "target": "local_4117494a_Statement",
+      "name": "ML Task Terminology-STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q334384', 'local_4117494a', 'SEMANTIC')": {
+      "source": "Q334384",
+      "target": "local_4117494a",
+      "name": "supervised learning-IS_A-ML Task Terminology",
+      "type": "SEMANTIC"
+    },
+    "('Q1152135', 'local_4117494a', 'SEMANTIC')": {
+      "source": "Q1152135",
+      "target": "local_4117494a",
+      "name": "unsupervised learning-IS_A-ML Task Terminology",
+      "type": "SEMANTIC"
+    },
+    "('Q830687', 'local_4117494a', 'SEMANTIC')": {
+      "source": "Q830687",
+      "target": "local_4117494a",
+      "name": "reinforcement learning-IS_A-ML Task Terminology",
+      "type": "SEMANTIC"
+    },
+    "('Q830687', 'Q1068473', 'SEMANTIC')": {
+      "source": "Q830687",
+      "target": "Q1068473",
+      "name": "reinforcement learning-PART_OF-educational technology",
+      "type": "SEMANTIC"
+    },
+    "('Q1068473', 'Q830687', 'SEMANTIC')": {
+      "source": "Q1068473",
+      "target": "Q830687",
+      "name": "educational technology-INCLUDES-reinforcement learning",
+      "type": "SEMANTIC"
+    },
+    "('Q2539', 'Q192776', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q192776",
+      "type": "RELATED"
+    },
+    "('Q192776', 'Q192776_Definition', 'CONTENT')": {
+      "source": "Q192776",
+      "target": "Q192776_Definition",
+      "name": "artificial neural network-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'local_ce744d64', 'RELATED')": {
+      "source": "Q2539",
+      "target": "local_ce744d64",
+      "type": "RELATED"
+    },
+    "('local_ce744d64', 'local_ce744d64_Definition', 'CONTENT')": {
+      "source": "local_ce744d64",
+      "target": "local_ce744d64_Definition",
+      "name": "Regression Trees-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'Q10884', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q10884",
+      "type": "RELATED"
+    },
+    "('Q2539', 'local_049f0246', 'RELATED')": {
+      "source": "Q2539",
+      "target": "local_049f0246",
+      "type": "RELATED"
+    },
+    "('local_049f0246', 'local_049f0246_Definition', 'CONTENT')": {
+      "source": "local_049f0246",
+      "target": "local_049f0246_Definition",
+      "name": "Classification Trees-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'local_8dbe36b7', 'RELATED')": {
+      "source": "Q2539",
+      "target": "local_8dbe36b7",
+      "type": "RELATED"
+    },
+    "('local_8dbe36b7', 'local_8dbe36b7_Definition', 'CONTENT')": {
+      "source": "local_8dbe36b7",
+      "target": "local_8dbe36b7_Definition",
+      "name": "Distance-based Methods-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'Q2695280', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q2695280",
+      "type": "RELATED"
+    },
+    "('Q2539', 'local_3b626c45', 'RELATED')": {
+      "source": "Q2539",
+      "target": "local_3b626c45",
+      "type": "RELATED"
+    },
+    "('local_3b626c45', 'local_3b626c45_Definition', 'CONTENT')": {
+      "source": "local_3b626c45",
+      "target": "local_3b626c45_Definition",
+      "name": "Agglomerative Hierarchical Methods-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'Q310401', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q310401",
+      "type": "RELATED"
+    },
+    "('Q310401', 'Q310401_Definition', 'CONTENT')": {
+      "source": "Q310401",
+      "target": "Q310401_Definition",
+      "name": "k-means clustering-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q192776', 'local_ce744d64', 'SEMANTIC')": {
+      "source": "Q192776",
+      "target": "local_ce744d64",
+      "name": "artificial neural network-RELATED_TO-Regression Trees",
+      "type": "SEMANTIC"
+    },
+    "('Q192776', 'local_049f0246', 'SEMANTIC')": {
+      "source": "Q192776",
+      "target": "local_049f0246",
+      "name": "artificial neural network-RELATED_TO-Classification Trees",
+      "type": "SEMANTIC"
+    },
+    "('Q192776', 'local_8dbe36b7', 'SEMANTIC')": {
+      "source": "Q192776",
+      "target": "local_8dbe36b7",
+      "name": "artificial neural network-RELATED_TO-Distance-based Methods",
+      "type": "SEMANTIC"
+    },
+    "('local_ce744d64', 'local_049f0246', 'SEMANTIC')": {
+      "source": "local_ce744d64",
+      "target": "local_049f0246",
+      "name": "Regression Trees-RELATED_TO-Classification Trees",
+      "type": "SEMANTIC"
+    },
+    "('local_ce744d64', 'local_8dbe36b7', 'SEMANTIC')": {
+      "source": "local_ce744d64",
+      "target": "local_8dbe36b7",
+      "name": "Regression Trees-RELATED_TO-Distance-based Methods",
+      "type": "SEMANTIC"
+    },
+    "('local_049f0246', 'local_8dbe36b7', 'SEMANTIC')": {
+      "source": "local_049f0246",
+      "target": "local_8dbe36b7",
+      "name": "Classification Trees-RELATED_TO-Distance-based Methods",
+      "type": "SEMANTIC"
+    },
+    "('local_3b626c45', 'Q310401', 'SEMANTIC')": {
+      "source": "local_3b626c45",
+      "target": "Q310401",
+      "name": "Agglomerative Hierarchical Methods-RELATED_TO-k-means clustering",
+      "type": "SEMANTIC"
+    },
+    "('local_ce744d64', 'Q10884', 'SEMANTIC')": {
+      "source": "local_ce744d64",
+      "target": "Q10884",
+      "name": "Regression Trees-PART_OF-tree",
+      "type": "SEMANTIC"
+    },
+    "('Q10884', 'local_ce744d64', 'SEMANTIC')": {
+      "source": "Q10884",
+      "target": "local_ce744d64",
+      "name": "tree-INCLUDES-Regression Trees",
+      "type": "SEMANTIC"
+    },
+    "('local_049f0246', 'Q10884', 'SEMANTIC')": {
+      "source": "local_049f0246",
+      "target": "Q10884",
+      "name": "Classification Trees-PART_OF-tree",
+      "type": "SEMANTIC"
+    },
+    "('Q10884', 'local_049f0246', 'SEMANTIC')": {
+      "source": "Q10884",
+      "target": "local_049f0246",
+      "name": "tree-INCLUDES-Classification Trees",
+      "type": "SEMANTIC"
+    },
+    "('local_8dbe36b7', 'Q2695280', 'SEMANTIC')": {
+      "source": "local_8dbe36b7",
+      "target": "Q2695280",
+      "name": "Distance-based Methods-PART_OF-technique",
+      "type": "SEMANTIC"
+    },
+    "('Q2695280', 'local_8dbe36b7', 'SEMANTIC')": {
+      "source": "Q2695280",
+      "target": "local_8dbe36b7",
+      "name": "technique-INCLUDES-Distance-based Methods",
+      "type": "SEMANTIC"
+    },
+    "('local_3b626c45', 'Q2695280', 'SEMANTIC')": {
+      "source": "local_3b626c45",
+      "target": "Q2695280",
+      "name": "Agglomerative Hierarchical Methods-PART_OF-technique",
+      "type": "SEMANTIC"
+    },
+    "('Q2695280', 'local_3b626c45', 'SEMANTIC')": {
+      "source": "Q2695280",
+      "target": "local_3b626c45",
+      "name": "technique-INCLUDES-Agglomerative Hierarchical Methods",
+      "type": "SEMANTIC"
+    },
+    "('Q2539', 'Q25048582', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q25048582",
+      "type": "RELATED"
+    },
+    "('Q25048582', 'Q25048582_Definition', 'CONTENT')": {
+      "source": "Q25048582",
+      "target": "Q25048582_Definition",
+      "name": "Loss functions for classification-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'Q6803654', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q6803654",
+      "type": "RELATED"
+    },
+    "('Q6803654', 'Q6803654_Definition', 'CONTENT')": {
+      "source": "Q6803654",
+      "target": "Q6803654_Definition",
+      "name": "Mean squared prediction error-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'local_656c505e', 'RELATED')": {
+      "source": "Q2539",
+      "target": "local_656c505e",
+      "type": "RELATED"
+    },
+    "('local_656c505e', 'local_656c505e_Definition', 'CONTENT')": {
+      "source": "local_656c505e",
+      "target": "local_656c505e_Definition",
+      "name": "Categorical Cross‑Entropy-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'Q7236587', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q7236587",
+      "type": "RELATED"
+    },
+    "('Q7236587', 'Q7236587_Definition', 'CONTENT')": {
+      "source": "Q7236587",
+      "target": "Q7236587_Definition",
+      "name": "power optimizer-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'Q2539', 'SEMANTIC')": {
+      "source": "Q2539",
+      "target": "Q2539",
+      "type": "SEMANTIC"
+    },
+    "('Q2539', 'Q2539_Definition', 'CONTENT')": {
+      "source": "Q2539",
+      "target": "Q2539_Definition",
+      "name": "machine learning-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'Q192776', 'SEMANTIC')": {
+      "source": "Q2539",
+      "target": "Q192776",
+      "type": "SEMANTIC"
+    },
+    "('Q2539', 'Q245748', 'SEMANTIC')": {
+      "source": "Q2539",
+      "target": "Q245748",
+      "type": "SEMANTIC"
+    },
+    "('Q245748', 'Q245748_Definition', 'CONTENT')": {
+      "source": "Q245748",
+      "target": "Q245748_Definition",
+      "name": "random forest-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'local_7c419040', 'SEMANTIC')": {
+      "source": "Q2539",
+      "target": "local_7c419040",
+      "type": "SEMANTIC"
+    },
+    "('local_7c419040', 'local_7c419040_Definition', 'CONTENT')": {
+      "source": "local_7c419040",
+      "target": "local_7c419040_Definition",
+      "name": "Boosted Regression Trees-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'local_471fd449', 'SEMANTIC')": {
+      "source": "Q2539",
+      "target": "local_471fd449",
+      "type": "SEMANTIC"
+    },
+    "('local_471fd449', 'local_471fd449_Problem', 'CONTENT')": {
+      "source": "local_471fd449",
+      "target": "local_471fd449_Problem",
+      "name": "Distributional Assumptions-PROBLEM",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'local_0ae309bd', 'SEMANTIC')": {
+      "source": "Q2539",
+      "target": "local_0ae309bd",
+      "type": "SEMANTIC"
+    },
+    "('local_0ae309bd', 'local_0ae309bd_Statement', 'CONTENT')": {
+      "source": "local_0ae309bd",
+      "target": "local_0ae309bd_Statement",
+      "name": "Non‑Parametric Approaches-STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'local_a6822706', 'SEMANTIC')": {
+      "source": "Q2539",
+      "target": "local_a6822706",
+      "type": "SEMANTIC"
+    },
+    "('local_a6822706', 'local_a6822706_Objective', 'CONTENT')": {
+      "source": "local_a6822706",
+      "target": "local_a6822706_Objective",
+      "name": "Lower Predictive Errors-OBJECTIVE",
+      "type": "CONTENT"
+    },
+    "('Q6803654', 'Q25048582', 'SEMANTIC')": {
+      "source": "Q6803654",
+      "target": "Q25048582",
+      "name": "Mean squared prediction error-IS_A-Loss functions for classification",
+      "type": "SEMANTIC"
+    },
+    "('local_656c505e', 'Q25048582', 'SEMANTIC')": {
+      "source": "local_656c505e",
+      "target": "Q25048582",
+      "name": "Categorical Cross‑Entropy-IS_A-Loss functions for classification",
+      "type": "SEMANTIC"
+    },
+    "('Q25048582', 'Q2539', 'SEMANTIC')": {
+      "source": "Q25048582",
+      "target": "Q2539",
+      "name": "Loss functions for classification-PART_OF-machine learning",
+      "type": "SEMANTIC"
+    },
+    "('Q7236587', 'Q2539', 'SEMANTIC')": {
+      "source": "Q7236587",
+      "target": "Q2539",
+      "name": "power optimizer-PART_OF-machine learning",
+      "type": "SEMANTIC"
+    },
+    "('Q192776', 'Q2539', 'SEMANTIC')": {
+      "source": "Q192776",
+      "target": "Q2539",
+      "name": "artificial neural network-IS_A-machine learning",
+      "type": "SEMANTIC"
+    },
+    "('Q245748', 'Q2539', 'SEMANTIC')": {
+      "source": "Q245748",
+      "target": "Q2539",
+      "name": "random forest-IS_A-machine learning",
+      "type": "SEMANTIC"
+    },
+    "('local_7c419040', 'Q2539', 'SEMANTIC')": {
+      "source": "local_7c419040",
+      "target": "Q2539",
+      "name": "Boosted Regression Trees-IS_A-machine learning",
+      "type": "SEMANTIC"
+    },
+    "('Q1152135', 'Q2539', 'SEMANTIC')": {
+      "source": "Q1152135",
+      "target": "Q2539",
+      "name": "unsupervised learning-IS_A-machine learning",
+      "type": "SEMANTIC"
+    },
+    "('Q7236587', 'Q25048582', 'SEMANTIC')": {
+      "source": "Q7236587",
+      "target": "Q25048582",
+      "name": "power optimizer-RELATED_TO-Loss functions for classification",
+      "type": "SEMANTIC"
+    },
+    "('Q2539', 'Q1068473', 'SEMANTIC')": {
+      "source": "Q2539",
+      "target": "Q1068473",
+      "name": "machine learning-PART_OF-educational technology",
+      "type": "SEMANTIC"
+    },
+    "('Q1068473', 'Q2539', 'SEMANTIC')": {
+      "source": "Q1068473",
+      "target": "Q2539",
+      "name": "educational technology-INCLUDES-machine learning",
+      "type": "SEMANTIC"
+    },
+    "('Q2539', 'local_66688f1c', 'RELATED')": {
+      "source": "Q2539",
+      "target": "local_66688f1c",
+      "type": "RELATED"
+    },
+    "('local_66688f1c', 'local_66688f1c_Definition', 'CONTENT')": {
+      "source": "local_66688f1c",
+      "target": "local_66688f1c_Definition",
+      "name": "Bootstrap Resampling-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('local_66688f1c', 'local_66688f1c_Application', 'CONTENT')": {
+      "source": "local_66688f1c",
+      "target": "local_66688f1c_Application",
+      "name": "Bootstrap Resampling-APPLICATION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'Q5188206', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q5188206",
+      "type": "RELATED"
+    },
+    "('Q5188206', 'Q5188206_Definition', 'CONTENT')": {
+      "source": "Q5188206",
+      "target": "Q5188206_Definition",
+      "name": "Cross-validation-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q5188206', 'Q5188206_Application', 'CONTENT')": {
+      "source": "Q5188206",
+      "target": "Q5188206_Application",
+      "name": "Cross-validation-APPLICATION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'Q11660', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q11660",
+      "type": "RELATED"
+    },
+    "('Q11660', 'Q11660_Definition', 'CONTENT')": {
+      "source": "Q11660",
+      "target": "Q11660_Definition",
+      "name": "artificial intelligence-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'local_cae30b92', 'RELATED')": {
+      "source": "Q2539",
+      "target": "local_cae30b92",
+      "type": "RELATED"
+    },
+    "('Q2539', 'Q2264109', 'RELATED')": {
+      "source": "Q2539",
+      "target": "Q2264109",
+      "type": "RELATED"
+    },
+    "('Q2264109', 'Q2264109_Definition', 'CONTENT')": {
+      "source": "Q2264109",
+      "target": "Q2264109_Definition",
+      "name": "artificial general intelligence-DEFINITION",
+      "type": "CONTENT"
+    },
+    "('local_7c419040', 'local_7c419040_Statement', 'CONTENT')": {
+      "source": "local_7c419040",
+      "target": "local_7c419040_Statement",
+      "name": "Boosted Regression Trees-STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q245748', 'Q245748_Statement', 'CONTENT')": {
+      "source": "Q245748",
+      "target": "Q245748_Statement",
+      "name": "random forest-STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'local_2f26ae52', 'SEMANTIC')": {
+      "source": "Q2539",
+      "target": "local_2f26ae52",
+      "type": "SEMANTIC"
+    },
+    "('local_2f26ae52', 'local_2f26ae52_Problem', 'CONTENT')": {
+      "source": "local_2f26ae52",
+      "target": "local_2f26ae52_Problem",
+      "name": "Computational-PROBLEM",
+      "type": "CONTENT"
+    },
+    "('Q2539', 'Q11660', 'SEMANTIC')": {
+      "source": "Q2539",
+      "target": "Q11660",
+      "name": "machine learning-IS_A-artificial intelligence",
+      "type": "SEMANTIC"
+    },
+    "('Q2264109', 'Q11660', 'SEMANTIC')": {
+      "source": "Q2264109",
+      "target": "Q11660",
+      "name": "artificial general intelligence-IS_A-artificial intelligence",
+      "type": "SEMANTIC"
+    },
+    "('local_66688f1c', 'Q2539', 'SEMANTIC')": {
+      "source": "local_66688f1c",
+      "target": "Q2539",
+      "name": "Bootstrap Resampling-RELATED_TO-machine learning",
+      "type": "SEMANTIC"
+    },
+    "('Q5188206', 'Q2539', 'SEMANTIC')": {
+      "source": "Q5188206",
+      "target": "Q2539",
+      "name": "Cross-validation-RELATED_TO-machine learning",
+      "type": "SEMANTIC"
+    },
+    "('local_66688f1c', 'local_2f26ae52', 'SEMANTIC')": {
+      "source": "local_66688f1c",
+      "target": "local_2f26ae52",
+      "name": "Bootstrap Resampling-CAUSES-Computational",
+      "type": "SEMANTIC"
+    },
+    "('Q5188206', 'local_2f26ae52', 'SEMANTIC')": {
+      "source": "Q5188206",
+      "target": "local_2f26ae52",
+      "name": "Cross-validation-CAUSES-Computational",
+      "type": "SEMANTIC"
+    },
+    "('Q11660', 'local_cae30b92', 'SEMANTIC')": {
+      "source": "Q11660",
+      "target": "local_cae30b92",
+      "name": "artificial intelligence-PART_OF-intelligence",
+      "type": "SEMANTIC"
+    },
+    "('local_cae30b92', 'Q11660', 'SEMANTIC')": {
+      "source": "local_cae30b92",
+      "target": "Q11660",
+      "name": "intelligence-INCLUDES-artificial intelligence",
+      "type": "SEMANTIC"
+    },
+    "('Q2264109', 'local_cae30b92', 'SEMANTIC')": {
+      "source": "Q2264109",
+      "target": "local_cae30b92",
+      "name": "artificial general intelligence-PART_OF-intelligence",
+      "type": "SEMANTIC"
+    },
+    "('local_cae30b92', 'Q2264109', 'SEMANTIC')": {
+      "source": "local_cae30b92",
+      "target": "Q2264109",
+      "name": "intelligence-INCLUDES-artificial general intelligence",
+      "type": "SEMANTIC"
+    }
+  },
+  "clusters": {
+    "cluster_source_test_01": {
+      "id": "cluster_source_test_01",
+      "label": "ML for beginner",
+      "type": "Source",
+      "member_ids": [
+        "local_66688f1c",
+        "local_66688f1c_Definition",
+        "local_66688f1c_Application",
+        "Q5188206",
+        "Q5188206_Definition",
+        "Q5188206_Application",
+        "Q11660",
+        "Q11660_Definition",
+        "local_cae30b92",
+        "Q2264109",
+        "Q2264109_Definition",
+        "Q2539",
+        "Q2539_Definition",
+        "local_7c419040",
+        "local_7c419040_Statement",
+        "Q245748",
+        "Q245748_Statement",
+        "local_2f26ae52",
+        "local_2f26ae52_Problem"
+      ],
+      "metadata": {
+        "doc_id": "test_01"
+      }
+    },
+    "cluster_topic_Q2539": {
+      "id": "cluster_topic_Q2539",
+      "label": "Machine Learning",
+      "type": "Topic",
+      "anchor_node": "Q2539",
+      "member_ids": [
+        "local_66688f1c",
+        "Q5188206",
+        "Q11660",
+        "local_cae30b92",
+        "Q2264109",
+        "Q2539",
+        "local_7c419040",
+        "Q245748",
+        "local_2f26ae52"
+      ]
+    }
+  }
+}

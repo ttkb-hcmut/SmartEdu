@@ -1,0 +1,1149 @@
+{
+  "nodes": {
+    "concept_00a4be873ec9": {
+      "id": "concept_00a4be873ec9",
+      "name": "Machine Learning Objective",
+      "content": "Extracted concept",
+      "metadata": {
+        "source": "local_llm"
+      }
+    },
+    "concept_00a4be873ec9_RhetoricalRole.OBJECTIVE": {
+      "id": "concept_00a4be873ec9_RhetoricalRole.OBJECTIVE",
+      "name": "Machine Learning Objective_RhetoricalRole.OBJECTIVE",
+      "content": "The objective of ML is to build a good predictive model.",
+      "concept_id": "concept_00a4be873ec9",
+      "rrole": "Objective",
+      "score": 1
+    },
+    "concept_6394f58d859e": {
+      "id": "concept_6394f58d859e",
+      "name": "Good Predictive Model",
+      "content": "Extracted concept",
+      "metadata": {
+        "source": "local_llm"
+      }
+    },
+    "concept_6394f58d859e_RhetoricalRole.DEFINITION": {
+      "id": "concept_6394f58d859e_RhetoricalRole.DEFINITION",
+      "name": "Good Predictive Model_RhetoricalRole.DEFINITION",
+      "content": "By “good”, we mean that the model should predict well to new data.",
+      "concept_id": "concept_6394f58d859e",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q331309": {
+      "id": "Q331309",
+      "name": "overfitting",
+      "content": "production of an analysis that corresponds too closely or exactly to a particular set of data, and may therefore fail to fit additional data or predict future observations reliably",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "MATCH"
+      }
+    },
+    "Q331309_RhetoricalRole.PROBLEM": {
+      "id": "Q331309_RhetoricalRole.PROBLEM",
+      "name": "overfitting_RhetoricalRole.PROBLEM",
+      "content": "A more complex and flexible model has a higher risk of overfitting.",
+      "concept_id": "Q331309",
+      "rrole": "Problem",
+      "score": 1
+    },
+    "Q17003119": {
+      "id": "Q17003119",
+      "name": "bias–variance tradeoff",
+      "content": "property of a set of predictive models whereby models with a lower bias in parameter estimation have a higher variance of the parameter estimates across samples, and vice versa",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "FALLBACK"
+      }
+    },
+    "Q17003119_RhetoricalRole.DEFINITION": {
+      "id": "Q17003119_RhetoricalRole.DEFINITION",
+      "name": "bias–variance tradeoff_RhetoricalRole.DEFINITION",
+      "content": "The trade-off between complexity and flexibility can be depicted by the bias-variance tradeoff (Box 3).",
+      "concept_id": "Q17003119",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "concept_9ae3c1dd6809": {
+      "id": "concept_9ae3c1dd6809",
+      "name": "General Ideal of Machine Learning Algorithms",
+      "content": "Extracted concept",
+      "metadata": {
+        "source": "local_llm"
+      }
+    },
+    "concept_9ae3c1dd6809_RhetoricalRole.STATEMENT": {
+      "id": "concept_9ae3c1dd6809_RhetoricalRole.STATEMENT",
+      "name": "General Ideal of Machine Learning Algorithms_RhetoricalRole.STATEMENT",
+      "content": "The general ideal of Machine Learning algorithms is thus to take a certain algorithmic structure and then adjust their parameters to the data (training), while simultaneously adapt its complexity by optimizing the bias-variance trade-off so that the fitted model generalizes well to new data.",
+      "concept_id": "concept_9ae3c1dd6809",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "Q16766476": {
+      "id": "Q16766476",
+      "name": "decision tree learning",
+      "content": "machine learning algorithm",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "MATCH"
+      }
+    },
+    "Q16766476_RhetoricalRole.DEFINITION": {
+      "id": "Q16766476_RhetoricalRole.DEFINITION",
+      "name": "decision tree learning_RhetoricalRole.DEFINITION",
+      "content": "Figure I: Decision tree to assist in task identification.",
+      "concept_id": "Q16766476",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q1152135": {
+      "id": "Q1152135",
+      "name": "unsupervised learning",
+      "content": "machine learning technique",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "MATCH"
+      }
+    },
+    "Q1152135_RhetoricalRole.DEFINITION": {
+      "id": "Q1152135_RhetoricalRole.DEFINITION",
+      "name": "unsupervised learning_RhetoricalRole.DEFINITION",
+      "content": "In constrast to that, unsupervised learning refers to tasks where no examples are supplied, and algorithms optimize some general loss function (e.g. genomic species delimitation, see Derkarabetian et al., 2019).",
+      "concept_id": "Q1152135",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q334384": {
+      "id": "Q334384",
+      "name": "supervised learning",
+      "content": "machine learning task of learning a function that maps an input to an output based on example input-output pairs",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "MATCH"
+      }
+    },
+    "Q334384_RhetoricalRole.DEFINITION": {
+      "id": "Q334384_RhetoricalRole.DEFINITION",
+      "name": "supervised learning_RhetoricalRole.DEFINITION",
+      "content": "In supervised learning, the algorithm is presented with examples for the “correct” execution of the task, and the model is trained to minize the differences its own and the “correct” actions.",
+      "concept_id": "Q334384",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "concept_593c01bf694a": {
+      "id": "concept_593c01bf694a",
+      "name": "Classification task",
+      "content": "Extracted concept",
+      "metadata": {
+        "source": "local_llm"
+      }
+    },
+    "concept_593c01bf694a_RhetoricalRole.DEFINITION": {
+      "id": "concept_593c01bf694a_RhetoricalRole.DEFINITION",
+      "name": "Classification task_RhetoricalRole.DEFINITION",
+      "content": "if y is discrete (e.g., species classes), it is a classification task,",
+      "concept_id": "concept_593c01bf694a",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "concept_dc122c3b3285": {
+      "id": "concept_dc122c3b3285",
+      "name": "Regression task",
+      "content": "Extracted concept",
+      "metadata": {
+        "source": "local_llm"
+      }
+    },
+    "concept_dc122c3b3285_RhetoricalRole.DEFINITION": {
+      "id": "concept_dc122c3b3285_RhetoricalRole.DEFINITION",
+      "name": "Regression task_RhetoricalRole.DEFINITION",
+      "content": "if y is a continuous variable (e.g. biomass), it is a regression task.",
+      "concept_id": "concept_dc122c3b3285",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q3414877": {
+      "id": "Q3414877",
+      "name": "quest / mission",
+      "content": "task in video games that a player-controlled character may complete to gain a reward and/or progress the story",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "FALLBACK"
+      }
+    },
+    "Q3414877_RhetoricalRole.DEFINITION": {
+      "id": "Q3414877_RhetoricalRole.DEFINITION",
+      "name": "quest / mission_RhetoricalRole.DEFINITION",
+      "content": "In ML, the different use cases for the algorithms are called tasks.",
+      "concept_id": "Q3414877",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q5962346": {
+      "id": "Q5962346",
+      "name": "classification scheme",
+      "content": "system of descriptive information for an arrangement or division of objects into groups based on characteristics, which the objects have in common",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "MATCH"
+      }
+    },
+    "Q5962346_RhetoricalRole.DEFINITION": {
+      "id": "Q5962346_RhetoricalRole.DEFINITION",
+      "name": "classification scheme_RhetoricalRole.DEFINITION",
+      "content": "classification (e.g. labeling of images)",
+      "concept_id": "Q5962346",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q208042": {
+      "id": "Q208042",
+      "name": "regression analysis",
+      "content": "set of statistical processes for estimating the relationships among variables",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "FALLBACK"
+      }
+    },
+    "Q208042_RhetoricalRole.DEFINITION": {
+      "id": "Q208042_RhetoricalRole.DEFINITION",
+      "name": "regression analysis_RhetoricalRole.DEFINITION",
+      "content": "regression (prediction of a numeric variable)",
+      "concept_id": "Q208042",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q830687": {
+      "id": "Q830687",
+      "name": "reinforcement learning",
+      "content": "type of machine learning where an agent learns how to behave in an environment by performing actions and receiving rewards or penalties in return, aiming to maximize the cumulative reward over time",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "MATCH"
+      }
+    },
+    "Q830687_RhetoricalRole.DEFINITION": {
+      "id": "Q830687_RhetoricalRole.DEFINITION",
+      "name": "reinforcement learning_RhetoricalRole.DEFINITION",
+      "content": "Finally, in reinforcement learning, the Machine Learning algorithm is trained by interacting with a (virtual) environment.",
+      "concept_id": "Q830687",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q830687_RhetoricalRole.STATEMENT": {
+      "id": "Q830687_RhetoricalRole.STATEMENT",
+      "name": "reinforcement learning_RhetoricalRole.STATEMENT",
+      "content": "Reinforcement learning is used in tasks in which the learning depends on executed actions and their produced consequences, for instance, playing strategy computer games such as DOTA (OpenAI et al., 2019) or Starcraft (Vinyals et al., 2019).",
+      "concept_id": "Q830687",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "concept_0cdf1d51224a": {
+      "id": "concept_0cdf1d51224a",
+      "name": "Machine learning and Deep learning in ecology",
+      "content": "Extracted concept",
+      "metadata": {
+        "source": "local_llm"
+      }
+    },
+    "concept_0cdf1d51224a_RhetoricalRole.STATEMENT": {
+      "id": "concept_0cdf1d51224a_RhetoricalRole.STATEMENT",
+      "name": "Machine learning and Deep learning in ecology_RhetoricalRole.STATEMENT",
+      "content": "Machine learning and Deep learning in ecology",
+      "concept_id": "concept_0cdf1d51224a",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "Q192776": {
+      "id": "Q192776",
+      "name": "artificial neural network",
+      "content": "computational model used in machine learning, based on connected, hierarchical functions",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "MATCH"
+      }
+    },
+    "Q192776_RhetoricalRole.DEFINITION": {
+      "id": "Q192776_RhetoricalRole.DEFINITION",
+      "name": "artificial neural network_RhetoricalRole.DEFINITION",
+      "content": "neural networks, which mimic the functioning of a brain",
+      "concept_id": "Q192776",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q127731137": {
+      "id": "Q127731137",
+      "name": "Regression and Classification Trees are Powerful and Intuitive Analytical Methods for Complex Datasets in Paleontology",
+      "content": "scholarly article",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "FALLBACK"
+      }
+    },
+    "Q127731137_RhetoricalRole.DEFINITION": {
+      "id": "Q127731137_RhetoricalRole.DEFINITION",
+      "name": "Regression and Classification Trees are Powerful and Intuitive Analytical Methods for Complex Datasets in Paleontology_RhetoricalRole.DEFINITION",
+      "content": "regression and classification trees",
+      "concept_id": "Q127731137",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q63440195": {
+      "id": "Q63440195",
+      "name": "Distance-Based Methods for Spatial and Spatio-Temporal Surveillance",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "FALLBACK"
+      }
+    },
+    "Q63440195_RhetoricalRole.DEFINITION": {
+      "id": "Q63440195_RhetoricalRole.DEFINITION",
+      "name": "Distance-Based Methods for Spatial and Spatio-Temporal Surveillance_RhetoricalRole.DEFINITION",
+      "content": "distance-based method",
+      "concept_id": "Q63440195",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "concept_3b626c45819c": {
+      "id": "concept_3b626c45819c",
+      "name": "Agglomerative Hierarchical Methods",
+      "content": "Extracted concept",
+      "metadata": {
+        "source": "local_llm"
+      }
+    },
+    "concept_3b626c45819c_RhetoricalRole.DEFINITION": {
+      "id": "concept_3b626c45819c_RhetoricalRole.DEFINITION",
+      "name": "Agglomerative Hierarchical Methods_RhetoricalRole.DEFINITION",
+      "content": "agglomerative hierarchical methods",
+      "concept_id": "concept_3b626c45819c",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q310401": {
+      "id": "Q310401",
+      "name": "k-means clustering",
+      "content": "Vector quantization algorithm minimizing the sum of squared deviations",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "MATCH"
+      }
+    },
+    "Q310401_RhetoricalRole.DEFINITION": {
+      "id": "Q310401_RhetoricalRole.DEFINITION",
+      "name": "k-means clustering_RhetoricalRole.DEFINITION",
+      "content": "k-means",
+      "concept_id": "Q310401",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "concept_61357c174f97": {
+      "id": "concept_61357c174f97",
+      "name": "Training (supervised & reinforcement learning)",
+      "content": "Extracted concept",
+      "metadata": {
+        "source": "local_llm"
+      }
+    },
+    "concept_61357c174f97_RhetoricalRole.DEFINITION": {
+      "id": "concept_61357c174f97_RhetoricalRole.DEFINITION",
+      "name": "Training (supervised & reinforcement learning)_RhetoricalRole.DEFINITION",
+      "content": "In supervised and reinforcement learning, training a model consists of two steps.",
+      "concept_id": "concept_61357c174f97",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q25048582": {
+      "id": "Q25048582",
+      "name": "Loss functions for classification",
+      "content": "Concept in machine learning",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "MATCH"
+      }
+    },
+    "Q25048582_RhetoricalRole.DEFINITION": {
+      "id": "Q25048582_RhetoricalRole.DEFINITION",
+      "name": "Loss functions for classification_RhetoricalRole.DEFINITION",
+      "content": "The first step is the definition of a loss function, which measures the current score (performance) of the algorithm in solving a certain task.",
+      "concept_id": "Q25048582",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q25048582_RhetoricalRole.STATEMENT": {
+      "id": "Q25048582_RhetoricalRole.STATEMENT",
+      "name": "Loss functions for classification_RhetoricalRole.STATEMENT",
+      "content": "The loss function differs for classification and regression tasks (e.g., mean squared error and categorical cross-entropy are common loss functions for regression and classification tasks).",
+      "concept_id": "Q25048582",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "Q7236587": {
+      "id": "Q7236587",
+      "name": "power optimizer",
+      "content": "electrical conversion technology",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "MATCH"
+      }
+    },
+    "Q7236587_RhetoricalRole.DEFINITION": {
+      "id": "Q7236587_RhetoricalRole.DEFINITION",
+      "name": "power optimizer_RhetoricalRole.DEFINITION",
+      "content": "The second component is the optimizer, which updates parameters of the algorithm with the goal to increase its performance.",
+      "concept_id": "Q7236587",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q7236587_RhetoricalRole.OBJECTIVE": {
+      "id": "Q7236587_RhetoricalRole.OBJECTIVE",
+      "name": "power optimizer_RhetoricalRole.OBJECTIVE",
+      "content": "with the goal to increase its performance.",
+      "concept_id": "Q7236587",
+      "rrole": "Objective",
+      "score": 1
+    },
+    "concept_cb57ee5e4172": {
+      "id": "concept_cb57ee5e4172",
+      "name": "Unsupervised learning (approach)",
+      "content": "Extracted concept",
+      "metadata": {
+        "source": "local_llm"
+      }
+    },
+    "concept_cb57ee5e4172_RhetoricalRole.DEFINITION": {
+      "id": "concept_cb57ee5e4172_RhetoricalRole.DEFINITION",
+      "name": "Unsupervised learning (approach)_RhetoricalRole.DEFINITION",
+      "content": "In unsupervised learning it depends on the method, but a common approach is to use similarities between observations to decide if observations are grouped together or not.",
+      "concept_id": "concept_cb57ee5e4172",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q2539": {
+      "id": "Q2539",
+      "name": "machine learning",
+      "content": "scientific study of algorithms and statistical models that computer systems use to perform tasks without explicit instructions",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "MATCH"
+      }
+    },
+    "Q2539_RhetoricalRole.DEFINITION": {
+      "id": "Q2539_RhetoricalRole.DEFINITION",
+      "name": "machine learning_RhetoricalRole.DEFINITION",
+      "content": "The rising availability of computers around the 1980s allowed not only more refined numerical solutions for classical statistical methods, but also the development of alternative modelling approaches for data analysis and predictions that we collectively refer to as “machine learning”.",
+      "concept_id": "Q2539",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q2539_RhetoricalRole.STATEMENT": {
+      "id": "Q2539_RhetoricalRole.STATEMENT",
+      "name": "machine learning_RhetoricalRole.STATEMENT",
+      "content": "Although these approaches differ in detail, we see their communality in the realization that abandoning the data-generating model (connected to the ability to calculate p-values, CIs and all that) in favor of generic algorithmic structures that can be trained to data often achieves lower errors for predictive tasks (for general Machine Learning principles, see Box 1) (Breiman, 2001b; Shmueli, 2010).",
+      "concept_id": "Q2539",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "Q192776_RhetoricalRole.STATEMENT": {
+      "id": "Q192776_RhetoricalRole.STATEMENT",
+      "name": "artificial neural network_RhetoricalRole.STATEMENT",
+      "content": "Examples of early Machine Learning algorithms are neural networks (McCulloch & Pitts, 1943), random forest (Breiman, 2001a), and boosted regression trees (Friedman, 2001) (more on these in the section ‘Important ML Algorithms in more detail’).",
+      "concept_id": "Q192776",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "Q245748": {
+      "id": "Q245748",
+      "name": "random forest",
+      "content": "statistical algorithm that is used to cluster points of data in functional groups",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "MATCH"
+      }
+    },
+    "Q245748_RhetoricalRole.STATEMENT": {
+      "id": "Q245748_RhetoricalRole.STATEMENT",
+      "name": "random forest_RhetoricalRole.STATEMENT",
+      "content": "Examples of early Machine Learning algorithms are neural networks (McCulloch & Pitts, 1943), random forest (Breiman, 2001a), and boosted regression trees (Friedman, 2001) (more on these in the section ‘Important ML Algorithms in more detail’).",
+      "concept_id": "Q245748",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "Q38478000": {
+      "id": "Q38478000",
+      "name": "Boosted regression trees, multivariate adaptive regression splines and their two-step combinations with multiple linear regression or partial least squares to predict blood-brain barrier passage: a case study",
+      "content": "scientific article published on 08 January 2008",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "FALLBACK"
+      }
+    },
+    "Q38478000_RhetoricalRole.STATEMENT": {
+      "id": "Q38478000_RhetoricalRole.STATEMENT",
+      "name": "Boosted regression trees, multivariate adaptive regression splines and their two-step combinations with multiple linear regression or partial least squares to predict blood-brain barrier passage: a case study_RhetoricalRole.STATEMENT",
+      "content": "Examples of early Machine Learning algorithms are neural networks (McCulloch & Pitts, 1943), random forest (Breiman, 2001a), and boosted regression trees (Friedman, 2001) (more on these in the section ‘Important ML Algorithms in more detail’).",
+      "concept_id": "Q38478000",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "concept_f12564ff610c": {
+      "id": "concept_f12564ff610c",
+      "name": "Algorithmic nature of ML models",
+      "content": "Extracted concept",
+      "metadata": {
+        "source": "local_llm"
+      }
+    },
+    "concept_f12564ff610c_RhetoricalRole.STATEMENT": {
+      "id": "concept_f12564ff610c_RhetoricalRole.STATEMENT",
+      "name": "Algorithmic nature of ML models_RhetoricalRole.STATEMENT",
+      "content": "The algorithmic nature of the new ML models laxed the necessary distributional assumptions for calculating p-values and CIs and fueled the development of non-parametric approaches",
+      "concept_id": "concept_f12564ff610c",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "Q893195": {
+      "id": "Q893195",
+      "name": "Bootstrap",
+      "content": "web design front-end framework",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "MATCH"
+      }
+    },
+    "Q893195_RhetoricalRole.DEFINITION": {
+      "id": "Q893195_RhetoricalRole.DEFINITION",
+      "name": "Bootstrap_RhetoricalRole.DEFINITION",
+      "content": "a resampling technique that is often used for estimating CIs on the parameters and predictions of statistical or Machine Learning models.",
+      "concept_id": "Q893195",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q893195_RhetoricalRole.PROBLEM": {
+      "id": "Q893195_RhetoricalRole.PROBLEM",
+      "name": "Bootstrap_RhetoricalRole.PROBLEM",
+      "content": "Since either of these methods require repeated evaluations of the model, their application would be unimageable without computers and can even today be computationally challenging for complex models (more on this in section ‘Why does machine learning work’).",
+      "concept_id": "Q893195",
+      "rrole": "Problem",
+      "score": 1
+    },
+    "Q5188206": {
+      "id": "Q5188206",
+      "name": "Cross-validation",
+      "content": "method in analytical chemistry",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "MATCH"
+      }
+    },
+    "Q5188206_RhetoricalRole.DEFINITION": {
+      "id": "Q5188206_RhetoricalRole.DEFINITION",
+      "name": "Cross-validation_RhetoricalRole.DEFINITION",
+      "content": "cross-validation, where a part of the data is used to train the model and the other part of the data is used to assess the error (Stone, 1974; see Roberts et al., 2017 for cross-validation strategies for structured ecological data).",
+      "concept_id": "Q5188206",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q5188206_RhetoricalRole.PROBLEM": {
+      "id": "Q5188206_RhetoricalRole.PROBLEM",
+      "name": "Cross-validation_RhetoricalRole.PROBLEM",
+      "content": "Since either of these methods require repeated evaluations of the model, their application would be unimageable without computers and can even today be computationally challenging for complex models (more on this in section ‘Why does machine learning work’).",
+      "concept_id": "Q5188206",
+      "rrole": "Problem",
+      "score": 1
+    },
+    "Q113894124": {
+      "id": "Q113894124",
+      "name": "Artificial Intelligence (AI) in Cardiotocography (CTG) Interpretation",
+      "content": "clinical trial",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "FALLBACK"
+      }
+    },
+    "Q113894124_RhetoricalRole.DEFINITION": {
+      "id": "Q113894124_RhetoricalRole.DEFINITION",
+      "name": "Artificial Intelligence (AI) in Cardiotocography (CTG) Interpretation_RhetoricalRole.DEFINITION",
+      "content": "AI refers to algorithms that are capable of achieving similar to human performance in specific decision or recognition tasks.",
+      "concept_id": "Q113894124",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q137325290": {
+      "id": "Q137325290",
+      "name": "Artificial General Intelligence (AGI)-Native Wireless Systems: A Journey Beyond 6G",
+      "content": "scientific article published on 29 April 2024",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "FALLBACK"
+      }
+    },
+    "Q137325290_RhetoricalRole.DEFINITION": {
+      "id": "Q137325290_RhetoricalRole.DEFINITION",
+      "name": "Artificial General Intelligence (AGI)-Native Wireless Systems: A Journey Beyond 6G_RhetoricalRole.DEFINITION",
+      "content": "This is sometimes contrasted to the aspiration to achieve Artificial general intelligence (AGI), referring to AI algorithms that can perform a wide range of tasks and may display human‑like abilities in cognitive tasks such as reasoning, logic or common sense.",
+      "concept_id": "Q137325290",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q121029579": {
+      "id": "Q121029579",
+      "name": "Machine learning (ML)-based static verification for derived hardware-design elements",
+      "content": "US patent 11467851",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "FALLBACK"
+      }
+    },
+    "Q121029579_RhetoricalRole.DEFINITION": {
+      "id": "Q121029579_RhetoricalRole.DEFINITION",
+      "name": "Machine learning (ML)-based static verification for derived hardware-design elements_RhetoricalRole.DEFINITION",
+      "content": "Machine Learning algorithms serve as a tool for AI systems to learn from data and make a decision based on data.",
+      "concept_id": "Q121029579",
+      "rrole": "Definition",
+      "score": 1
+    },
+    "Q121029579_RhetoricalRole.STATEMENT": {
+      "id": "Q121029579_RhetoricalRole.STATEMENT",
+      "name": "Machine learning (ML)-based static verification for derived hardware-design elements_RhetoricalRole.STATEMENT",
+      "content": "There are many different ML algorithms such as Boosted Regression Trees (BRT) or Random Forest (RF).",
+      "concept_id": "Q121029579",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "Q127826446": {
+      "id": "Q127826446",
+      "name": "Deep learning (DL) Opens New Horizons in Personalized Medicine",
+      "content": "scholarly article",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "FALLBACK"
+      }
+    },
+    "Q127826446_RhetoricalRole.STATEMENT": {
+      "id": "Q127826446_RhetoricalRole.STATEMENT",
+      "name": "Deep learning (DL) Opens New Horizons in Personalized Medicine_RhetoricalRole.STATEMENT",
+      "content": "Figure 2: Relationship between Artificial Intelligence (AI), Machine Learning (ML), and Deep Learning (DL).",
+      "concept_id": "Q127826446",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "concept_e629781bb966": {
+      "id": "concept_e629781bb966",
+      "name": "Boosted Regression Trees (BRT)",
+      "content": "Extracted concept",
+      "metadata": {
+        "source": "local_llm"
+      }
+    },
+    "concept_e629781bb966_RhetoricalRole.STATEMENT": {
+      "id": "concept_e629781bb966_RhetoricalRole.STATEMENT",
+      "name": "Boosted Regression Trees (BRT)_RhetoricalRole.STATEMENT",
+      "content": "Boosted Regression Trees (BRT)",
+      "concept_id": "concept_e629781bb966",
+      "rrole": "Statement",
+      "score": 1
+    },
+    "Q31048338": {
+      "id": "Q31048338",
+      "name": "Random Forest (RF) Wrappers for Waveband Selection and Classification of Hyperspectral Data.",
+      "content": "scientific article",
+      "metadata": {
+        "source": "wikidata",
+        "match_type": "FALLBACK"
+      }
+    },
+    "Q31048338_RhetoricalRole.STATEMENT": {
+      "id": "Q31048338_RhetoricalRole.STATEMENT",
+      "name": "Random Forest (RF) Wrappers for Waveband Selection and Classification of Hyperspectral Data._RhetoricalRole.STATEMENT",
+      "content": "Random Forest (RF)",
+      "concept_id": "Q31048338",
+      "rrole": "Statement",
+      "score": 1
+    }
+  },
+  "edges": {
+    "('concept_00a4be873ec9', 'concept_00a4be873ec9_RhetoricalRole.OBJECTIVE', 'HAS_OBJECTIVE')": {
+      "source": "concept_00a4be873ec9",
+      "target": "concept_00a4be873ec9_RhetoricalRole.OBJECTIVE",
+      "name": "Machine Learning Objective-OBJECTIVE"
+    },
+    "('concept_6394f58d859e', 'concept_6394f58d859e_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "concept_6394f58d859e",
+      "target": "concept_6394f58d859e_RhetoricalRole.DEFINITION",
+      "name": "Good Predictive Model-DEFINITION"
+    },
+    "('Q331309', 'Q331309_RhetoricalRole.PROBLEM', 'HAS_PROBLEM')": {
+      "source": "Q331309",
+      "target": "Q331309_RhetoricalRole.PROBLEM",
+      "name": "overfitting-PROBLEM"
+    },
+    "('Q17003119', 'Q17003119_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q17003119",
+      "target": "Q17003119_RhetoricalRole.DEFINITION",
+      "name": "bias–variance tradeoff-DEFINITION"
+    },
+    "('concept_9ae3c1dd6809', 'concept_9ae3c1dd6809_RhetoricalRole.STATEMENT', 'HAS_STATEMENT')": {
+      "source": "concept_9ae3c1dd6809",
+      "target": "concept_9ae3c1dd6809_RhetoricalRole.STATEMENT",
+      "name": "General Ideal of Machine Learning Algorithms-STATEMENT"
+    },
+    "('concept_00a4be873ec9', 'concept_6394f58d859e', 'CAUSES')": {
+      "source": "concept_00a4be873ec9",
+      "target": "concept_6394f58d859e",
+      "name": "CAUSES"
+    },
+    "('Q17003119', 'Q331309', 'RELATED_TO')": {
+      "source": "Q17003119",
+      "target": "Q331309",
+      "name": "RELATED_TO"
+    },
+    "('concept_9ae3c1dd6809', 'concept_6394f58d859e', 'CAUSES')": {
+      "source": "concept_9ae3c1dd6809",
+      "target": "concept_6394f58d859e",
+      "name": "CAUSES"
+    },
+    "('concept_9ae3c1dd6809', 'Q17003119', 'RELATED_TO')": {
+      "source": "concept_9ae3c1dd6809",
+      "target": "Q17003119",
+      "name": "RELATED_TO"
+    },
+    "('Q16766476', 'Q16766476_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q16766476",
+      "target": "Q16766476_RhetoricalRole.DEFINITION",
+      "name": "decision tree learning-DEFINITION"
+    },
+    "('Q1152135', 'Q1152135_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q1152135",
+      "target": "Q1152135_RhetoricalRole.DEFINITION",
+      "name": "unsupervised learning-DEFINITION"
+    },
+    "('Q334384', 'Q334384_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q334384",
+      "target": "Q334384_RhetoricalRole.DEFINITION",
+      "name": "supervised learning-DEFINITION"
+    },
+    "('concept_593c01bf694a', 'concept_593c01bf694a_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "concept_593c01bf694a",
+      "target": "concept_593c01bf694a_RhetoricalRole.DEFINITION",
+      "name": "Classification task-DEFINITION"
+    },
+    "('concept_dc122c3b3285', 'concept_dc122c3b3285_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "concept_dc122c3b3285",
+      "target": "concept_dc122c3b3285_RhetoricalRole.DEFINITION",
+      "name": "Regression task-DEFINITION"
+    },
+    "('Q16766476', 'Q1152135', 'RELATED_TO')": {
+      "source": "Q16766476",
+      "target": "Q1152135",
+      "name": "RELATED_TO"
+    },
+    "('Q16766476', 'Q334384', 'RELATED_TO')": {
+      "source": "Q16766476",
+      "target": "Q334384",
+      "name": "RELATED_TO"
+    },
+    "('concept_593c01bf694a', 'Q334384', 'IS_A')": {
+      "source": "concept_593c01bf694a",
+      "target": "Q334384",
+      "name": "IS_A"
+    },
+    "('concept_dc122c3b3285', 'Q334384', 'IS_A')": {
+      "source": "concept_dc122c3b3285",
+      "target": "Q334384",
+      "name": "IS_A"
+    },
+    "('Q3414877', 'Q3414877_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q3414877",
+      "target": "Q3414877_RhetoricalRole.DEFINITION",
+      "name": "quest / mission-DEFINITION"
+    },
+    "('Q5962346', 'Q5962346_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q5962346",
+      "target": "Q5962346_RhetoricalRole.DEFINITION",
+      "name": "classification scheme-DEFINITION"
+    },
+    "('Q208042', 'Q208042_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q208042",
+      "target": "Q208042_RhetoricalRole.DEFINITION",
+      "name": "regression analysis-DEFINITION"
+    },
+    "('Q830687', 'Q830687_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q830687",
+      "target": "Q830687_RhetoricalRole.DEFINITION",
+      "name": "reinforcement learning-DEFINITION"
+    },
+    "('Q830687', 'Q830687_RhetoricalRole.STATEMENT', 'HAS_STATEMENT')": {
+      "source": "Q830687",
+      "target": "Q830687_RhetoricalRole.STATEMENT",
+      "name": "reinforcement learning-STATEMENT"
+    },
+    "('concept_0cdf1d51224a', 'concept_0cdf1d51224a_RhetoricalRole.STATEMENT', 'HAS_STATEMENT')": {
+      "source": "concept_0cdf1d51224a",
+      "target": "concept_0cdf1d51224a_RhetoricalRole.STATEMENT",
+      "name": "Machine learning and Deep learning in ecology-STATEMENT"
+    },
+    "('Q334384', 'concept_0cdf1d51224a', 'IS_A')": {
+      "source": "Q334384",
+      "target": "concept_0cdf1d51224a",
+      "name": "IS_A"
+    },
+    "('Q1152135', 'concept_0cdf1d51224a', 'IS_A')": {
+      "source": "Q1152135",
+      "target": "concept_0cdf1d51224a",
+      "name": "IS_A"
+    },
+    "('Q830687', 'concept_0cdf1d51224a', 'IS_A')": {
+      "source": "Q830687",
+      "target": "concept_0cdf1d51224a",
+      "name": "IS_A"
+    },
+    "('Q5962346', 'Q3414877', 'IS_A')": {
+      "source": "Q5962346",
+      "target": "Q3414877",
+      "name": "IS_A"
+    },
+    "('Q208042', 'Q3414877', 'IS_A')": {
+      "source": "Q208042",
+      "target": "Q3414877",
+      "name": "IS_A"
+    },
+    "('Q334384', 'Q3414877', 'RELATED_TO')": {
+      "source": "Q334384",
+      "target": "Q3414877",
+      "name": "RELATED_TO"
+    },
+    "('Q1152135', 'Q3414877', 'RELATED_TO')": {
+      "source": "Q1152135",
+      "target": "Q3414877",
+      "name": "RELATED_TO"
+    },
+    "('Q830687', 'Q3414877', 'RELATED_TO')": {
+      "source": "Q830687",
+      "target": "Q3414877",
+      "name": "RELATED_TO"
+    },
+    "('Q192776', 'Q192776_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q192776",
+      "target": "Q192776_RhetoricalRole.DEFINITION",
+      "name": "artificial neural network-DEFINITION"
+    },
+    "('Q127731137', 'Q127731137_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q127731137",
+      "target": "Q127731137_RhetoricalRole.DEFINITION",
+      "name": "Regression and Classification Trees are Powerful and Intuitive Analytical Methods for Complex Datasets in Paleontology-DEFINITION"
+    },
+    "('Q63440195', 'Q63440195_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q63440195",
+      "target": "Q63440195_RhetoricalRole.DEFINITION",
+      "name": "Distance-Based Methods for Spatial and Spatio-Temporal Surveillance-DEFINITION"
+    },
+    "('concept_3b626c45819c', 'concept_3b626c45819c_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "concept_3b626c45819c",
+      "target": "concept_3b626c45819c_RhetoricalRole.DEFINITION",
+      "name": "Agglomerative Hierarchical Methods-DEFINITION"
+    },
+    "('Q310401', 'Q310401_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q310401",
+      "target": "Q310401_RhetoricalRole.DEFINITION",
+      "name": "k-means clustering-DEFINITION"
+    },
+    "('Q192776', 'Q127731137', 'RELATED_TO')": {
+      "source": "Q192776",
+      "target": "Q127731137",
+      "name": "RELATED_TO"
+    },
+    "('Q192776', 'Q63440195', 'RELATED_TO')": {
+      "source": "Q192776",
+      "target": "Q63440195",
+      "name": "RELATED_TO"
+    },
+    "('Q127731137', 'Q63440195', 'RELATED_TO')": {
+      "source": "Q127731137",
+      "target": "Q63440195",
+      "name": "RELATED_TO"
+    },
+    "('concept_3b626c45819c', 'Q310401', 'RELATED_TO')": {
+      "source": "concept_3b626c45819c",
+      "target": "Q310401",
+      "name": "RELATED_TO"
+    },
+    "('concept_61357c174f97', 'concept_61357c174f97_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "concept_61357c174f97",
+      "target": "concept_61357c174f97_RhetoricalRole.DEFINITION",
+      "name": "Training (supervised & reinforcement learning)-DEFINITION"
+    },
+    "('Q25048582', 'Q25048582_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q25048582",
+      "target": "Q25048582_RhetoricalRole.DEFINITION",
+      "name": "Loss functions for classification-DEFINITION"
+    },
+    "('Q25048582', 'Q25048582_RhetoricalRole.STATEMENT', 'HAS_STATEMENT')": {
+      "source": "Q25048582",
+      "target": "Q25048582_RhetoricalRole.STATEMENT",
+      "name": "Loss functions for classification-STATEMENT"
+    },
+    "('Q7236587', 'Q7236587_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q7236587",
+      "target": "Q7236587_RhetoricalRole.DEFINITION",
+      "name": "power optimizer-DEFINITION"
+    },
+    "('Q7236587', 'Q7236587_RhetoricalRole.OBJECTIVE', 'HAS_OBJECTIVE')": {
+      "source": "Q7236587",
+      "target": "Q7236587_RhetoricalRole.OBJECTIVE",
+      "name": "power optimizer-OBJECTIVE"
+    },
+    "('concept_cb57ee5e4172', 'concept_cb57ee5e4172_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "concept_cb57ee5e4172",
+      "target": "concept_cb57ee5e4172_RhetoricalRole.DEFINITION",
+      "name": "Unsupervised learning (approach)-DEFINITION"
+    },
+    "('Q2539', 'Q2539_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q2539",
+      "target": "Q2539_RhetoricalRole.DEFINITION",
+      "name": "machine learning-DEFINITION"
+    },
+    "('Q2539', 'Q2539_RhetoricalRole.STATEMENT', 'HAS_STATEMENT')": {
+      "source": "Q2539",
+      "target": "Q2539_RhetoricalRole.STATEMENT",
+      "name": "machine learning-STATEMENT"
+    },
+    "('Q192776', 'Q192776_RhetoricalRole.STATEMENT', 'HAS_STATEMENT')": {
+      "source": "Q192776",
+      "target": "Q192776_RhetoricalRole.STATEMENT",
+      "name": "artificial neural network-STATEMENT"
+    },
+    "('Q245748', 'Q245748_RhetoricalRole.STATEMENT', 'HAS_STATEMENT')": {
+      "source": "Q245748",
+      "target": "Q245748_RhetoricalRole.STATEMENT",
+      "name": "random forest-STATEMENT"
+    },
+    "('Q38478000', 'Q38478000_RhetoricalRole.STATEMENT', 'HAS_STATEMENT')": {
+      "source": "Q38478000",
+      "target": "Q38478000_RhetoricalRole.STATEMENT",
+      "name": "Boosted regression trees, multivariate adaptive regression splines and their two-step combinations with multiple linear regression or partial least squares to predict blood-brain barrier passage: a case study-STATEMENT"
+    },
+    "('concept_f12564ff610c', 'concept_f12564ff610c_RhetoricalRole.STATEMENT', 'HAS_STATEMENT')": {
+      "source": "concept_f12564ff610c",
+      "target": "concept_f12564ff610c_RhetoricalRole.STATEMENT",
+      "name": "Algorithmic nature of ML models-STATEMENT"
+    },
+    "('Q25048582', 'concept_61357c174f97', 'PART_OF')": {
+      "source": "Q25048582",
+      "target": "concept_61357c174f97",
+      "name": "PART_OF"
+    },
+    "('Q7236587', 'concept_61357c174f97', 'PART_OF')": {
+      "source": "Q7236587",
+      "target": "concept_61357c174f97",
+      "name": "PART_OF"
+    },
+    "('concept_61357c174f97', 'concept_cb57ee5e4172', 'RELATED_TO')": {
+      "source": "concept_61357c174f97",
+      "target": "concept_cb57ee5e4172",
+      "name": "RELATED_TO"
+    },
+    "('Q192776', 'Q2539', 'IS_A')": {
+      "source": "Q192776",
+      "target": "Q2539",
+      "name": "IS_A"
+    },
+    "('Q245748', 'Q2539', 'IS_A')": {
+      "source": "Q245748",
+      "target": "Q2539",
+      "name": "IS_A"
+    },
+    "('Q38478000', 'Q2539', 'IS_A')": {
+      "source": "Q38478000",
+      "target": "Q2539",
+      "name": "IS_A"
+    },
+    "('concept_cb57ee5e4172', 'Q2539', 'IS_A')": {
+      "source": "concept_cb57ee5e4172",
+      "target": "Q2539",
+      "name": "IS_A"
+    },
+    "('concept_f12564ff610c', 'Q2539', 'RELATED_TO')": {
+      "source": "concept_f12564ff610c",
+      "target": "Q2539",
+      "name": "RELATED_TO"
+    },
+    "('concept_61357c174f97', 'Q2539', 'PART_OF')": {
+      "source": "concept_61357c174f97",
+      "target": "Q2539",
+      "name": "PART_OF"
+    },
+    "('Q893195', 'Q893195_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q893195",
+      "target": "Q893195_RhetoricalRole.DEFINITION",
+      "name": "Bootstrap-DEFINITION"
+    },
+    "('Q893195', 'Q893195_RhetoricalRole.PROBLEM', 'HAS_PROBLEM')": {
+      "source": "Q893195",
+      "target": "Q893195_RhetoricalRole.PROBLEM",
+      "name": "Bootstrap-PROBLEM"
+    },
+    "('Q5188206', 'Q5188206_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q5188206",
+      "target": "Q5188206_RhetoricalRole.DEFINITION",
+      "name": "Cross-validation-DEFINITION"
+    },
+    "('Q5188206', 'Q5188206_RhetoricalRole.PROBLEM', 'HAS_PROBLEM')": {
+      "source": "Q5188206",
+      "target": "Q5188206_RhetoricalRole.PROBLEM",
+      "name": "Cross-validation-PROBLEM"
+    },
+    "('Q113894124', 'Q113894124_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q113894124",
+      "target": "Q113894124_RhetoricalRole.DEFINITION",
+      "name": "Artificial Intelligence (AI) in Cardiotocography (CTG) Interpretation-DEFINITION"
+    },
+    "('Q137325290', 'Q137325290_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q137325290",
+      "target": "Q137325290_RhetoricalRole.DEFINITION",
+      "name": "Artificial General Intelligence (AGI)-Native Wireless Systems: A Journey Beyond 6G-DEFINITION"
+    },
+    "('Q121029579', 'Q121029579_RhetoricalRole.DEFINITION', 'HAS_DEFINITION')": {
+      "source": "Q121029579",
+      "target": "Q121029579_RhetoricalRole.DEFINITION",
+      "name": "Machine learning (ML)-based static verification for derived hardware-design elements-DEFINITION"
+    },
+    "('Q121029579', 'Q121029579_RhetoricalRole.STATEMENT', 'HAS_STATEMENT')": {
+      "source": "Q121029579",
+      "target": "Q121029579_RhetoricalRole.STATEMENT",
+      "name": "Machine learning (ML)-based static verification for derived hardware-design elements-STATEMENT"
+    },
+    "('Q127826446', 'Q127826446_RhetoricalRole.STATEMENT', 'HAS_STATEMENT')": {
+      "source": "Q127826446",
+      "target": "Q127826446_RhetoricalRole.STATEMENT",
+      "name": "Deep learning (DL) Opens New Horizons in Personalized Medicine-STATEMENT"
+    },
+    "('concept_e629781bb966', 'concept_e629781bb966_RhetoricalRole.STATEMENT', 'HAS_STATEMENT')": {
+      "source": "concept_e629781bb966",
+      "target": "concept_e629781bb966_RhetoricalRole.STATEMENT",
+      "name": "Boosted Regression Trees (BRT)-STATEMENT"
+    },
+    "('Q31048338', 'Q31048338_RhetoricalRole.STATEMENT', 'HAS_STATEMENT')": {
+      "source": "Q31048338",
+      "target": "Q31048338_RhetoricalRole.STATEMENT",
+      "name": "Random Forest (RF) Wrappers for Waveband Selection and Classification of Hyperspectral Data.-STATEMENT"
+    },
+    "('Q893195', 'Q121029579', 'RELATED_TO')": {
+      "source": "Q893195",
+      "target": "Q121029579",
+      "name": "RELATED_TO"
+    },
+    "('Q5188206', 'Q121029579', 'RELATED_TO')": {
+      "source": "Q5188206",
+      "target": "Q121029579",
+      "name": "RELATED_TO"
+    },
+    "('Q893195', 'Q5188206', 'RELATED_TO')": {
+      "source": "Q893195",
+      "target": "Q5188206",
+      "name": "RELATED_TO"
+    },
+    "('Q121029579', 'Q113894124', 'IS_A')": {
+      "source": "Q121029579",
+      "target": "Q113894124",
+      "name": "IS_A"
+    },
+    "('Q127826446', 'Q121029579', 'IS_A')": {
+      "source": "Q127826446",
+      "target": "Q121029579",
+      "name": "IS_A"
+    },
+    "('concept_e629781bb966', 'Q121029579', 'IS_A')": {
+      "source": "concept_e629781bb966",
+      "target": "Q121029579",
+      "name": "IS_A"
+    },
+    "('Q31048338', 'Q121029579', 'IS_A')": {
+      "source": "Q31048338",
+      "target": "Q121029579",
+      "name": "IS_A"
+    },
+    "('Q137325290', 'Q113894124', 'RELATED_TO')": {
+      "source": "Q137325290",
+      "target": "Q113894124",
+      "name": "RELATED_TO"
+    }
+  },
+  "clusters": {
+    "cluster_source_test_01": {
+      "id": "cluster_source_test_01",
+      "label": "ML for beginner",
+      "type": "Source",
+      "member_ids": [
+        "Q893195",
+        "Q893195_RhetoricalRole.DEFINITION",
+        "Q893195_RhetoricalRole.PROBLEM",
+        "Q5188206",
+        "Q5188206_RhetoricalRole.DEFINITION",
+        "Q5188206_RhetoricalRole.PROBLEM",
+        "Q113894124",
+        "Q113894124_RhetoricalRole.DEFINITION",
+        "Q137325290",
+        "Q137325290_RhetoricalRole.DEFINITION",
+        "Q121029579",
+        "Q121029579_RhetoricalRole.DEFINITION",
+        "Q121029579_RhetoricalRole.STATEMENT",
+        "Q127826446",
+        "Q127826446_RhetoricalRole.STATEMENT",
+        "concept_e629781bb966",
+        "concept_e629781bb966_RhetoricalRole.STATEMENT",
+        "Q31048338",
+        "Q31048338_RhetoricalRole.STATEMENT"
+      ],
+      "metadata": {
+        "doc_id": "test_01"
+      }
+    },
+    "cluster_topic_6087000520693490709": {
+      "id": "cluster_topic_6087000520693490709",
+      "label": "Machine Learning",
+      "type": "Topic",
+      "member_ids": [
+        "concept_00a4be873ec9",
+        "concept_6394f58d859e",
+        "Q331309",
+        "Q17003119",
+        "concept_9ae3c1dd6809",
+        "Q16766476",
+        "Q1152135",
+        "Q334384",
+        "concept_593c01bf694a",
+        "concept_dc122c3b3285",
+        "Q3414877",
+        "Q5962346",
+        "Q208042",
+        "Q830687",
+        "concept_0cdf1d51224a",
+        "Q192776",
+        "Q127731137",
+        "Q63440195",
+        "concept_3b626c45819c",
+        "Q310401",
+        "concept_61357c174f97",
+        "Q25048582",
+        "Q7236587",
+        "concept_cb57ee5e4172",
+        "Q2539",
+        "Q245748",
+        "Q38478000",
+        "concept_f12564ff610c",
+        "Q893195",
+        "Q5188206",
+        "Q113894124",
+        "Q137325290",
+        "Q121029579",
+        "Q127826446",
+        "concept_e629781bb966",
+        "Q31048338"
+      ]
+    }
+  }
+}

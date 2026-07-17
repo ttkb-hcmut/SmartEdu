@@ -1,0 +1,241 @@
+{
+  "og": "Principal Component Analysis (PCA)\nTo be maximized:\nwith the constraint on the unit vector u 1 :\nLagrange function to be maximized:\nPrincipal Component Analysis (PCA)\nTo be maximized:\nwith the constraint on the unit vector u 1 :\nLagrange function to be maximized:\nSolution:\nPrincipal Component Analysis (PCA)\nSoluution is an eigenvalue and eigenvector:\nCompute the data covariance matrix (square and symmetric) in the original space of D dimensions.\nFind D eigenvalues and eigenvectors of the covariance matrix.\nSelect the largest M < D eigenvalues and the corresponding eigenvectors to be the new space.\nPrincipal Component Analysis (PCA)\nMachine Learning\nFeature selection & text classification\nFeature selection for text classification\nThis is important because of:\nHigh dimensionality of text features.\nExistence of irrelevant/noisy features (not only redundant, but also with negative effects).\nFeature selection for text classification\nRepresentation of a document:\nBag of words.\nSequence of words (strings).\nPlus grammatical and semantic elements.\nProbabilistic distribution on topics (topic modeling).\nThe most basic and common feature filtering:\nRemoval of stop-words (the common words such as articles, conjunctions, prepositions,...)\nStemming : different forms (e.g. singular, plural, difference tenses, ...) of the same word are consolidated into a single word.\nFeature selection for text classification\nThe basic idea of word feature selection: retain only those words that discriminate document classes.\nHow to measure the discriminative power of a word?\nConsider a word w and assume k class-labels.\nLet p n ( w ) be the fraction of those documents containing w that belong to class n :\np n ( w ) = Prob(a document ∈ class n | it contains w )\nConsider a word w and assume k class-labels.\nLet p n ( w ) be the fraction of those documents containing w that belong to class n :\np n ( w ) = Prob(a document ∈ class n | it contains w )\nthe higher, the greater discriminative power of w .\nGini-index of w :\nCriticism: p n ( w ) may be biased when the global class distribution of documents is usually not uniform.\nLet P n be the fraction of documents that belong to class n.\nDefine the normalized probability q n ( w ) :\nLet P n be the fraction of documents that belong to class n.\nDefine the normalized probability q n ( w ) :\nNew gini-index of w :\nPrior inhomogeneity of a set of documents:",
+  "meta": {
+    "model": "gpt-oss:120b-cloud",
+    "concept_count": 11,
+    "relation_count": 11
+  },
+  "skeleton_phase": {
+    "tree": [
+      {
+        "name": "Principal Component Analysis",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Principal Component Analysis is a dimensionality reduction technique that finds orthogonal directions, called principal components, which maximize the variance of the data.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Solution",
+            "content": "Principal Component Analysis solution involves computing the data covariance matrix, performing eigenvalue decomposition of that matrix, and selecting the top M eigenvectors corresponding to the largest eigenvalues to form a new lower‑dimensional space.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Formula",
+            "content": "The Lagrange function used to obtain the first principal component is L(u) = uᵀ C u - λ (uᵀ u - 1), where C is the covariance matrix and u is a unit vector.",
+            "confidence": 0.8
+          },
+          {
+            "role": "Problem",
+            "content": "Retaining too many principal components relative to the number of training samples can lead to overfitting.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Covariance Matrix",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "A covariance matrix is a square, symmetric matrix that contains the covariances between each pair of dimensions in the original data space.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Formula",
+            "content": "C = (1/N) Σ_{i=1}^{N} (x_i - μ)(x_i - μ)ᵀ, where μ is the mean vector of the data.",
+            "confidence": 0.8
+          },
+          {
+            "role": "Application",
+            "content": "The covariance matrix is used in Principal Component Analysis to determine the directions of maximum variance.",
+            "confidence": 0.8
+          }
+        ]
+      },
+      {
+        "name": "Eigenvalue",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "An eigenvalue λ is a scalar that satisfies the equation A v = λ v for a given square matrix A and its corresponding eigenvector v.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Formula",
+            "content": "det(A - λ I) = 0 defines the eigenvalues of matrix A.",
+            "confidence": 0.8
+          }
+        ]
+      },
+      {
+        "name": "Eigenvector",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "An eigenvector v is a non‑zero vector that satisfies the equation A v = λ v for a given square matrix A and its corresponding eigenvalue λ.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "Feature Selection",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Feature selection is the process of selecting a subset of relevant features for building a machine‑learning model, aiming to improve performance and reduce dimensionality.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Problem",
+            "content": "High dimensionality of text features and the existence of irrelevant or noisy features can degrade model performance in text classification.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Solution",
+            "content": "Feature selection techniques such as stop‑word removal, stemming, and discriminative word selection are employed to mitigate the problems of high dimensionality and noisy features.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "Text Classification",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Text classification is the task of assigning predefined categories to textual documents based on their content.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Application",
+            "content": "Effective feature selection is crucial for text classification because textual data often have very high dimensionality.",
+            "confidence": 0.8
+          }
+        ]
+      },
+      {
+        "name": "Bag of Words",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Bag of words is a document representation that treats a text as an unordered collection of word occurrences, ignoring grammar and word order.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "Stop-word Removal",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Stop-word removal is a preprocessing step that eliminates common words such as articles, conjunctions, and prepositions from text to reduce noise.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "Stemming",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Stemming reduces different morphological forms of a word—such as singular, plural, and various tenses—to a single base form.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "Discriminative Power",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Discriminative power of a word w measures how well the presence of w predicts the document's class, quantified by p_n(w) = Prob(document ∈ class n | it contains w).",
+            "confidence": 0.9
+          },
+          {
+            "role": "Problem",
+            "content": "The raw probability p_n(w) may be biased when the global class distribution of documents is not uniform.",
+            "confidence": 0.8
+          },
+          {
+            "role": "Solution",
+            "content": "A normalized probability q_n(w) = p_n(w) / P_n, where P_n is the fraction of documents belonging to class n, is used to compute a bias‑adjusted Gini index for word w.",
+            "confidence": 0.8
+          }
+        ]
+      },
+      {
+        "name": "Gini Index",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "The Gini index of a word w is defined as G(w) = Σ_{n=1}^{k} p_n(w)^2 and measures the impurity of w with respect to class distribution; higher values indicate stronger discriminative power.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Solution",
+            "content": "A normalized Gini index using q_n(w) instead of p_n(w) mitigates bias caused by imbalanced class distributions.",
+            "confidence": 0.8
+          }
+        ]
+      }
+    ]
+  },
+  "relation_phase": {
+    "edges": [
+      {
+        "name": "INCLUDES",
+        "src": "Principal Component Analysis",
+        "tgt": "Covariance Matrix"
+      },
+      {
+        "name": "INCLUDES",
+        "src": "Principal Component Analysis",
+        "tgt": "Eigenvalue"
+      },
+      {
+        "name": "INCLUDES",
+        "src": "Principal Component Analysis",
+        "tgt": "Eigenvector"
+      },
+      {
+        "name": "PREREQUISITE",
+        "src": "Covariance Matrix",
+        "tgt": "Eigenvalue"
+      },
+      {
+        "name": "PREREQUISITE",
+        "src": "Covariance Matrix",
+        "tgt": "Eigenvector"
+      },
+      {
+        "name": "INCLUDES",
+        "src": "Feature Selection",
+        "tgt": "Stop-word Removal"
+      },
+      {
+        "name": "INCLUDES",
+        "src": "Feature Selection",
+        "tgt": "Stemming"
+      },
+      {
+        "name": "INCLUDES",
+        "src": "Feature Selection",
+        "tgt": "Discriminative Power"
+      },
+      {
+        "name": "INCLUDES",
+        "src": "Discriminative Power",
+        "tgt": "Gini Index"
+      },
+      {
+        "name": "INCLUDES",
+        "src": "Text Classification",
+        "tgt": "Bag of Words"
+      },
+      {
+        "name": "INCLUDES",
+        "src": "Text Classification",
+        "tgt": "Feature Selection"
+      }
+    ]
+  }
+}

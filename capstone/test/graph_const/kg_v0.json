@@ -1,0 +1,1657 @@
+{
+  "nodes": {
+    "Q21169670": {
+      "id": "Q21169670",
+      "name": "Machine Learning Framework",
+      "content": "scientific study of algorithms and statistical models that computer systems use to perform tasks without explicit instructions",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_1_d056d6/chunks/cc940725ae6a2a427d690c80ea550222_slide0.txt",
+        "name": "tmpi2fulqij part 1",
+        "summary": "Machine Learning Chapter 1 - Introduction Machine Learning What is Machine learning? Machine Learnin ......",
+        "p_num": [
+          1,
+          15
+        ]
+      }
+    },
+    "93b266e6d904": {
+      "id": "93b266e6d904",
+      "name": "Induction, Machine Learning\n",
+      "content": "Topic: Induction, Machine Learning\n"
+    },
+    "Q1074074": {
+      "id": "Q1074074",
+      "name": "Inductive Bias",
+      "content": "in a machine-learning algorithm, the set of assumptions that the learner uses to predict outputs of given inputs that it has not encountered\n**ARTICLE: scientific article published on June 2003",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_2_83879e/chunks/cc940725ae6a2a427d690c80ea550222_slide1.txt",
+        "name": "tmpi2fulqij part 2",
+        "summary": "Machine Learning Phases of Machine Learning K-fold cross validation: -Randomly partitioned k equal s ......",
+        "p_num": [
+          14,
+          28
+        ]
+      }
+    },
+    "Q1074074_Statement": {
+      "id": "Q1074074_Statement",
+      "name": "Inductive Bias_Statement",
+      "content": "Inductive bias is the set of assumptions a learner uses to predict outputs for inputs it has not encountered.",
+      "concept_id": "Q1074074",
+      "rrole": "Statement",
+      "score": 0.9
+    },
+    "Q6027324": {
+      "id": "Q6027324",
+      "name": "Transfer Learning",
+      "content": "research problem in machine learning (ML) that focuses on storing knowledge gained while solving one problem and applying it to a different but related problem",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_3_07c684/chunks/cc940725ae6a2a427d690c80ea550222_slide2.txt",
+        "name": "tmpi2fulqij part 3",
+        "summary": "Inductive Bias Common inductive bias in ML: Maximum conditional independence : if the hypothesis can ......",
+        "p_num": [
+          27,
+          32
+        ]
+      }
+    },
+    "ab5bfa471159": {
+      "id": "ab5bfa471159",
+      "name": "Maximum Conditional Independence",
+      "content": "Maximum conditional independence is applied when the hypothesis can be cast in a Bayesian framework, trying to maximize conditional independence (Naive Bayes classifier).",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_2_83879e/chunks/cc940725ae6a2a427d690c80ea550222_slide1.txt",
+        "name": "tmpi2fulqij part 2",
+        "summary": "Machine Learning Phases of Machine Learning K-fold cross validation: -Randomly partitioned k equal s ......",
+        "p_num": [
+          14,
+          28
+        ]
+      }
+    },
+    "ab5bfa471159_Statement": {
+      "id": "ab5bfa471159_Statement",
+      "name": "Maximum Conditional Independence_Statement",
+      "content": "Maximum conditional independence bias suggests maximizing conditional independence in a Bayesian hypothesis, exemplified by the Naive Bayes classifier.",
+      "concept_id": "ab5bfa471159",
+      "rrole": "Statement",
+      "score": 0.9
+    },
+    "ab5bfa471159_Application": {
+      "id": "ab5bfa471159_Application",
+      "name": "Maximum Conditional Independence_Application",
+      "content": "Maximum conditional independence encourages the use of Naive Bayes classifier as it assumes feature independence given the class.",
+      "concept_id": "ab5bfa471159",
+      "rrole": "Application",
+      "score": 0.7
+    },
+    "959918a43523": {
+      "id": "959918a43523",
+      "name": "Maximum Conditional",
+      "content": "General Concept",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_3_07c684/chunks/cc940725ae6a2a427d690c80ea550222_slide2.txt",
+        "name": "tmpi2fulqij part 3",
+        "summary": "Inductive Bias Common inductive bias in ML: Maximum conditional independence : if the hypothesis can ......",
+        "p_num": [
+          27,
+          32
+        ]
+      }
+    },
+    "f8be509bfaa7": {
+      "id": "f8be509bfaa7",
+      "name": "Minimum Cross Validation Error",
+      "content": "Minimum cross-validation error bias selects the hypothesis with the lowest cross-validation error among alternatives.",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_2_83879e/chunks/cc940725ae6a2a427d690c80ea550222_slide1.txt",
+        "name": "tmpi2fulqij part 2",
+        "summary": "Machine Learning Phases of Machine Learning K-fold cross validation: -Randomly partitioned k equal s ......",
+        "p_num": [
+          14,
+          28
+        ]
+      }
+    },
+    "f8be509bfaa7_Solution": {
+      "id": "f8be509bfaa7_Solution",
+      "name": "Minimum Cross Validation Error_Solution",
+      "content": "When choosing among hypotheses, select the hypothesis with the lowest cross-validation error.",
+      "concept_id": "f8be509bfaa7",
+      "rrole": "Solution",
+      "score": 0.7
+    },
+    "f8be509bfaa7_Objective": {
+      "id": "f8be509bfaa7_Objective",
+      "name": "Minimum Cross Validation Error_Objective",
+      "content": "Minimum cross-validation error aims to reduce overfitting by evaluating model performance on held‑out data.",
+      "concept_id": "f8be509bfaa7",
+      "rrole": "Objective",
+      "score": 0.7
+    },
+    "Q179550": {
+      "id": "Q179550",
+      "name": "Software Bug",
+      "content": "error, flaw, failure or fault in a computer program/system that produces an incorrect or unexpected result or causes it to behave in unintended ways",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_2_83879e/chunks/cc940725ae6a2a427d690c80ea550222_slide1.txt",
+        "name": "tmpi2fulqij part 2",
+        "summary": "Machine Learning Phases of Machine Learning K-fold cross validation: -Randomly partitioned k equal s ......",
+        "p_num": [
+          14,
+          28
+        ]
+      }
+    },
+    "225575e88fd9": {
+      "id": "225575e88fd9",
+      "name": "Maximum Margin",
+      "content": "When drawing a boundary between two classes, attempt to maximize the width of the boundary (SVM).",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_3_07c684/chunks/cc940725ae6a2a427d690c80ea550222_slide2.txt",
+        "name": "tmpi2fulqij part 3",
+        "summary": "Inductive Bias Common inductive bias in ML: Maximum conditional independence : if the hypothesis can ......",
+        "p_num": [
+          27,
+          32
+        ]
+      }
+    },
+    "225575e88fd9_Solution": {
+      "id": "225575e88fd9_Solution",
+      "name": "Maximum Margin_Solution",
+      "content": "When drawing a boundary between two classes, attempt to maximize the width of the boundary (SVM).",
+      "concept_id": "225575e88fd9",
+      "rrole": "Solution",
+      "score": 0.7
+    },
+    "225575e88fd9_Statement": {
+      "id": "225575e88fd9_Statement",
+      "name": "Maximum Margin_Statement",
+      "content": "Maximum margin assumes distinct classes tend to be separated by wide boundaries.",
+      "concept_id": "225575e88fd9",
+      "rrole": "Statement",
+      "score": 0.7
+    },
+    "Q135452514": {
+      "id": "Q135452514",
+      "name": "Maximum",
+      "content": "2023 video game developed by Soomka Games",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_3_07c684/chunks/cc940725ae6a2a427d690c80ea550222_slide2.txt",
+        "name": "tmpi2fulqij part 3",
+        "summary": "Inductive Bias Common inductive bias in ML: Maximum conditional independence : if the hypothesis can ......",
+        "p_num": [
+          27,
+          32
+        ]
+      }
+    },
+    "Q1417790": {
+      "id": "Q1417790",
+      "name": "Minimum Description Length",
+      "content": "model selection principle\n**ARTICLE: scientific article",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_3_07c684/chunks/cc940725ae6a2a427d690c80ea550222_slide2.txt",
+        "name": "tmpi2fulqij part 3",
+        "summary": "Inductive Bias Common inductive bias in ML: Maximum conditional independence : if the hypothesis can ......",
+        "p_num": [
+          27,
+          32
+        ]
+      }
+    },
+    "Q1417790_Solution": {
+      "id": "Q1417790_Solution",
+      "name": "Minimum Description Length_Solution",
+      "content": "When forming a hypothesis, attempt to minimize the length of the description of the hypothesis.",
+      "concept_id": "Q1417790",
+      "rrole": "Solution",
+      "score": 0.7
+    },
+    "Q1417790_Statement": {
+      "id": "Q1417790_Statement",
+      "name": "Minimum Description Length_Statement",
+      "content": "The assumption is that simpler hypotheses are more likely to be true.",
+      "concept_id": "Q1417790",
+      "rrole": "Statement",
+      "score": 0.7
+    },
+    "337add868dc4": {
+      "id": "337add868dc4",
+      "name": "Minimum Feature",
+      "content": "Unless there is good evidence that a feature is useful, it should be deleted.",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_3_07c684/chunks/cc940725ae6a2a427d690c80ea550222_slide2.txt",
+        "name": "tmpi2fulqij part 3",
+        "summary": "Inductive Bias Common inductive bias in ML: Maximum conditional independence : if the hypothesis can ......",
+        "p_num": [
+          27,
+          32
+        ]
+      }
+    },
+    "337add868dc4_Solution": {
+      "id": "337add868dc4_Solution",
+      "name": "Minimum Feature_Solution",
+      "content": "Unless there is good evidence that a feature is useful, it should be deleted.",
+      "concept_id": "337add868dc4",
+      "rrole": "Solution",
+      "score": 0.7
+    },
+    "337add868dc4_Statement": {
+      "id": "337add868dc4_Statement",
+      "name": "Minimum Feature_Statement",
+      "content": "Minimum features bias encourages feature elimination to avoid unnecessary complexity.",
+      "concept_id": "337add868dc4",
+      "rrole": "Statement",
+      "score": 0.7
+    },
+    "Q240464": {
+      "id": "Q240464",
+      "name": "Minimum Spanning Tree",
+      "content": "data structure, subgraph of a weighted graph",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_3_07c684/chunks/cc940725ae6a2a427d690c80ea550222_slide2.txt",
+        "name": "tmpi2fulqij part 3",
+        "summary": "Inductive Bias Common inductive bias in ML: Maximum conditional independence : if the hypothesis can ......",
+        "p_num": [
+          27,
+          32
+        ]
+      }
+    },
+    "Q17162702": {
+      "id": "Q17162702",
+      "name": "Nearest Neighbor Chain Algorithm",
+      "content": "stack-based method for clustering\n**ARTICLE: Article by Cover and Hart, 1967",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_3_07c684/chunks/cc940725ae6a2a427d690c80ea550222_slide2.txt",
+        "name": "tmpi2fulqij part 3",
+        "summary": "Inductive Bias Common inductive bias in ML: Maximum conditional independence : if the hypothesis can ......",
+        "p_num": [
+          27,
+          32
+        ]
+      }
+    },
+    "Q17162702_Statement": {
+      "id": "Q17162702_Statement",
+      "name": "Nearest Neighbor Chain Algorithm_Statement",
+      "content": "Assume that most of the cases in a small neighborhood in feature space belong to the same class.",
+      "concept_id": "Q17162702",
+      "rrole": "Statement",
+      "score": 0.7
+    },
+    "Q17162702_Application": {
+      "id": "Q17162702_Application",
+      "name": "Nearest Neighbor Chain Algorithm_Application",
+      "content": "Nearest neighbor bias underlies k‑nearest neighbor classification methods.",
+      "concept_id": "Q17162702",
+      "rrole": "Application",
+      "score": 0.7
+    },
+    "Q17104437": {
+      "id": "Q17104437",
+      "name": "Nearest Centroid Classifier",
+      "content": "A classification model in machine learning based on centroids",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_3_07c684/chunks/cc940725ae6a2a427d690c80ea550222_slide2.txt",
+        "name": "tmpi2fulqij part 3",
+        "summary": "Inductive Bias Common inductive bias in ML: Maximum conditional independence : if the hypothesis can ......",
+        "p_num": [
+          27,
+          32
+        ]
+      }
+    },
+    "9475420d915a": {
+      "id": "9475420d915a",
+      "name": "Phase, Validation",
+      "content": "Topic: Phase, Validation"
+    },
+    "7d88dcbd2dc1": {
+      "id": "7d88dcbd2dc1",
+      "name": "K Fold Cross Validation",
+      "content": "K-fold cross validation: Randomly partitioned k equal sized sub-samples. k - 1 for training and 1 for testing. k times (folds) of validation and taking the average.",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_1_d056d6/chunks/cc940725ae6a2a427d690c80ea550222_slide0.txt",
+        "name": "tmpi2fulqij part 1",
+        "summary": "Machine Learning Chapter 1 - Introduction Machine Learning What is Machine learning? Machine Learnin ......",
+        "p_num": [
+          1,
+          15
+        ]
+      }
+    },
+    "7d88dcbd2dc1_Statement": {
+      "id": "7d88dcbd2dc1_Statement",
+      "name": "K Fold Cross Validation_Statement",
+      "content": "K-fold cross validation: Randomly partitioned k equal sized sub-samples. k - 1 for training and 1 for testing. k times (folds) of validation and taking the average.",
+      "concept_id": "7d88dcbd2dc1",
+      "rrole": "Statement",
+      "score": 0.95
+    },
+    "Q359176": {
+      "id": "Q359176",
+      "name": "Validation",
+      "content": "process of establishing documentary evidence demonstrating that a procedure, process, or activity carried out in testing and then production maintains the desired level of compliance at all stages",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_1_d056d6/chunks/cc940725ae6a2a427d690c80ea550222_slide0.txt",
+        "name": "tmpi2fulqij part 1",
+        "summary": "Machine Learning Chapter 1 - Introduction Machine Learning What is Machine learning? Machine Learnin ......",
+        "p_num": [
+          1,
+          15
+        ]
+      }
+    },
+    "024d47b2dcc8": {
+      "id": "024d47b2dcc8",
+      "name": "Statistical Significance Test",
+      "content": "Statistical significance test evaluates whether performance differences between two systems are unlikely due to chance, rejecting the null hypothesis of equal efficiency.",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_2_83879e/chunks/cc940725ae6a2a427d690c80ea550222_slide1.txt",
+        "name": "tmpi2fulqij part 2",
+        "summary": "Machine Learning Phases of Machine Learning K-fold cross validation: -Randomly partitioned k equal s ......",
+        "p_num": [
+          14,
+          28
+        ]
+      }
+    },
+    "024d47b2dcc8_Statement": {
+      "id": "024d47b2dcc8_Statement",
+      "name": "Statistical Significance Test_Statement",
+      "content": "Statistical significance test evaluates whether performance differences between two systems are unlikely due to chance, rejecting the null hypothesis of equal efficiency.",
+      "concept_id": "024d47b2dcc8",
+      "rrole": "Statement",
+      "score": 0.9
+    },
+    "Q425265": {
+      "id": "Q425265",
+      "name": "Statistical Significance",
+      "content": "statistical assessment of whether observations reflect a pattern rather than just chance\n**ARTICLE: scientific article",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_2_83879e/chunks/cc940725ae6a2a427d690c80ea550222_slide1.txt",
+        "name": "tmpi2fulqij part 2",
+        "summary": "Machine Learning Phases of Machine Learning K-fold cross validation: -Randomly partitioned k equal s ......",
+        "p_num": [
+          14,
+          28
+        ]
+      }
+    },
+    "Q138967979": {
+      "id": "Q138967979",
+      "name": "Overfitting Confidence",
+      "content": "The state where a data practitioner expresses high certainty about model performance on unseen data following automatic feature selection by an AI system, despite the model's complexity exceeding the information content of the training set.\n**ARTICLE: publication published on 08 July 2021",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_2_83879e/chunks/cc940725ae6a2a427d690c80ea550222_slide1.txt",
+        "name": "tmpi2fulqij part 2",
+        "summary": "Machine Learning Phases of Machine Learning K-fold cross validation: -Randomly partitioned k equal s ......",
+        "p_num": [
+          14,
+          28
+        ]
+      }
+    },
+    "Q138967979_Problem": {
+      "id": "Q138967979_Problem",
+      "name": "Overfitting Confidence_Problem",
+      "content": "Overfitting occurs when noise in the data and insufficient training examples cause a model to fit the training set too closely, harming generalization.",
+      "concept_id": "Q138967979",
+      "rrole": "Problem",
+      "score": 0.9
+    },
+    "Q350532": {
+      "id": "Q350532",
+      "name": "Precision Mechanic",
+      "content": "branch of engineering that deals with the production of precision mechanical components in devices",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_2_83879e/chunks/cc940725ae6a2a427d690c80ea550222_slide1.txt",
+        "name": "tmpi2fulqij part 2",
+        "summary": "Machine Learning Phases of Machine Learning K-fold cross validation: -Randomly partitioned k equal s ......",
+        "p_num": [
+          14,
+          28
+        ]
+      }
+    },
+    "Q350532_Formula": {
+      "id": "Q350532_Formula",
+      "name": "Precision Mechanic_Formula",
+      "content": "Precision = number of correct system answers / number of system answers.",
+      "concept_id": "Q350532",
+      "rrole": "Formula",
+      "score": 0.9
+    },
+    "Q138797909": {
+      "id": "Q138797909",
+      "name": "Recall",
+      "content": "class in the 2014 video game Our Darker Purpose\n**ARTICLE: journal",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_2_83879e/chunks/cc940725ae6a2a427d690c80ea550222_slide1.txt",
+        "name": "tmpi2fulqij part 2",
+        "summary": "Machine Learning Phases of Machine Learning K-fold cross validation: -Randomly partitioned k equal s ......",
+        "p_num": [
+          14,
+          28
+        ]
+      }
+    },
+    "Q138797909_Formula": {
+      "id": "Q138797909_Formula",
+      "name": "Recall_Formula",
+      "content": "Recall = number of correct system answers / number of correct problem answers.",
+      "concept_id": "Q138797909",
+      "rrole": "Formula",
+      "score": 0.9
+    },
+    "641a6ddc3eaa": {
+      "id": "641a6ddc3eaa",
+      "name": "F1 Score",
+      "content": "F1 score seeks a balance between precision and recall and is useful when class distribution is uneven.",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_2_83879e/chunks/cc940725ae6a2a427d690c80ea550222_slide1.txt",
+        "name": "tmpi2fulqij part 2",
+        "summary": "Machine Learning Phases of Machine Learning K-fold cross validation: -Randomly partitioned k equal s ......",
+        "p_num": [
+          14,
+          28
+        ]
+      }
+    },
+    "641a6ddc3eaa_Statement": {
+      "id": "641a6ddc3eaa_Statement",
+      "name": "F1 Score_Statement",
+      "content": "F1 score seeks a balance between precision and recall and is useful when class distribution is uneven.",
+      "concept_id": "641a6ddc3eaa",
+      "rrole": "Statement",
+      "score": 0.9
+    },
+    "Q1437614": {
+      "id": "Q1437614",
+      "name": "F1",
+      "content": "video game series by Codemasters",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_2_83879e/chunks/cc940725ae6a2a427d690c80ea550222_slide1.txt",
+        "name": "tmpi2fulqij part 2",
+        "summary": "Machine Learning Phases of Machine Learning K-fold cross validation: -Randomly partitioned k equal s ......",
+        "p_num": [
+          14,
+          28
+        ]
+      }
+    },
+    "Q134994644": {
+      "id": "Q134994644",
+      "name": "Bias",
+      "content": "2022 video game developed by KUROSAWACREATE",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_2_83879e/chunks/cc940725ae6a2a427d690c80ea550222_slide1.txt",
+        "name": "tmpi2fulqij part 2",
+        "summary": "Machine Learning Phases of Machine Learning K-fold cross validation: -Randomly partitioned k equal s ......",
+        "p_num": [
+          14,
+          28
+        ]
+      }
+    },
+    "Q625303": {
+      "id": "Q625303",
+      "name": "Independent Event",
+      "content": "term in probability theory",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_2_83879e/chunks/cc940725ae6a2a427d690c80ea550222_slide1.txt",
+        "name": "tmpi2fulqij part 2",
+        "summary": "Machine Learning Phases of Machine Learning K-fold cross validation: -Randomly partitioned k equal s ......",
+        "p_num": [
+          14,
+          28
+        ]
+      }
+    },
+    "f8be509bfaa7_Statement": {
+      "id": "f8be509bfaa7_Statement",
+      "name": "Minimum Cross Validation Error_Statement",
+      "content": "Minimum cross-validation error bias selects the hypothesis with the lowest cross-validation error among alternatives.",
+      "concept_id": "f8be509bfaa7",
+      "rrole": "Statement",
+      "score": 0.9
+    },
+    "Q79234467": {
+      "id": "Q79234467",
+      "name": "Introduction\n",
+      "content": "Topic: Introduction\n"
+    },
+    "Q21169670_Statement": {
+      "id": "Q21169670_Statement",
+      "name": "Machine Learning Framework_Statement",
+      "content": "Machine Learning is a subset of artificial intelligence.",
+      "concept_id": "Q21169670",
+      "rrole": "Statement",
+      "score": 0.95
+    },
+    "Q21169670_Objective": {
+      "id": "Q21169670_Objective",
+      "name": "Machine Learning Framework_Objective",
+      "content": "How to construct programs that automatically improve with experience.",
+      "concept_id": "Q21169670",
+      "rrole": "Objective",
+      "score": 0.95
+    },
+    "Q1068473": {
+      "id": "Q1068473",
+      "name": "Educational Technology",
+      "content": "use of technology in education to improve learning and teaching; not restricted to high technology\n**ARTICLE: journal",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_1_d056d6/chunks/cc940725ae6a2a427d690c80ea550222_slide0.txt",
+        "name": "tmpi2fulqij part 1",
+        "summary": "Machine Learning Chapter 1 - Introduction Machine Learning What is Machine learning? Machine Learnin ......",
+        "p_num": [
+          1,
+          15
+        ]
+      }
+    },
+    "Q1068473_Statement": {
+      "id": "Q1068473_Statement",
+      "name": "Educational Technology_Statement",
+      "content": "Learning is an (endless) generalization or induction process.",
+      "concept_id": "Q1068473",
+      "rrole": "Statement",
+      "score": 0.95
+    },
+    "Q334384": {
+      "id": "Q334384",
+      "name": "Supervised Learning",
+      "content": "machine learning task of learning a function that maps an input to an output based on example input-output pairs\n**ARTICLE: scientific article published in February 2010",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_1_d056d6/chunks/cc940725ae6a2a427d690c80ea550222_slide0.txt",
+        "name": "tmpi2fulqij part 1",
+        "summary": "Machine Learning Chapter 1 - Introduction Machine Learning What is Machine learning? Machine Learnin ......",
+        "p_num": [
+          1,
+          15
+        ]
+      }
+    },
+    "Q334384_Statement": {
+      "id": "Q334384_Statement",
+      "name": "Supervised Learning_Statement",
+      "content": "Supervised learning: the learner (learning algorithm) are trained on labeled examples, i.e., input where the desired output is known.",
+      "concept_id": "Q334384",
+      "rrole": "Statement",
+      "score": 0.95
+    },
+    "23ed6b136eca": {
+      "id": "23ed6b136eca",
+      "name": "Unsupervised Learning",
+      "content": "Unsupervised learning: the learner operates on unlabeled examples, i.e., input where the desired output is unknown.",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_1_d056d6/chunks/cc940725ae6a2a427d690c80ea550222_slide0.txt",
+        "name": "tmpi2fulqij part 1",
+        "summary": "Machine Learning Chapter 1 - Introduction Machine Learning What is Machine learning? Machine Learnin ......",
+        "p_num": [
+          1,
+          15
+        ]
+      }
+    },
+    "23ed6b136eca_Statement": {
+      "id": "23ed6b136eca_Statement",
+      "name": "Unsupervised Learning_Statement",
+      "content": "Unsupervised learning: the learner operates on unlabeled examples, i.e., input where the desired output is unknown.",
+      "concept_id": "23ed6b136eca",
+      "rrole": "Statement",
+      "score": 0.95
+    },
+    "Q115570683": {
+      "id": "Q115570683",
+      "name": "Reinforcement Learning From Human Feedback",
+      "content": "training method using human feedback to rank responses and train a reward model that improves model outputs\n**ARTICLE: Doctoral Thesis from Delft University of Technology",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_1_d056d6/chunks/cc940725ae6a2a427d690c80ea550222_slide0.txt",
+        "name": "tmpi2fulqij part 1",
+        "summary": "Machine Learning Chapter 1 - Introduction Machine Learning What is Machine learning? Machine Learnin ......",
+        "p_num": [
+          1,
+          15
+        ]
+      }
+    },
+    "Q115570683_Statement": {
+      "id": "Q115570683_Statement",
+      "name": "Reinforcement Learning From Human Feedback_Statement",
+      "content": "Reinforcement learning is told when an answer is wrong, but not how to correct it.",
+      "concept_id": "Q115570683",
+      "rrole": "Statement",
+      "score": 0.95
+    },
+    "05e244c75af3": {
+      "id": "05e244c75af3",
+      "name": "Evolutionary Learning",
+      "content": "Evolutionary learning: biological evolution can be seen as a learning process, to improve survival rates and chance of having offspring.",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_1_d056d6/chunks/cc940725ae6a2a427d690c80ea550222_slide0.txt",
+        "name": "tmpi2fulqij part 1",
+        "summary": "Machine Learning Chapter 1 - Introduction Machine Learning What is Machine learning? Machine Learnin ......",
+        "p_num": [
+          1,
+          15
+        ]
+      }
+    },
+    "05e244c75af3_Statement": {
+      "id": "05e244c75af3_Statement",
+      "name": "Evolutionary Learning_Statement",
+      "content": "Evolutionary learning: biological evolution can be seen as a learning process, to improve survival rates and chance of having offspring.",
+      "concept_id": "05e244c75af3",
+      "rrole": "Statement",
+      "score": 0.95
+    },
+    "Q2298789": {
+      "id": "Q2298789",
+      "name": "Evolutionary Game Theory",
+      "content": "application of game theory to evolving populations in biology\n**ARTICLE: journal",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_1_d056d6/chunks/cc940725ae6a2a427d690c80ea550222_slide0.txt",
+        "name": "tmpi2fulqij part 1",
+        "summary": "Machine Learning Chapter 1 - Introduction Machine Learning What is Machine learning? Machine Learnin ......",
+        "p_num": [
+          1,
+          15
+        ]
+      }
+    },
+    "Q1503443": {
+      "id": "Q1503443",
+      "name": "Secrecy",
+      "content": "practice of hiding information or making it inaccessible; quality of such information",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_1_d056d6/chunks/cc940725ae6a2a427d690c80ea550222_slide0.txt",
+        "name": "tmpi2fulqij part 1",
+        "summary": "Machine Learning Chapter 1 - Introduction Machine Learning What is Machine learning? Machine Learnin ......",
+        "p_num": [
+          1,
+          15
+        ]
+      }
+    },
+    "Q1503443_Statement": {
+      "id": "Q1503443_Statement",
+      "name": "Secrecy_Statement",
+      "content": "Classification: to find the class of an instance given its selected features.",
+      "concept_id": "Q1503443",
+      "rrole": "Statement",
+      "score": 0.95
+    },
+    "Q135079610": {
+      "id": "Q135079610",
+      "name": "Regression",
+      "content": "video game developed by Valgardia",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Machine Learning/tmpi2fulqij_part_1_d056d6/chunks/cc940725ae6a2a427d690c80ea550222_slide0.txt",
+        "name": "tmpi2fulqij part 1",
+        "summary": "Machine Learning Chapter 1 - Introduction Machine Learning What is Machine learning? Machine Learnin ......",
+        "p_num": [
+          1,
+          15
+        ]
+      }
+    },
+    "Q135079610_Statement": {
+      "id": "Q135079610_Statement",
+      "name": "Regression_Statement",
+      "content": "Regression: to find a function whose curve passes as close as possible to all of the given data points.",
+      "concept_id": "Q135079610",
+      "rrole": "Statement",
+      "score": 0.95
+    }
+  },
+  "edges": {
+    "('93b266e6d904', 'Q21169670', 'PART_OF')": {
+      "source": "93b266e6d904",
+      "target": "Q21169670",
+      "relationship": "Source concept is essentially a part of target topic",
+      "name": "PART_OF",
+      "type": "PART_OF"
+    },
+    "('Q1074074', '93b266e6d904', 'PART_OF')": {
+      "source": "Q1074074",
+      "target": "93b266e6d904",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q1074074', 'Q1074074_Statement', 'CONTENT')": {
+      "source": "Q1074074",
+      "target": "Q1074074_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q6027324', '93b266e6d904', 'PART_OF')": {
+      "source": "Q6027324",
+      "target": "93b266e6d904",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('ab5bfa471159', '93b266e6d904', 'PART_OF')": {
+      "source": "ab5bfa471159",
+      "target": "93b266e6d904",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('ab5bfa471159', 'ab5bfa471159_Statement', 'CONTENT')": {
+      "source": "ab5bfa471159",
+      "target": "ab5bfa471159_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('ab5bfa471159', 'ab5bfa471159_Application', 'CONTENT')": {
+      "source": "ab5bfa471159",
+      "target": "ab5bfa471159_Application",
+      "relationship": "This concept contains this knowledge",
+      "name": "APPLICATION",
+      "type": "CONTENT"
+    },
+    "('959918a43523', '93b266e6d904', 'PART_OF')": {
+      "source": "959918a43523",
+      "target": "93b266e6d904",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('f8be509bfaa7', '93b266e6d904', 'PART_OF')": {
+      "source": "f8be509bfaa7",
+      "target": "93b266e6d904",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('f8be509bfaa7', 'f8be509bfaa7_Solution', 'CONTENT')": {
+      "source": "f8be509bfaa7",
+      "target": "f8be509bfaa7_Solution",
+      "relationship": "This concept contains this knowledge",
+      "name": "SOLUTION",
+      "type": "CONTENT"
+    },
+    "('f8be509bfaa7', 'f8be509bfaa7_Objective', 'CONTENT')": {
+      "source": "f8be509bfaa7",
+      "target": "f8be509bfaa7_Objective",
+      "relationship": "This concept contains this knowledge",
+      "name": "OBJECTIVE",
+      "type": "CONTENT"
+    },
+    "('Q179550', '93b266e6d904', 'PART_OF')": {
+      "source": "Q179550",
+      "target": "93b266e6d904",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('225575e88fd9', '93b266e6d904', 'PART_OF')": {
+      "source": "225575e88fd9",
+      "target": "93b266e6d904",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('225575e88fd9', '225575e88fd9_Solution', 'CONTENT')": {
+      "source": "225575e88fd9",
+      "target": "225575e88fd9_Solution",
+      "relationship": "This concept contains this knowledge",
+      "name": "SOLUTION",
+      "type": "CONTENT"
+    },
+    "('225575e88fd9', '225575e88fd9_Statement', 'CONTENT')": {
+      "source": "225575e88fd9",
+      "target": "225575e88fd9_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q135452514', '93b266e6d904', 'PART_OF')": {
+      "source": "Q135452514",
+      "target": "93b266e6d904",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q1417790', '93b266e6d904', 'PART_OF')": {
+      "source": "Q1417790",
+      "target": "93b266e6d904",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q1417790', 'Q1417790_Solution', 'CONTENT')": {
+      "source": "Q1417790",
+      "target": "Q1417790_Solution",
+      "relationship": "This concept contains this knowledge",
+      "name": "SOLUTION",
+      "type": "CONTENT"
+    },
+    "('Q1417790', 'Q1417790_Statement', 'CONTENT')": {
+      "source": "Q1417790",
+      "target": "Q1417790_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('337add868dc4', '93b266e6d904', 'PART_OF')": {
+      "source": "337add868dc4",
+      "target": "93b266e6d904",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('337add868dc4', '337add868dc4_Solution', 'CONTENT')": {
+      "source": "337add868dc4",
+      "target": "337add868dc4_Solution",
+      "relationship": "This concept contains this knowledge",
+      "name": "SOLUTION",
+      "type": "CONTENT"
+    },
+    "('337add868dc4', '337add868dc4_Statement', 'CONTENT')": {
+      "source": "337add868dc4",
+      "target": "337add868dc4_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q240464', '93b266e6d904', 'PART_OF')": {
+      "source": "Q240464",
+      "target": "93b266e6d904",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q17162702', '93b266e6d904', 'PART_OF')": {
+      "source": "Q17162702",
+      "target": "93b266e6d904",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q17162702', 'Q17162702_Statement', 'CONTENT')": {
+      "source": "Q17162702",
+      "target": "Q17162702_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q17162702', 'Q17162702_Application', 'CONTENT')": {
+      "source": "Q17162702",
+      "target": "Q17162702_Application",
+      "relationship": "This concept contains this knowledge",
+      "name": "APPLICATION",
+      "type": "CONTENT"
+    },
+    "('Q17104437', '93b266e6d904', 'PART_OF')": {
+      "source": "Q17104437",
+      "target": "93b266e6d904",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q1074074', 'ab5bfa471159', 'SEMANTIC')": {
+      "source": "Q1074074",
+      "target": "ab5bfa471159",
+      "relationship": "Maximum Conditional Independence is listed as a common inductive bias, so it is a specific instance that falls under the broader category of Inductive Bias.",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('Q1074074', 'f8be509bfaa7', 'SEMANTIC')": {
+      "source": "Q1074074",
+      "target": "f8be509bfaa7",
+      "relationship": "Minimum Cross-Validation Error is presented as a common inductive bias, making it a particular bias included within the general concept of Inductive Bias.",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('Q1074074', '225575e88fd9', 'SEMANTIC')": {
+      "source": "Q1074074",
+      "target": "225575e88fd9",
+      "relationship": "Maximum Margin is described as a common inductive bias (used in SVM), therefore it is a specific bias that is part of the broader Inductive Bias category.",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('Q1074074', 'Q1417790', 'SEMANTIC')": {
+      "source": "Q1074074",
+      "target": "Q1417790",
+      "relationship": "Minimum Description Length is identified as a common inductive bias, so it is included under the umbrella of Inductive Bias.",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('Q1074074', '337add868dc4', 'SEMANTIC')": {
+      "source": "Q1074074",
+      "target": "337add868dc4",
+      "relationship": "Minimum Features is mentioned as a common inductive bias, thus it is a specific bias contained within Inductive Bias.",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('Q1074074', 'Q17162702', 'SEMANTIC')": {
+      "source": "Q1074074",
+      "target": "Q17162702",
+      "relationship": "Nearest Neighbor is listed as a common inductive bias, making it a particular instance of the broader concept Inductive Bias.",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('Q1417790', '337add868dc4', 'SEMANTIC')": {
+      "source": "Q1417790",
+      "target": "337add868dc4",
+      "relationship": "Both biases promote simpler models: MDL minimizes the length of a hypothesis description, while Minimum Features removes unnecessary attributes; they share the goal of reducing model complexity.",
+      "name": "RELATED_TO",
+      "type": "SEMANTIC"
+    },
+    "('225575e88fd9', 'f8be509bfaa7', 'SEMANTIC')": {
+      "source": "225575e88fd9",
+      "target": "f8be509bfaa7",
+      "relationship": "Both are criteria used to select hypotheses that generalize well: maximizing the margin often leads to lower cross‑validation error, linking the two biases.",
+      "name": "RELATED_TO",
+      "type": "SEMANTIC"
+    },
+    "('ab5bfa471159', 'Q1417790', 'SEMANTIC')": {
+      "source": "ab5bfa471159",
+      "target": "Q1417790",
+      "relationship": "Both biases favor simpler, more independent representations: maximizing conditional independence reduces dependencies, akin to minimizing description length.",
+      "name": "RELATED_TO",
+      "type": "SEMANTIC"
+    },
+    "('Q17162702', '337add868dc4', 'SEMANTIC')": {
+      "source": "Q17162702",
+      "target": "337add868dc4",
+      "relationship": "Nearest Neighbor performance degrades with many irrelevant dimensions; the Minimum Features bias, which removes unnecessary features, aligns with the assumptions of Nearest Neighbor.",
+      "name": "RELATED_TO",
+      "type": "SEMANTIC"
+    },
+    "('Q1074074', 'Q6027324', 'SEMANTIC')": {
+      "source": "Q1074074",
+      "target": "Q6027324",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('Q6027324', 'Q1074074', 'SEMANTIC')": {
+      "source": "Q6027324",
+      "target": "Q1074074",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('ab5bfa471159', '959918a43523', 'SEMANTIC')": {
+      "source": "ab5bfa471159",
+      "target": "959918a43523",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('959918a43523', 'ab5bfa471159', 'SEMANTIC')": {
+      "source": "959918a43523",
+      "target": "ab5bfa471159",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('f8be509bfaa7', 'Q179550', 'SEMANTIC')": {
+      "source": "f8be509bfaa7",
+      "target": "Q179550",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('Q179550', 'f8be509bfaa7', 'SEMANTIC')": {
+      "source": "Q179550",
+      "target": "f8be509bfaa7",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('225575e88fd9', 'Q135452514', 'SEMANTIC')": {
+      "source": "225575e88fd9",
+      "target": "Q135452514",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('Q135452514', '225575e88fd9', 'SEMANTIC')": {
+      "source": "Q135452514",
+      "target": "225575e88fd9",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('337add868dc4', 'Q240464', 'SEMANTIC')": {
+      "source": "337add868dc4",
+      "target": "Q240464",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('Q240464', '337add868dc4', 'SEMANTIC')": {
+      "source": "Q240464",
+      "target": "337add868dc4",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('Q17162702', 'Q17104437', 'SEMANTIC')": {
+      "source": "Q17162702",
+      "target": "Q17104437",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('Q17104437', 'Q17162702', 'SEMANTIC')": {
+      "source": "Q17104437",
+      "target": "Q17162702",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('9475420d915a', 'Q21169670', 'PART_OF')": {
+      "source": "9475420d915a",
+      "target": "Q21169670",
+      "relationship": "Source concept is essentially a part of target topic",
+      "name": "PART_OF",
+      "type": "PART_OF"
+    },
+    "('7d88dcbd2dc1', '9475420d915a', 'PART_OF')": {
+      "source": "7d88dcbd2dc1",
+      "target": "9475420d915a",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('7d88dcbd2dc1', '7d88dcbd2dc1_Statement', 'CONTENT')": {
+      "source": "7d88dcbd2dc1",
+      "target": "7d88dcbd2dc1_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q359176', '9475420d915a', 'PART_OF')": {
+      "source": "Q359176",
+      "target": "9475420d915a",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('024d47b2dcc8', '9475420d915a', 'PART_OF')": {
+      "source": "024d47b2dcc8",
+      "target": "9475420d915a",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('024d47b2dcc8', '024d47b2dcc8_Statement', 'CONTENT')": {
+      "source": "024d47b2dcc8",
+      "target": "024d47b2dcc8_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q425265', '9475420d915a', 'PART_OF')": {
+      "source": "Q425265",
+      "target": "9475420d915a",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q138967979', '9475420d915a', 'PART_OF')": {
+      "source": "Q138967979",
+      "target": "9475420d915a",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q138967979', 'Q138967979_Problem', 'CONTENT')": {
+      "source": "Q138967979",
+      "target": "Q138967979_Problem",
+      "relationship": "This concept contains this knowledge",
+      "name": "PROBLEM",
+      "type": "CONTENT"
+    },
+    "('Q350532', '9475420d915a', 'PART_OF')": {
+      "source": "Q350532",
+      "target": "9475420d915a",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q350532', 'Q350532_Formula', 'CONTENT')": {
+      "source": "Q350532",
+      "target": "Q350532_Formula",
+      "relationship": "This concept contains this knowledge",
+      "name": "FORMULA",
+      "type": "CONTENT"
+    },
+    "('Q138797909', '9475420d915a', 'PART_OF')": {
+      "source": "Q138797909",
+      "target": "9475420d915a",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q138797909', 'Q138797909_Formula', 'CONTENT')": {
+      "source": "Q138797909",
+      "target": "Q138797909_Formula",
+      "relationship": "This concept contains this knowledge",
+      "name": "FORMULA",
+      "type": "CONTENT"
+    },
+    "('641a6ddc3eaa', '9475420d915a', 'PART_OF')": {
+      "source": "641a6ddc3eaa",
+      "target": "9475420d915a",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('641a6ddc3eaa', '641a6ddc3eaa_Statement', 'CONTENT')": {
+      "source": "641a6ddc3eaa",
+      "target": "641a6ddc3eaa_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q1437614', '9475420d915a', 'PART_OF')": {
+      "source": "Q1437614",
+      "target": "9475420d915a",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q1074074', '9475420d915a', 'PART_OF')": {
+      "source": "Q1074074",
+      "target": "9475420d915a",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q134994644', '9475420d915a', 'PART_OF')": {
+      "source": "Q134994644",
+      "target": "9475420d915a",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('ab5bfa471159', '9475420d915a', 'PART_OF')": {
+      "source": "ab5bfa471159",
+      "target": "9475420d915a",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q625303', '9475420d915a', 'PART_OF')": {
+      "source": "Q625303",
+      "target": "9475420d915a",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('f8be509bfaa7', '9475420d915a', 'PART_OF')": {
+      "source": "f8be509bfaa7",
+      "target": "9475420d915a",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('f8be509bfaa7', 'f8be509bfaa7_Statement', 'CONTENT')": {
+      "source": "f8be509bfaa7",
+      "target": "f8be509bfaa7_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q179550', '9475420d915a', 'PART_OF')": {
+      "source": "Q179550",
+      "target": "9475420d915a",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('641a6ddc3eaa', 'Q350532', 'SEMANTIC')": {
+      "source": "641a6ddc3eaa",
+      "target": "Q350532",
+      "relationship": "F1 score combines precision and recall, thus it includes precision as a component.",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('641a6ddc3eaa', 'Q138797909', 'SEMANTIC')": {
+      "source": "641a6ddc3eaa",
+      "target": "Q138797909",
+      "relationship": "F1 score combines precision and recall, thus it includes recall as a component.",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('Q350532', 'Q138797909', 'SEMANTIC')": {
+      "source": "Q350532",
+      "target": "Q138797909",
+      "relationship": "Precision and recall are complementary evaluation metrics often used together.",
+      "name": "RELATED_TO",
+      "type": "SEMANTIC"
+    },
+    "('024d47b2dcc8', 'Q350532', 'SEMANTIC')": {
+      "source": "024d47b2dcc8",
+      "target": "Q350532",
+      "relationship": "Statistical significance tests are applied to precision scores to determine if differences are meaningful.",
+      "name": "RELATED_TO",
+      "type": "SEMANTIC"
+    },
+    "('024d47b2dcc8', 'Q138797909', 'SEMANTIC')": {
+      "source": "024d47b2dcc8",
+      "target": "Q138797909",
+      "relationship": "Statistical significance tests are applied to recall scores to assess significance of differences.",
+      "name": "RELATED_TO",
+      "type": "SEMANTIC"
+    },
+    "('024d47b2dcc8', '641a6ddc3eaa', 'SEMANTIC')": {
+      "source": "024d47b2dcc8",
+      "target": "641a6ddc3eaa",
+      "relationship": "Statistical significance tests can be used to compare F1 scores between systems.",
+      "name": "RELATED_TO",
+      "type": "SEMANTIC"
+    },
+    "('7d88dcbd2dc1', 'f8be509bfaa7', 'SEMANTIC')": {
+      "source": "7d88dcbd2dc1",
+      "target": "f8be509bfaa7",
+      "relationship": "K-fold cross validation provides the error estimates that are minimized by the minimum cross-validation error criterion.",
+      "name": "RELATED_TO",
+      "type": "SEMANTIC"
+    },
+    "('f8be509bfaa7', 'Q138967979', 'SEMANTIC')": {
+      "source": "f8be509bfaa7",
+      "target": "Q138967979",
+      "relationship": "Selecting the hypothesis with the minimum cross-validation error helps reduce overfitting.",
+      "name": "CAUSES",
+      "type": "SEMANTIC"
+    },
+    "('Q1074074', 'Q138967979', 'SEMANTIC')": {
+      "source": "Q1074074",
+      "target": "Q138967979",
+      "relationship": "A proper inductive bias can mitigate overfitting, while its absence may lead to overfitting.",
+      "name": "RELATED_TO",
+      "type": "SEMANTIC"
+    },
+    "('7d88dcbd2dc1', 'Q359176', 'SEMANTIC')": {
+      "source": "7d88dcbd2dc1",
+      "target": "Q359176",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('Q359176', '7d88dcbd2dc1', 'SEMANTIC')": {
+      "source": "Q359176",
+      "target": "7d88dcbd2dc1",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('024d47b2dcc8', 'Q425265', 'SEMANTIC')": {
+      "source": "024d47b2dcc8",
+      "target": "Q425265",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('Q425265', '024d47b2dcc8', 'SEMANTIC')": {
+      "source": "Q425265",
+      "target": "024d47b2dcc8",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('641a6ddc3eaa', 'Q1437614', 'SEMANTIC')": {
+      "source": "641a6ddc3eaa",
+      "target": "Q1437614",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('Q1437614', '641a6ddc3eaa', 'SEMANTIC')": {
+      "source": "Q1437614",
+      "target": "641a6ddc3eaa",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('Q1074074', 'Q134994644', 'SEMANTIC')": {
+      "source": "Q1074074",
+      "target": "Q134994644",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('Q134994644', 'Q1074074', 'SEMANTIC')": {
+      "source": "Q134994644",
+      "target": "Q1074074",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('ab5bfa471159', 'Q625303', 'SEMANTIC')": {
+      "source": "ab5bfa471159",
+      "target": "Q625303",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('Q625303', 'ab5bfa471159', 'SEMANTIC')": {
+      "source": "Q625303",
+      "target": "ab5bfa471159",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('Q79234467', 'Q21169670', 'PART_OF')": {
+      "source": "Q79234467",
+      "target": "Q21169670",
+      "relationship": "Source concept is essentially a part of target topic",
+      "name": "PART_OF",
+      "type": "PART_OF"
+    },
+    "('Q21169670', 'Q79234467', 'RELATED')": {
+      "source": "Q21169670",
+      "target": "Q79234467",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "RELATED"
+    },
+    "('Q21169670', 'Q21169670_Statement', 'CONTENT')": {
+      "source": "Q21169670",
+      "target": "Q21169670_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q21169670', 'Q21169670_Objective', 'CONTENT')": {
+      "source": "Q21169670",
+      "target": "Q21169670_Objective",
+      "relationship": "This concept contains this knowledge",
+      "name": "OBJECTIVE",
+      "type": "CONTENT"
+    },
+    "('Q1068473', 'Q79234467', 'PART_OF')": {
+      "source": "Q1068473",
+      "target": "Q79234467",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q1068473', 'Q1068473_Statement', 'CONTENT')": {
+      "source": "Q1068473",
+      "target": "Q1068473_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q334384', 'Q79234467', 'PART_OF')": {
+      "source": "Q334384",
+      "target": "Q79234467",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q334384', 'Q334384_Statement', 'CONTENT')": {
+      "source": "Q334384",
+      "target": "Q334384_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('23ed6b136eca', 'Q79234467', 'PART_OF')": {
+      "source": "23ed6b136eca",
+      "target": "Q79234467",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('23ed6b136eca', '23ed6b136eca_Statement', 'CONTENT')": {
+      "source": "23ed6b136eca",
+      "target": "23ed6b136eca_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q115570683', 'Q79234467', 'PART_OF')": {
+      "source": "Q115570683",
+      "target": "Q79234467",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q115570683', 'Q115570683_Statement', 'CONTENT')": {
+      "source": "Q115570683",
+      "target": "Q115570683_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('05e244c75af3', 'Q79234467', 'PART_OF')": {
+      "source": "05e244c75af3",
+      "target": "Q79234467",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('05e244c75af3', '05e244c75af3_Statement', 'CONTENT')": {
+      "source": "05e244c75af3",
+      "target": "05e244c75af3_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q2298789', 'Q79234467', 'PART_OF')": {
+      "source": "Q2298789",
+      "target": "Q79234467",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q1503443', 'Q79234467', 'PART_OF')": {
+      "source": "Q1503443",
+      "target": "Q79234467",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q1503443', 'Q1503443_Statement', 'CONTENT')": {
+      "source": "Q1503443",
+      "target": "Q1503443_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q135079610', 'Q79234467', 'PART_OF')": {
+      "source": "Q135079610",
+      "target": "Q79234467",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q135079610', 'Q135079610_Statement', 'CONTENT')": {
+      "source": "Q135079610",
+      "target": "Q135079610_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('7d88dcbd2dc1', 'Q79234467', 'PART_OF')": {
+      "source": "7d88dcbd2dc1",
+      "target": "Q79234467",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q359176', 'Q79234467', 'PART_OF')": {
+      "source": "Q359176",
+      "target": "Q79234467",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q334384', 'Q1503443', 'SEMANTIC')": {
+      "source": "Q334384",
+      "target": "Q1503443",
+      "relationship": "Supervised Learning includes Classification as a typical task.",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('Q334384', 'Q135079610', 'SEMANTIC')": {
+      "source": "Q334384",
+      "target": "Q135079610",
+      "relationship": "Supervised Learning includes Regression as a typical task.",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('05e244c75af3', 'Q2298789', 'SEMANTIC')": {
+      "source": "05e244c75af3",
+      "target": "Q2298789",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('Q2298789', '05e244c75af3', 'SEMANTIC')": {
+      "source": "Q2298789",
+      "target": "05e244c75af3",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    }
+  },
+  "clusters": {
+    "cluster_93b266e6d904": {
+      "id": "cluster_93b266e6d904",
+      "label": "Induction, Machine Learning\n",
+      "type": "Topic",
+      "anchor_node": "93b266e6d904",
+      "member_ids": [
+        "Q1074074",
+        "Q1074074_Statement",
+        "Q6027324",
+        "ab5bfa471159",
+        "ab5bfa471159_Statement",
+        "ab5bfa471159_Application",
+        "959918a43523",
+        "f8be509bfaa7",
+        "f8be509bfaa7_Solution",
+        "f8be509bfaa7_Objective",
+        "Q179550",
+        "225575e88fd9",
+        "225575e88fd9_Solution",
+        "225575e88fd9_Statement",
+        "Q135452514",
+        "Q1417790",
+        "Q1417790_Solution",
+        "Q1417790_Statement",
+        "337add868dc4",
+        "337add868dc4_Solution",
+        "337add868dc4_Statement",
+        "Q240464",
+        "Q17162702",
+        "Q17162702_Statement",
+        "Q17162702_Application",
+        "Q17104437"
+      ]
+    },
+    "cluster_9475420d915a": {
+      "id": "cluster_9475420d915a",
+      "label": "Phase, Validation",
+      "type": "Topic",
+      "anchor_node": "9475420d915a",
+      "member_ids": [
+        "7d88dcbd2dc1",
+        "7d88dcbd2dc1_Statement",
+        "Q359176",
+        "024d47b2dcc8",
+        "024d47b2dcc8_Statement",
+        "Q425265",
+        "Q138967979",
+        "Q138967979_Problem",
+        "Q350532",
+        "Q350532_Formula",
+        "Q138797909",
+        "Q138797909_Formula",
+        "641a6ddc3eaa",
+        "641a6ddc3eaa_Statement",
+        "Q1437614",
+        "Q1074074",
+        "Q1074074_Statement",
+        "Q134994644",
+        "ab5bfa471159",
+        "ab5bfa471159_Statement",
+        "Q625303",
+        "f8be509bfaa7",
+        "f8be509bfaa7_Statement",
+        "Q179550"
+      ]
+    },
+    "cluster_Q79234467": {
+      "id": "cluster_Q79234467",
+      "label": "Introduction\n",
+      "type": "Topic",
+      "anchor_node": "Q79234467",
+      "member_ids": [
+        "Q21169670",
+        "Q21169670_Statement",
+        "Q21169670_Objective",
+        "Q1068473",
+        "Q1068473_Statement",
+        "Q334384",
+        "Q334384_Statement",
+        "23ed6b136eca",
+        "23ed6b136eca_Statement",
+        "Q115570683",
+        "Q115570683_Statement",
+        "05e244c75af3",
+        "05e244c75af3_Statement",
+        "Q2298789",
+        "Q1503443",
+        "Q1503443_Statement",
+        "Q135079610",
+        "Q135079610_Statement",
+        "7d88dcbd2dc1",
+        "7d88dcbd2dc1_Statement",
+        "Q359176"
+      ]
+    }
+  }
+}

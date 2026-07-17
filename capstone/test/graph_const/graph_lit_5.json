@@ -1,0 +1,176 @@
+{
+  "og": "Criticism: p n ( w ) may be biased when the global class distribution of documents is usually not uniform.\nLet P n be the fraction of documents that belong to class n.\nDefine the normalized probability q n ( w ) :\nLet P n be the fraction of documents that belong to class n.\nDefine the normalized probability q n ( w ) :\nNew gini-index of w :\nPrior inhomogeneity of a set of documents:\nPrior inhomogeneity of a set of documents:\nLet F ( w ) be the fraction of documents that contains w\nInhomogeneity after using w :\nPrior inhomogeneity of a set of documents:\nLet F ( w ) be the fraction of documents that contains w\nInhomogeneity after using w :\nInformation gain\nMutual information\nHow a word w and a class n are correlated?\nMutual information\nHow a word w and a class n are correlated?\nExpected co-occurrence of w and class n :\nP n .F ( w )\np n ( w ) .F ( w )\nTrue co-occurrence of w and class n :\nMutual information\nHow a word w and a class n are correlated?\nExpected co-occurrence of w and class n :\nTrue co-occurrence of w and class n :\nMutual information of w and class n :\nMutual information\nMutual information of w and class n :\nM n ( w ) = 0 : w is not relevant to class n .\nM n ( w ) > 0 : w is positively correlated to class n .\nM n ( w ) < 0 : w is negatively correlated to class n .\nMutual information of w and class n :\nAverage and maximum values of M n ( w ) :\nt-SNE\nWhat is t-SNE\nt-Distributed Stochastic Neighbor Embedding (t-SNE) : an unsupervised, non-linear technique.\nWhat is t-SNE\nt-Distributed Stochastic Neighbor Embedding (t-SNE) : an unsupervised, non-linear technique.\nPrimarily used for data exploration and visualizing high-dimensional data.\nWhat is t-SNE\nt-Distributed Stochastic Neighbor Embedding (t-SNE) : an unsupervised, non-linear technique.\nPrimarily used for data exploration and visualizing high-dimensional data.\nt-SNE gives an intuition of how data is arranged in high dimensional space .",
+  "meta": {
+    "model": "gpt-oss:120b-cloud",
+    "concept_count": 8,
+    "relation_count": 7
+  },
+  "skeleton_phase": {
+    "tree": [
+      {
+        "name": "Normalized Probability",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Normalized probability q_n(w) is defined for each class n and word w.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "Fraction of Documents",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "F(w) is the fraction of documents that contains word w.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "Prior Inhomogeneity",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Prior Inhomogeneity of a set of documents is measured before using word w.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Statement",
+            "content": "Inhomogeneity after using w is measured after applying word w to the document set.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "Gini Index",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "New Gini-index of w is a metric used to evaluate the impurity of word w with respect to class distribution.",
+            "confidence": 0.8
+          }
+        ]
+      },
+      {
+        "name": "Information Gain",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Information Gain quantifies the reduction in uncertainty about class labels after observing word w.",
+            "confidence": 0.8
+          }
+        ]
+      },
+      {
+        "name": "Mutual Information",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Mutual Information measures how a word w and a class n are correlated.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Statement",
+            "content": "Expected co-occurrence of w and class n is P_n · F(w).",
+            "confidence": 0.9
+          },
+          {
+            "role": "Statement",
+            "content": "True co-occurrence of w and class n is p_n(w) · F(w).",
+            "confidence": 0.9
+          },
+          {
+            "role": "Statement",
+            "content": "M_n(w) = 0 indicates that word w is not relevant to class n.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Statement",
+            "content": "M_n(w) > 0 indicates that word w is positively correlated to class n.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Statement",
+            "content": "M_n(w) < 0 indicates that word w is negatively correlated to class n.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Statement",
+            "content": "Average and maximum values of M_n(w) summarize the overall relevance of word w across classes.",
+            "confidence": 0.8
+          }
+        ]
+      },
+      {
+        "name": "p_n(w)",
+        "details": [
+          {
+            "role": "Problem",
+            "content": "p_n(w) may be biased when the global class distribution of documents is usually not uniform.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "t-SNE",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "t-Distributed Stochastic Neighbor Embedding (t-SNE) is an unsupervised, non-linear technique.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Application",
+            "content": "t-SNE is primarily used for data exploration and visualizing high-dimensional data.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Statement",
+            "content": "t-SNE gives an intuition of how data is arranged in high dimensional space.",
+            "confidence": 0.9
+          }
+        ]
+      }
+    ]
+  },
+  "relation_phase": {
+    "edges": [
+      {
+        "name": "INCLUDES",
+        "src": "Normalized Probability",
+        "tgt": "p_n(w)"
+      },
+      {
+        "name": "PREREQUISITE",
+        "src": "Fraction of Documents",
+        "tgt": "p_n(w)"
+      },
+      {
+        "name": "PREREQUISITE",
+        "src": "Fraction of Documents",
+        "tgt": "Prior Inhomogeneity"
+      },
+      {
+        "name": "INCLUDES",
+        "src": "Prior Inhomogeneity",
+        "tgt": "Gini Index"
+      },
+      {
+        "name": "RELATED_TO",
+        "src": "Information Gain",
+        "tgt": "Mutual Information"
+      },
+      {
+        "name": "PREREQUISITE",
+        "src": "p_n(w)",
+        "tgt": "Mutual Information"
+      },
+      {
+        "name": "PREREQUISITE",
+        "src": "Fraction of Documents",
+        "tgt": "Mutual Information"
+      }
+    ]
+  }
+}

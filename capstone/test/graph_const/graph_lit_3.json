@@ -1,0 +1,232 @@
+{
+  "og": "Decision-Trees: Subtree replacement\nDecision-Trees: Subtree raising\nDelete node B\nRedistribute instances of leaves 4 and 5 into C\nDecision-Trees: Estimating Error Rates\nPrune only if it does not increase the estimated error. Reduced Error Pruning:\nUse hold-out set for pruning\nEssentially the same as in rule learning\nDecision-Trees: Reduced Error Pruning\nSplit training data into a growing and a pruning set\nLearn a complete and consistent decision tree that classifies all examples in the growing set correctly\nAs long as the error on the pruning set does not increase, try to replace each node by a leaf, evaluate the resulting (sub-)tree on the pruning set then make the replacement the results in the maximum error reduction.\nReturn the resulting decision tree.\nDecision-Trees: Decision Lists and Decision Graphs\nDecision Lists\nAn ordered list of rules\nThe first rule that fires makes the prediction\ncan be learned with a covering approach\nDecision Graphs\nSimilar to decision trees, but nodes may have multiple predecessors\nEach decision tree can be converted into a rule set. A decision tree can be viewed as a set of non-overlapping rules and typically learned via divide-and-conquer algorithms (recursive partitioning) Transformation of rule sets / decision lists into trees is less trivial\nMany concepts have a shorter description as a rule set\nLow complexity decision lists are more expressive than low complexity decision trees\nExceptions: if one or more attributes are relevant for the classification of all examples\nDecision-Trees: Regression Problems\nRegression Task: the target variable is numerical instead of discrete. Two principal approaches\nDiscretize the numerical target variable\nAdapt the classification algorithm to regression data\nDecision-Trees: Regression Trees\nDifferences to Decision Trees (Classification Trees)\nLeaf Nodes: Predict the average value of all instances in this leaf\nSplitting criterion: Minimize the variance of the values in each subset\nTermination criteria: Lower bound on standard deviation in a node and lower bound on number of examples in a node\nPruning criterion: Numeric error measures, e.g. Mean-Squared Error",
+  "meta": {
+    "model": "gpt-oss:120b-cloud",
+    "concept_count": 10,
+    "relation_count": 11
+  },
+  "skeleton_phase": {
+    "tree": [
+      {
+        "name": "Subtree replacement",
+        "content": "Subtree replacement removes a node from a decision tree and redistributes the instances of its leaf children to another node.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Subtree replacement is performed by deleting node B and moving instances of leaves 4 and 5 into node C.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Subtree raising",
+        "content": "Subtree raising moves a subtree upward in a decision tree to replace a parent node, preserving classification while maintaining overall accuracy.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Subtree raising is an alternative to subtree replacement for pruning decision trees.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Reduced error pruning",
+        "content": "Reduced error pruning uses a hold-out validation set to iteratively replace nodes with leaves while ensuring error does not increase.",
+        "details": [
+          {
+            "role": "Objective",
+            "content": "The goal of reduced error pruning is to simplify the decision tree without increasing validation error.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Solution",
+            "content": "Split training data into a growing set and a pruning set, learn a complete tree on the growing set, then evaluate replacements on the pruning set.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Statement",
+            "content": "Reduced error pruning is essentially the same as pruning in rule learning.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Decision list",
+        "content": "A decision list is an ordered list of rules where the first rule that fires determines the prediction for classification.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Decision lists can be learned with a covering approach.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Application",
+            "content": "Decision lists are used as an alternative representation to decision trees for classification.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Decision graph",
+        "content": "A decision graph resembles a decision tree but permits nodes to have multiple predecessors, forming a directed acyclic graph structure.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Each decision tree can be converted into a rule set, and decision graphs can represent such rule sets with shared substructures.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Problem",
+            "content": "Transforming rule sets or decision lists into decision graphs is less trivial than converting them into trees.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Regression tree",
+        "content": "A regression tree predicts numeric values by assigning leaf nodes the average of target values and splitting to minimize variance.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "In regression trees, leaf nodes predict the average value of all instances in the leaf.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Objective",
+            "content": "The splitting criterion for regression trees is to minimize the variance of the target values in each subset.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Statement",
+            "content": "Regression trees stop growing when the standard deviation in a node falls below a lower bound or the node contains fewer examples than a threshold.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Statement",
+            "content": "Regression trees use numeric error measures such as mean-squared error for pruning.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Regression task",
+        "content": "A regression task involves predicting a continuous numerical target variable instead of a discrete class label for supervised learning problems.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Regression tasks can be approached by discretizing the target variable or adapting classification algorithms to handle numeric outputs.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Solution",
+            "content": "One principal approach to regression trees is to adapt the classification algorithm to regression data.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Splitting criterion",
+        "content": "A splitting criterion determines how a decision tree node divides data, aiming to improve purity or reduce variance in subsets.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "For regression trees, the splitting criterion minimizes the variance of the values in each subset.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Termination criterion",
+        "content": "Termination criteria are conditions that stop splitting of a decision tree node, such as minimum standard deviation or instance count.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Regression trees use a lower bound on standard deviation in a node and a lower bound on number of examples as termination criteria.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Pruning criterion",
+        "content": "A pruning criterion evaluates whether removing a subtree improves model performance, using numeric error measures like mean-squared error on validation.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Regression trees prune using numeric error measures, e.g., mean-squared error.",
+            "confidence": 0.7
+          }
+        ]
+      }
+    ]
+  },
+  "relation_phase": {
+    "edges": [
+      {
+        "rel": "Both are pruning techniques applied to decision trees, serving similar purposes of simplifying the tree structure.",
+        "name": "RELATED_TO",
+        "src": "Subtree replacement",
+        "tgt": "Subtree raising"
+      },
+      {
+        "rel": "Both are pruning strategies; subtree replacement replaces a subtree with a leaf, while reduced error pruning evaluates replacements based on error on a hold‑out set.",
+        "name": "RELATED_TO",
+        "src": "Subtree replacement",
+        "tgt": "Reduced error pruning"
+      },
+      {
+        "rel": "Both are pruning methods used to simplify decision trees, though they differ in how they modify the tree.",
+        "name": "RELATED_TO",
+        "src": "Subtree raising",
+        "tgt": "Reduced error pruning"
+      },
+      {
+        "rel": "Reduced error pruning relies on a pruning criterion that measures error on a validation set to decide whether to prune.",
+        "name": "RELATED_TO",
+        "src": "Reduced error pruning",
+        "tgt": "Pruning criterion"
+      },
+      {
+        "rel": "Subtree replacement decisions are guided by a pruning criterion that assesses whether the replacement would increase error.",
+        "name": "RELATED_TO",
+        "src": "Subtree replacement",
+        "tgt": "Pruning criterion"
+      },
+      {
+        "rel": "Subtree raising also uses a pruning criterion to ensure that raising a subtree does not increase the estimated error.",
+        "name": "RELATED_TO",
+        "src": "Subtree raising",
+        "tgt": "Pruning criterion"
+      },
+      {
+        "rel": "Decision lists and decision graphs are alternative representations of rule‑based models; both can be derived from decision trees.",
+        "name": "RELATED_TO",
+        "src": "Decision list",
+        "tgt": "Decision graph"
+      },
+      {
+        "rel": "A regression task is a problem category that includes regression trees as one of the algorithms used to predict continuous targets.",
+        "name": "INCLUDES",
+        "src": "Regression task",
+        "tgt": "Regression tree"
+      },
+      {
+        "rel": "A regression tree includes a splitting criterion that selects splits by minimizing the variance of the target values within each subset.",
+        "name": "INCLUDES",
+        "src": "Regression tree",
+        "tgt": "Splitting criterion"
+      },
+      {
+        "rel": "A regression tree includes termination criteria such as a lower bound on standard deviation or on the number of examples required to continue splitting.",
+        "name": "INCLUDES",
+        "src": "Regression tree",
+        "tgt": "Termination criterion"
+      },
+      {
+        "rel": "A regression tree includes a pruning criterion based on numeric error measures, e.g., mean‑squared error, to decide when to prune sub‑trees.",
+        "name": "INCLUDES",
+        "src": "Regression tree",
+        "tgt": "Pruning criterion"
+      }
+    ]
+  }
+}

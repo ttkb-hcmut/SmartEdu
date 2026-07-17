@@ -1,0 +1,257 @@
+(base) (Capstone) PS D:\Project\AI\Capstone\capstone> uv run main.py                                                                                                            
+INFO:     Will watch for changes in these directories: ['D:\\Project\\AI\\Capstone\\capstone\\TA', 'D:\\Project\\AI\\Capstone\\capstone\\core', 'D:\\Project\\AI\\Capstone\\capstone\\knowledge']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [31584] using StatReload
+INFO:     Started server process [5592]
+INFO:     Waiting for application startup.
+Milvus connected to 127.0.0.1:19530
+INFO:     Application startup complete.
+INFO:     127.0.0.1:55963 - "POST /internal/v1/knowledge/ingest-course HTTP/1.1" 200 OK
+[INFO] 2026-04-17 19:22:19,003 [RapidOCR] base.py:22: Using engine_name: torch
+[INFO] 2026-04-17 19:22:19,011 [RapidOCR] device_config.py:57: Using GPU device with ID: 0
+[INFO] 2026-04-17 19:22:19,033 [RapidOCR] download_file.py:60: File exists and is valid: D:\Project\AI\Capstone\.venv\Lib\site-packages\rapidocr\models\ch_PP-OCRv4_det_infer.pth
+[INFO] 2026-04-17 19:22:19,033 [RapidOCR] main.py:50: Using D:\Project\AI\Capstone\.venv\Lib\site-packages\rapidocr\models\ch_PP-OCRv4_det_infer.pth
+[INFO] 2026-04-17 19:22:19,278 [RapidOCR] base.py:22: Using engine_name: torch
+[INFO] 2026-04-17 19:22:19,279 [RapidOCR] device_config.py:57: Using GPU device with ID: 0
+[INFO] 2026-04-17 19:22:19,289 [RapidOCR] download_file.py:60: File exists and is valid: D:\Project\AI\Capstone\.venv\Lib\site-packages\rapidocr\models\ch_ptocr_mobile_v2.0_cls_infer.pth
+[INFO] 2026-04-17 19:22:19,289 [RapidOCR] main.py:50: Using D:\Project\AI\Capstone\.venv\Lib\site-packages\rapidocr\models\ch_ptocr_mobile_v2.0_cls_infer.pth
+[INFO] 2026-04-17 19:22:19,365 [RapidOCR] base.py:22: Using engine_name: torch
+[INFO] 2026-04-17 19:22:19,366 [RapidOCR] device_config.py:57: Using GPU device with ID: 0
+[INFO] 2026-04-17 19:22:19,409 [RapidOCR] download_file.py:60: File exists and is valid: D:\Project\AI\Capstone\.venv\Lib\site-packages\rapidocr\models\ch_PP-OCRv4_rec_infer.pth
+[INFO] 2026-04-17 19:22:19,409 [RapidOCR] main.py:50: Using D:\Project\AI\Capstone\.venv\Lib\site-packages\rapidocr\models\ch_PP-OCRv4_rec_infer.pth
+Heading: Chapter 1 - Introduction - Part 1 
+ Content: Machine Learning
+Chapter 1 - Introduction
+What is Machine learning?
+Arthur Samuel (1959): "Field of study that gives computers the ability to learn without being explicitly programmed"
+Tom Mitchell (1997): "A computer program is said to learn from experience E with respect to some class of tasks T and performance measure P, if its performance at tasks in T, as measured by P, improves with experience E".
+How to construct programs that automatically improve with experience.
+The scientific study of algorithms and statistical models that computer systems use to perform a specific task without using explicit instructions, relying on patterns and inference instead.
+A subset of artificial intelligence.
+Experience
+Prediction
+What is learning?
+Learning is an (endless) generalization or induction process.
+Types of Machine Learning
+Supervised learning: the learner (learning algorithm) are trained on labeled examples, i.e., input where the desired output is known.
+Unsupervised learning: the learner operates on unlabeled examples, i.e., input where the desired output is unknown.
+Reinforcement learning: between supervised and unsupervised learning. It is told when an answer is wrong, but not how to correct it.
+Evolutionary learning: biological evolution can be seen as a learning process, to improve survival rates and chance of having offspring.
+The most common type: supervised learning.
+-Classification: to find the class of an instance given its selected features.
+-Regression: to find a function whose curve passes as close as possible to all of the given data points.
+How many phase do we have in machine learning?
+Phases of Machine Learning
+K-fold cross validation:
+-Randomly partitioned k equal sized sub-samples.
+-k - 1 for training and 1 for testing.
+-k times (folds) of validation and taking the average.
+Statistical significance test : to reject the null-hypothesis that the two compared systems are equivalently efficient although their performance measures are different.
+Overfitting
+There is noise in the data
+The number of training examples is too small to produce a representative sample of the target concept.
+Precision:
+P = number of correct system answers number of system answers
+Recall:
+R = number of correct system answers number of correct problem answers
+==========================================================================================
+Heading: Chapter 1 - Introduction - Part 2 
+ Content: F1 score : want to seek a balance between Precision and Recall It is good when there is an uneven class distribution .
+Inductive Bias
+A learner that makes no prior assumptions regarding the identity of the target concept cannot classify any unseen instances.
+A learner that makes no a priori assumptions regarding the identity of the target concept has no rational basic for classifying any unseen instances.
+The inductive bias (learning bias): the set of assumptions that the learner uses to predict outputs given inputs that it has not encountered.
+Common inductive bias in ML:
+Maximum conditional independence : if the hypothesis can be cast in a Bayesian framework, try to maximize conditional independence (Naive Bayes classifier).
+Minimum cross-validation error : when trying to choose among hypotheses, select the hypothesis with the lowest cross-validation error.
+Maximum margin : when drawing a boundary between two classes, attempt to maximize the width of the boundary (SVM). The assumption is that distinct classes tend to be separated by wide boundaries.
+Minimum description length : when forming a hypothesis, attempt to minimize the length of the description of the hypothesis. The assumption is that simpler hypotheses are more likely to be true.
+Minimum features : unless there is good evidence that a feature is useful, it should be deleted.
+Nearest neighbors : assume that most of the cases in a small neighborhood in feature space belong to the same class.
+==========================================================================================
+Extraction completed in 18.50s. Created 2 batch chunks.
+Old: Chapter 1 - Introduction - Part 1, new: Machine Learning
+Finish in 8.70806622505188 s
+Finish topic Machine Learning in 62.355942726135254 seconds
+Old: Chapter 1 - Introduction - Part 2, new: Machine Learning
+Finish in 0.5913493633270264 s
+Finish topic Machine Learning in 52.32944679260254 seconds
+Graph inserted in 2.0015053749084473
+[INFO] 2026-04-17 19:24:34,935 [RapidOCR] base.py:22: Using engine_name: torch
+[INFO] 2026-04-17 19:24:34,935 [RapidOCR] device_config.py:57: Using GPU device with ID: 0
+[INFO] 2026-04-17 19:24:35,013 [RapidOCR] download_file.py:60: File exists and is valid: D:\Project\AI\Capstone\.venv\Lib\site-packages\rapidocr\models\ch_PP-OCRv4_det_infer.pth
+[INFO] 2026-04-17 19:24:35,013 [RapidOCR] main.py:50: Using D:\Project\AI\Capstone\.venv\Lib\site-packages\rapidocr\models\ch_PP-OCRv4_det_infer.pth
+[INFO] 2026-04-17 19:24:35,241 [RapidOCR] base.py:22: Using engine_name: torch
+[INFO] 2026-04-17 19:24:35,242 [RapidOCR] device_config.py:57: Using GPU device with ID: 0
+[INFO] 2026-04-17 19:24:35,245 [RapidOCR] download_file.py:60: File exists and is valid: D:\Project\AI\Capstone\.venv\Lib\site-packages\rapidocr\models\ch_ptocr_mobile_v2.0_cls_infer.pth
+[INFO] 2026-04-17 19:24:35,245 [RapidOCR] main.py:50: Using D:\Project\AI\Capstone\.venv\Lib\site-packages\rapidocr\models\ch_ptocr_mobile_v2.0_cls_infer.pth
+[INFO] 2026-04-17 19:24:35,332 [RapidOCR] base.py:22: Using engine_name: torch
+[INFO] 2026-04-17 19:24:35,332 [RapidOCR] device_config.py:57: Using GPU device with ID: 0
+[INFO] 2026-04-17 19:24:35,374 [RapidOCR] download_file.py:60: File exists and is valid: D:\Project\AI\Capstone\.venv\Lib\site-packages\rapidocr\models\ch_PP-OCRv4_rec_infer.pth
+[INFO] 2026-04-17 19:24:35,374 [RapidOCR] main.py:50: Using D:\Project\AI\Capstone\.venv\Lib\site-packages\rapidocr\models\ch_PP-OCRv4_rec_infer.pth
+Heading: Chapter 2 - Decision Tree - Part 1 
+ Content: Machine Learning
+Decision Tree
+Contents
+Decision-Tree Learning
+Decision-Trees
+Introduction
+Decision Trees
+TDIDT: Top-Down Induction of Decision Trees
+Attribute selection
+Entropy, Information, Information Gain
+Gain Ratio
+Numeric Values
+Missing Values
+Pruning
+Regression and Model Trees
+A decision tree consists of
+Nodes : test for the value of a certain attribute
+Edges : correspond to the outcome of a test and connect to the next node or leaf
+Leaves : terminal nodes that predict the outcome
+Decision-Trees: Divide-And-Conquer Algorithms
+Family of decision tree learning algorithms: TDIDT: Top-Down Induction of Decision Trees. Learn trees in a Top-Down fashion:
+Divide the problem in subproblems.
+Solve each problem.
+Decision-Trees: ID3 Algorithm
+Function ID3
+Input:
+Example set S
+Output: Decision Tree DT
+If all examples in S belong to the same class c , return a new leaf and label it with c . Else:
+Select an attribute A according to some heuristic function.
+Generate a new node DT with A as test.
+For each Value v i of A , let S i = all examples in S with A = v i . Use ID3 to construct a decision tree DT i for example set S i . Generate an edge that connects DT and DT i
+Decision-Trees: What is a good Attribute?
+A good attribute prefers attributes that split the data so that each successor node is as pure as possible.
+In other words, we want a measure that prefers attributes that have a high degree of 'order':
+Maximum order: All examples are of the same class
+Minimum order: All classes are equally likely
+→ Entropy is a measure for (un-)orderedness.
+Decision-Trees: Entropy (for two classes)
+S is a set of examples
+p ⊕ is the proportion of examples in class ⊕
+p glyph[circleminus] = 1 -p ⊕ is the proportion of examples in class glyph[circleminus]
+Entropy:
+Decision-Trees: Entropy (for more classes)
+Entropy can be easily generalized for n > 2 classes:
+p i is the proportion of examples in S that belong to the i -th class.
+Decision-Trees: Average Entropy / Information
+Problem: Entropy only computes the quality of a single (sub-)set of examples.
+Solution: Compute the weighted average over all sets resulting from the split weighted by their size.
+When an attribute A splits the set S into subsets S i , we then compute the average entropy and compare the sum to the entropy of the original set S .
+Information Gain for Attribute A :
+The attribute that maximizes the difference is selected.
+Decision-Trees: Properties of Entropy
+Entropy is the only function that satisfies all of the following three properties:
+When node is pure, measure should be zero.
+When impurity is maximal (i.e. all classes equally likely), measure should be maximal.
+Measure should obey multistage property.
+Decision-Trees: Highly-branching attributes
+Problematic: attributes with a large number of values.
+Subsets are more likely to be pure if there is a large number of different attribute values. Information gain is biased towards choosing attributes with a large number of values. This may cause several problems:
+Overfitting: selection of an attribute that is non-optimal for prediction
+Fragmentation: data are fragmented into (too) many small sets.
+==========================================================================================
+Heading: Chapter 2 - Decision Tree - Part 2 
+ Content: Decision-Trees: Intrinsic Information of an Attribute
+Intrinsic information of a split:
+Modification of the information gain that reduces its bias towards multi-valued attributes. Takes number and size of branches into account when choosing an attribute. Corrects the information gain by taking the intrinsic information of a split into account. Definition of Gain Ratio:
+There are many alternative measures to Information Gain. Most popular altermative is Gini index.
+Impurity measure (instead of entropy):
+Average Gini index (instead of average entropy / information):
+Gini Gain could be defined analogously to information gain but typically avg. Gini index is minimized instead of maximizing Gini gain.
+Decision-Trees: Industrial-strength algorithms
+For an algorithm to be useful in a wide range of real-world applications it must:
+Permit numeric attributes
+Allow missing values
+Be robust in the presence of noise
+Be able to approximate arbitrary concept descriptions (at least in principle)
+Decision-Trees: Numeric attributes
+Standard method: binary splits
+Unlike nominal attributes, every attribute has many possible split points and computationally more demanding.
+Solution is straightforward extension:
+Evaluate info gain (or other measure) for every possible split point of attribute
+Choose 'best' split point
+Info gain for best split point is info gain for attribute
+Efficient computation needs only one scan through the values!
+Linearly scan the sorted values, each time updating the count matrix and computing the evaluation measure
+Choose the split position that has the best value
+Decision-Trees: Binary vs. vs. Multiway Splits
+Splitting (multi-way) on a nominal attribute exhausts all information in that attribute.
+Not so for binary splits on numeric attributes! Numeric attribute may be tested several times along a path in the tree.
+Disadvantage: tree is hard to read
+Remedy: pre-discretize numeric attributes, or use multi-way splits instead of binary ones.
+Decision-Trees: Missing values
+If an attribute with a missing value needs to be tested:
+split the instance into fractional instances (pieces)
+one piece for each outgoing branch of the node
+a piece going down a branch receives a weight proportional to the popularity of the branch
+weights sum to 1
+Info gain or gain ratio work with fractional instances, use sums of weights instead of counts. During classification, split the instance in the same way. Merge probability distribution using weights of fractional instances
+Decision-Trees: Overfitting and Pruning
+The smaller the complexity of a concept, the less danger that it overfits the data. Thus, learning algorithms try to keep the learned concepts simple.
+Decision-Trees: Prepruning
+Based on statistical significance test. Stop growing the tree when there is no statistically significant association between any attribute and the class at a particular node.
+Most popular test: chi-squared test. Only statistically significant attributes were allowed to be selected by information gain procedure.
+Pre-pruning may stop the growth process prematurely:
+early stopping.
+Decision-Trees: Post-Pruning
+Learn a complete and consistent decision tree that classifies all examples in the training set correctly .
+As long as the performance increases
+Try simplification operators on the tree
+Evaluate the resulting trees
+Make the replacement the results in the best estimated performance
+then return the resulting decision tree.
+Two subtree simplification operators
+Subtree replacement
+Subtree raising
+Decision-Trees: Subtree replacement
+Decision-Trees: Subtree raising
+Delete node B
+Redistribute instances of leaves 4 and 5 into C
+Decision-Trees: Estimating Error Rates
+Prune only if it does not increase the estimated error. Reduced Error Pruning:
+Use hold-out set for pruning
+Essentially the same as in rule learning
+Decision-Trees: Reduced Error Pruning
+Split training data into a growing and a pruning set
+Learn a complete and consistent decision tree that classifies all examples in the growing set correctly
+As long as the error on the pruning set does not increase, try to replace each node by a leaf, evaluate the resulting (sub-)tree on the pruning set then make the replacement the results in the maximum error reduction.
+Return the resulting decision tree.
+Decision-Trees: Decision Lists and Decision Graphs
+An ordered list of rules
+The first rule that fires makes the prediction
+can be learned with a covering approach
+Similar to decision trees, but nodes may have multiple predecessors
+Each decision tree can be converted into a rule set. A decision tree can be viewed as a set of non-overlapping rules and typically learned via divide-and-conquer algorithms (recursive partitioning) Transformation of rule sets / decision lists into trees is less trivial
+Many concepts have a shorter description as a rule set
+Low complexity decision lists are more expressive than low complexity decision trees
+Exceptions: if one or more attributes are relevant for the classification of all examples
+Decision-Trees: Regression Problems
+Regression Task: the target variable is numerical instead of discrete. Two principal approaches
+Discretize the numerical target variable
+Adapt the classification algorithm to regression data
+==========================================================================================
+Heading: Chapter 2 - Decision Tree - Part 3 
+ Content: Decision-Trees: Regression Trees
+Differences to Decision Trees (Classification Trees)
+Leaf Nodes: Predict the average value of all instances in this leaf
+Splitting criterion: Minimize the variance of the values in each subset
+Termination criteria: Lower bound on standard deviation in a node and lower bound on number of examples in a node
+Pruning criterion: Numeric error measures, e.g. Mean-Squared Error
+==========================================================================================
+Extraction completed in 18.79s. Created 3 batch chunks.
+Old: Chapter 2 - Decision Tree - Part 1, new: Decision Tree
+Finish in 0.29751014709472656 s
+Finish topic Decision Tree in 73.72085952758789 seconds
+Old: Chapter 2 - Decision Tree - Part 2, new: Decision Tree
+Finish in 0.3801155090332031 s
+Finish topic Decision Tree in 93.9845323562622 seconds
+Old: Chapter 2 - Decision Tree - Part 3, new: Decision Tree
+
+Finish in 0.23625469207763672 s
+Finish topic Decision Tree
+ in 45.58255386352539 seconds
+Graph inserted in 1.415520191192627
+ ====>  All finished and takes 387.1231348514557
