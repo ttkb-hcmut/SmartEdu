@@ -1,10 +1,10 @@
 """
 Trace log schema — SmartEdu TA Agent
-Version: 1.0
+Version: 1.1
 
 Output format:
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "session_id": "student_123",
   "chat": [
     {
@@ -34,7 +34,7 @@ class StepTrace(BaseModel):
     """Trace logical step: tool call, textual, though"""
 
     node: str = Field(description="Node name (TA_Router, RAG_Core, ...)")
-    prompt: str = Field(default="", description="Prompt đưa vào LLM tại bước này")
+    prompt: str = Field(default="", description="Prompt fed to LLM at this step")
     state: Dict[str, Any] = Field(
         default_factory=dict,
         description="Snapshot of StudentState (serialized, stringified)"
@@ -43,7 +43,11 @@ class StepTrace(BaseModel):
         default_factory=dict,
         description="tools (worker_results snapshot)"
     )
-    output: str = Field(default="", description="Raw LLM output hoặc kết quả node")
+    output: str = Field(default="", description="Raw LLM output or node result")
+    ## uri matched vs gold set in eval
+    chunks: List[Dict[str, Any]] = Field(default_factory=list, description="Retrieved chunks at this step")
+    latency_ms: float = Field(default=0.0, description="Node wall time")
+    tokens: Dict[str, int] = Field(default_factory=dict, description="LLM usage if available")
 
 
 class ChatTrace(BaseModel):
@@ -51,15 +55,17 @@ class ChatTrace(BaseModel):
 
     chat_id: str = Field(description="Timestamp YYYYMMDD_HHMMSS")
     query: str = Field(description="User query")
-    intent: str = Field(default="", description="Intent routered")
-    agent: List[StepTrace] = Field(default_factory=list, description=" Agentic steps")
-    final_output: str = Field(default="", description="Serialized response trả về user")
+    intent: str = Field(default="", description="Routed intent")
+    agent: List[StepTrace] = Field(default_factory=list, description="Agentic steps")
+    final_output: str = Field(default="", description="Serialized response returned to user")
     status: str = Field(default="SUCCESS", description="SUCCESS | FAIL")
+    retrieve_flags: Dict[str, bool] = Field(default_factory=dict, description="Ablation component flags")
+    preset: str = Field(default="", description="PLAIN | RAG | FULL | CUSTOM")
 
 
 class TraceSession(BaseModel):
     """full state of a session"""
 
-    schema_version: str = Field(default="1.0", description="Dùng để migrate khi schema thay đổi")
+    schema_version: str = Field(default="1.1", description="Migration marker on schema change")
     session_id: str = Field(default="default")
     chat: List[ChatTrace] = Field(default_factory=list)
