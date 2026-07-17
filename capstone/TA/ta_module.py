@@ -5,6 +5,7 @@ from TA.edu.smart_edu import SmartEdu
 from TA.tracing import AgentTracer
 from langchain_core.messages import HumanMessage, SystemMessage, BaseMessage, AIMessage
 from core.schema.wf_state import AgentState, TAOutput
+from core.config import retrieve_param as _default_rp
 from student.Student_Tracker import Student_Tracker
 from student.memo import Chat, ChatMessage
 from collections import OrderedDict
@@ -26,6 +27,7 @@ class TAModule:
         self.engine: SmartEdu = SmartEdu(
             agents=self.agents,
             teach_tools=self.tools_factory.get_teach_lookup_tools(),
+            retrieve_res={"graph_db": graph_db, "milvus_db": milvus_db, "embedder": embedder},
         )
 
         # tracer per session, LRU bound -> no unbounded leak
@@ -49,7 +51,8 @@ class TAModule:
                     update_callback=None,
                     language: str = "vn",
                     chat_id: str = "",
-                    emit=None):
+                    emit=None,
+                    retrieve_param=None):
 
         session = self.student_tracker.get_session(session_id)
         tracer = self._get_tracer(session_id)
@@ -108,7 +111,8 @@ class TAModule:
                 tracer=tracer,
                 callbacks=callbacks,
                 update_callback=update_callback,
-                emit=emit
+                emit=emit,
+                retrieve_param=retrieve_param
             )
         finally:
             _current_session_context.reset(_ctx_token)
@@ -125,12 +129,15 @@ class TAModule:
         intent = final_state.get("intent", "")
         ui_action = final_state.get("ui_action")
 
-        # ── Kết thúc trace, flush ra file ───────────────────────────────
+        # ── End trace, flush to file ────────────────────────────────────
+        rp = retrieve_param or _default_rp
         await tracer.end_chat(
             chat_id=chat_id,
             final_output=response,
             intent=intent,
             status=status,
+            retrieve_flags=rp.flag_set(),
+            preset=rp.preset,
         )
 
         return {"message": response, "ui_action": ui_action}
