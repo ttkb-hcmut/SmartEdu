@@ -52,7 +52,7 @@ class RecallThoughtsInput(BaseModel):
 
 # Maps agent_type label → node name prefixes stored in SessionContext
 _AGENT_TYPE_NODE_PREFIX = {
-    "rag":   ("RAG_Core", "RAG_Deep", "Roadmap_Explore"),
+    "rag":   ("Fusion", "RAG_Core", "RAG_Deep", "Roadmap_Explore"),
     "teach": ("Teach_Lecture", "Teach_RAG", "Teach_Lookup"),
 }
 
