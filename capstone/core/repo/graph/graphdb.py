@@ -155,17 +155,21 @@ class GraphDB:
         return rows[0] if rows else None
 
     def passage_search(self, emb: List[float], query_text: str = "", top_k: int = 5,
-                       db_name=None) -> List[Dict]:
+                       db_name=None, uri_prefix: Optional[str] = None) -> List[Dict]:
         ## hybrid textbook retrieval: vector ANN + fulltext, RRF merge
         db_name = db_name or self.db_name
+        ## vec index cannot pre-filter, probe wide then trim
+        probe = top_k * 4 if uri_prefix else top_k
         try:
-            vec_rows = self.run_query(db_name, CYPHER_passage_search_vec, {"k": top_k, "emb": emb})
+            vec_rows = self.run_query(db_name, CYPHER_passage_search_vec,
+                                      {"probe": probe, "k": top_k, "emb": emb, "prefix": uri_prefix})
         except ClientError:
             vec_rows = []
         ft_rows = []
         if query_text:
             try:
-                ft_rows = self.run_query(db_name, CYPHER_passage_search_ft, {"q": query_text, "k": top_k})
+                ft_rows = self.run_query(db_name, CYPHER_passage_search_ft,
+                                         {"q": query_text, "k": top_k, "prefix": uri_prefix})
             except ClientError:
                 ft_rows = []
         ## RRF, raw merge lets Lucene beat cosine

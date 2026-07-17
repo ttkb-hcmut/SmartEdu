@@ -39,13 +39,16 @@ LIMIT $k
 """
 
 CYPHER_passage_search_vec = """
-CALL db.index.vector.queryNodes('passage_vec_index', $k, $emb) YIELD node, score
+CALL db.index.vector.queryNodes('passage_vec_index', $probe, $emb) YIELD node, score
+WHERE $prefix IS NULL OR node.uri STARTS WITH $prefix
 RETURN node.id AS id, node.text AS text, node.uri AS uri,
        node.p_lo AS p_lo, node.p_hi AS p_hi, score
+LIMIT $k
 """
 
 CYPHER_passage_search_ft = """
 CALL db.index.fulltext.queryNodes('passage_text_index', $q) YIELD node, score
+WHERE $prefix IS NULL OR node.uri STARTS WITH $prefix
 RETURN node.id AS id, node.text AS text, node.uri AS uri,
        node.p_lo AS p_lo, node.p_hi AS p_hi, score
 LIMIT $k
