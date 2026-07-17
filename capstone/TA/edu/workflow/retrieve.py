@@ -2,8 +2,9 @@ import os
 import time
 import logging
 from langgraph.graph import StateGraph, END
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional
 
+from core.config import retrieve_param as _default_rp, Retrieve_param
 from core.schema.wf_state import AgentState, ConceptNode
 import TA.edu.helper.prompt as prompt_lib
 from TA.edu.helper.schema import RAGCore, RAGDeep, DeepDecision
@@ -16,38 +17,164 @@ from TA.tracing.tracer import AgentTracer
 logger = logging.getLogger(__name__)
 
 
-def build_retrieve_wf(agents):
+def _get_rp(config) -> Retrieve_param:
+    return config.get("configurable", {}).get("retrieve_param") or _default_rp
+
+
+def _tracer_ctx(config):
+    c = config.get("configurable", {})
+    return c.get("tracer"), c.get("chat_id", "")
+
+
+def _norm_chunk(r: Dict, source: str) -> Dict:
+    return {
+        "id": r.get("id"),
+        "uri": r.get("uri") or r.get("id"),
+        "text": r.get("text", ""),
+        "score": float(r.get("score", 0.0) or 0.0),
+        "source": source,
+    }
+
+
+def rrf_merge(pools: Dict[str, List[Dict]], rrf_k: int, top_k: int) -> List[Dict]:
+    scores: Dict[str, float] = {}
+    seen: Dict[str, Dict] = {}
+    for chunks in pools.values():
+        for rank, c in enumerate(chunks):
+            key = str(c["uri"])
+            scores[key] = scores.get(key, 0.0) + 1.0 / (rrf_k + rank + 1)
+            seen.setdefault(key, c)
+    merged = sorted(seen.values(), key=lambda c: scores[str(c["uri"])], reverse=True)[:top_k]
+    return [{**c, "score": scores[str(c["uri"])]} for c in merged]
+
+
+def build_retrieve_wf(agents, resources: Optional[Dict] = None):
+    """Fan-out retrieval: dispatch -> enabled components (parallel) -> fusion."""
     builder = StateGraph(AgentState)
+    resources = resources or {}
 
-    async def _rag_core(state, config):
-        return await rag_core(state, agents["RAG"], config)
+    async def dispatch(state, config):
+        rp = _get_rp(config)
+        flags = rp.flag_set()
+        tracer, chat_id = _tracer_ctx(config)
+        if tracer and chat_id:
+            tracer.log_step(chat_id=chat_id, node="Retrieve_Dispatch",
+                            tool_result={"flags": flags, "preset": rp.preset})
+        return {"_retrieve_flags": flags}
 
-    async def _deep_decision(state, config):
-        return await deep_decision(state, agents["TA"], config)
+    async def comp_rag(state, config):
+        rp = _get_rp(config)
+        tracer, chat_id = _tracer_ctx(config)
+        start = time.time()
+        chunks: List[Dict] = []
+        error = ""
+        query = state.get("user_query", state["messages"][-1].content)
+        milvus, embedder = resources.get("milvus_db"), resources.get("embedder")
+        if milvus and embedder:
+            try:
+                ## assumes ingest writes course into community field
+                expr = f'community == "{rp.benchmark_course}"' if rp.benchmark_course else None
+                hits = milvus.search(query=query, embedder=embedder, top_k=rp.per_component_k, expr=expr)
+                chunks = [_norm_chunk(h, "rag") for h in hits]
+            except Exception as e:
+                logger.warning(f"[comp_rag] search failed: {e}")
+                error = str(e)
+        else:
+            logger.warning("[comp_rag] milvus/embedder resources missing, component no-op")
+            error = "resources missing"
+        if tracer and chat_id:
+            ## error in trace -> eval can tell crash from empty
+            tracer.log_step(chat_id=chat_id, node="Comp_RAG",
+                            tool_result={"error": error} if error else {},
+                            chunks=chunks, latency_ms=(time.time() - start) * 1000)
+        return {"retrieval_pool": {"rag": chunks}}
 
-    async def _rag_deep(state, config):
-        return await rag_deep(state, agents["RAG"], config)
+    async def comp_graphrag(state, config):
+        rp = _get_rp(config)
+        tracer, chat_id = _tracer_ctx(config)
+        start = time.time()
+        chunks: List[Dict] = []
+        error = ""
+        query = state.get("user_query", state["messages"][-1].content)
+        graph_db, embedder = resources.get("graph_db"), resources.get("embedder")
+        if graph_db and embedder:
+            try:
+                emb = embedder.get_embedding(query)
+                prefix = f"{rp.benchmark_course}/" if rp.benchmark_course else None
+                hits = graph_db.passage_search(emb, query_text=query,
+                                               top_k=rp.per_component_k, uri_prefix=prefix)
+                chunks = [_norm_chunk(h, "graphrag") for h in hits]
+            except Exception as e:
+                logger.warning(f"[comp_graphrag] search failed: {e}")
+                error = str(e)
+        else:
+            logger.warning("[comp_graphrag] graph_db/embedder resources missing, component no-op")
+            error = "resources missing"
+        if tracer and chat_id:
+            tracer.log_step(chat_id=chat_id, node="Comp_GraphRAG",
+                            tool_result={"error": error} if error else {},
+                            chunks=chunks, latency_ms=(time.time() - start) * 1000)
+        return {"retrieval_pool": {"graphrag": chunks}}
 
-    builder.add_node("RAG_Core", _rag_core)
-    builder.add_node("Deep_Decision", _deep_decision)
-    builder.add_node("rag_deep", _rag_deep)
+    async def fusion(state, config):
+        rp = _get_rp(config)
+        tracer, chat_id = _tracer_ctx(config)
+        start = time.time()
+        pools = state.get("retrieval_pool") or {}
+        merged = rrf_merge(pools, rp.rrf_k, rp.top_k)
+        content = "\n".join(f"- [{c['source']}] {c['text']}" for c in merged)
 
-    builder.set_entry_point("RAG_Core")
-    builder.add_edge("RAG_Core", "Deep_Decision")
-
-    builder.add_conditional_edges(
-        "Deep_Decision",
-        lambda state: state.get("_deep_route", "skip"),
-        {
-            "deep": "rag_deep",
-            "skip": END
+        status = "SUCCESS" if merged else ("PLAIN" if not any(rp.flag_set().values()) else "FAIL")
+        rag_result = {
+            "thought": f"fusion over {list(pools.keys())} -> {len(merged)} chunks",
+            "entity_ids": [c["id"] for c in merged if c.get("id")],
+            "content": content,
+            "status": status,
         }
+
+        session_context = config.get("configurable", {}).get("session_context")
+        if session_context and chat_id and content:
+            session_context.store_tool_result(
+                chat_id=chat_id, tool_name="retrieval_fusion",
+                args={"query": state.get("user_query", "")}, output=content, node="Fusion",
+            )
+
+        if tracer and chat_id:
+            tracer.log_step(chat_id=chat_id, node="Fusion",
+                            tool_result={"sources": rp.flag_set(), "status": status},
+                            chunks=merged, latency_ms=(time.time() - start) * 1000)
+
+        current = state.get("worker_results", {})
+        return {"worker_results": {**current, "RAG": rag_result}, "status_flag": status}
+
+    def route_components(state):
+        flags = state.get("_retrieve_flags") or {}
+        targets = []
+        if flags.get("rag"):
+            targets.append("Comp_RAG")
+        if flags.get("graphrag"):
+            targets.append("Comp_GraphRAG")
+        return targets or ["Fusion"]
+
+    builder.add_node("Retrieve_Dispatch", dispatch)
+    builder.add_node("Comp_RAG", comp_rag)
+    builder.add_node("Comp_GraphRAG", comp_graphrag)
+    builder.add_node("Fusion", fusion)
+
+    builder.set_entry_point("Retrieve_Dispatch")
+    builder.add_conditional_edges(
+        "Retrieve_Dispatch",
+        route_components,
+        {"Comp_RAG": "Comp_RAG", "Comp_GraphRAG": "Comp_GraphRAG", "Fusion": "Fusion"},
     )
-    builder.add_edge("rag_deep", END)
+    builder.add_edge("Comp_RAG", "Fusion")
+    builder.add_edge("Comp_GraphRAG", "Fusion")
+    builder.add_edge("Fusion", END)
 
     return builder.compile()
 
 
+## unwired legacy chain below (deep_decision/rag_deep), kept for rollback; bridge proposals dormant
 async def deep_decision(state: AgentState, ta_agent, config):
     """ Classify DEEP vs SKIP, no tools, direct structured output"""
     rag_data = state.get("worker_results", {}).get("RAG", {})

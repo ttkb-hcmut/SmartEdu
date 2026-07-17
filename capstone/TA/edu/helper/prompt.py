@@ -43,16 +43,28 @@ You received retrieval results from the RAG agent. Synthesize them into a pedago
 (Style — tone, trilingual terms, Markdown, closing next step — is set by your system prompt.)
 
 INPUT:
-- worker_results["RAG"]: entity_ids, content, optional bridge_concepts
+- worker_results["RAG"]: entity_ids, content, status
 - student_state: current position and mastery
 
 TASK:
 1. If RAG found content (status=SUCCESS):
-   - Present the factual answer clearly.
-   - If bridge_concepts exist: name the prerequisite gaps and explain them.
-   - If is_deep=true: warn about the knowledge distance and suggest a learning path.
+   - Present the factual answer clearly, grounded in the retrieved content.
 2. If RAG found nothing (status=FAIL or content is empty):
    - Tell the student the topic was not found and invite them to rephrase. Do NOT fabricate.
+
+summary = one-sentence gist; message = the full Markdown answer.
+"""
+
+## PLAIN ablation floor: no retrieval context, must not mention it
+_RETRIEVE_PLAIN_PROMPT = """
+{language_instruction}
+
+Answer the student's question directly from your own knowledge, as a pedagogical answer.
+(Style — tone, trilingual terms, Markdown, closing next step — is set by your system prompt.)
+
+TASK:
+1. Present the factual answer clearly and honestly.
+2. If you are not sure, say so plainly. Do NOT fabricate.
 
 summary = one-sentence gist; message = the full Markdown answer.
 """

@@ -8,6 +8,7 @@ from TA.edu.helper.few_shot import get_language_instruction
 from TA.edu.helper.utils import safe_parse_structured, extract_llm_raw_text, extract_agent_result
 from TA.edu.helper.context import extract_ta_context
 from TA.tools.tool_config import PREREQUISITE_WEIGHT
+from core.repo.graph.cypher.tools.course import CYPHER_get_recommendations
 import os
 from TA.tracing.tracer import AgentTracer
 
@@ -552,18 +553,7 @@ def _get_recommendations(graphdb, current_node) -> str:
     if not current_node:
         return "No current position."
 
-    cypher = """
-    MATCH (n:Entity {name: $name})-[r]->(m:Entity)
-    WHERE type(r) <> 'CONTENT' AND m.rrole IS NULL
-    OPTIONAL MATCH (m)-[r2]->(other:Entity)
-    WHERE type(r2) <> 'CONTENT' AND other.rrole IS NULL
-    WITH m, sum(CASE WHEN type(r2) = 'PREREQUISITE' THEN $prereq_weight ELSE 1.0 END) AS out_degree
-    ORDER BY out_degree DESC
-    LIMIT 10
-    RETURN m.name AS name, m.content AS content,
-           m.typeNode AS type, out_degree
-    """
-    results = graphdb.run_query(graphdb.db_name, cypher, {"name": current_node.name, "prereq_weight": PREREQUISITE_WEIGHT})
+    results = graphdb.run_query(graphdb.db_name, CYPHER_get_recommendations, {"name": current_node.name, "prereq_weight": PREREQUISITE_WEIGHT})
 
     if not results:
         return "No neighboring nodes found."

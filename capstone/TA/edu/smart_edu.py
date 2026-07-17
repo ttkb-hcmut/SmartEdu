@@ -12,7 +12,7 @@ from TA.edu.helper.few_shot import format_few_shot, get_language_instruction
 from TA.edu.helper.schema import RouterDecision
 from core.schema.wf_state import AgentState, ConceptNode, TAOutput
 
-from TA.edu.workflow.retrieve import build_retrieve_wf
+from TA.edu.workflow.retrieve import build_retrieve_wf, _get_rp
 from TA.edu.workflow.roadmap import build_roadmap_wf
 from TA.edu.workflow.teach import build_teach_wf
 
@@ -61,9 +61,10 @@ def _tracer_ctx(config: RunnableConfig):
 
 
 class SmartEdu:
-    def __init__(self, agents, teach_tools: Dict = None):
+    def __init__(self, agents, teach_tools: Dict = None, retrieve_res: Dict = None):
         self.agents = agents
         self.teach_tools = teach_tools or {}
+        self.retrieve_res = retrieve_res or {}
         self.app = self._build_graph()
 
     def _build_graph(self):
@@ -71,7 +72,7 @@ class SmartEdu:
 
         builder.add_node("TA_Router", self.ta_router_node)
 
-        builder.add_node("WF_Retrieve", build_retrieve_wf(agents=self.agents))
+        builder.add_node("WF_Retrieve", build_retrieve_wf(agents=self.agents, resources=self.retrieve_res))
         builder.add_node("WF_Roadmap", build_roadmap_wf(agents=self.agents))
         builder.add_node("WF_Teach", build_teach_wf(agents=self.agents))
 
@@ -181,10 +182,18 @@ class SmartEdu:
             tracker.apply_proposal(sid, proposal)
 
         results = state.get("worker_results", {})
-        refine_prompt = prompt_lib.RETRIEVE_REFINE_PROMPT.format(
-            language_instruction=language_instruction
-        )
-        prompt = f"{refine_prompt}\nData: {results}"
+        rp = _get_rp(config)
+        if rp.preset == "PLAIN":
+            ## PLAIN floor: prompt must not point at retrieval data
+            refine_prompt = prompt_lib.RETRIEVE_PLAIN_PROMPT.format(
+                language_instruction=language_instruction
+            )
+            prompt = f"{refine_prompt}\nQuestion: {state.get('user_query', '')}"
+        else:
+            refine_prompt = prompt_lib.RETRIEVE_REFINE_PROMPT.format(
+                language_instruction=language_instruction
+            )
+            prompt = f"{refine_prompt}\nData: {results}"
 
         ## -- Inject prior TA messages for coherence
         ta_context = extract_ta_context(state)
@@ -556,7 +565,8 @@ class SmartEdu:
         chat_id: str = "",
         callbacks: Optional[List[Any]] = None,
         update_callback=None,
-        emit=None
+        emit=None,
+        retrieve_param=None,
     ):
 
         log_f = f"wf/wf_v0_{datetime.now().strftime('%H%M%S')}_{datetime.now().strftime('%d%m')}.json"
@@ -575,6 +585,7 @@ class SmartEdu:
                 "teach_tools": self.teach_tools,
                 "log_filename": log_f,
                 "emit": emit,  ## finish nodes pull this to stream tokens
+                "retrieve_param": retrieve_param,
             },
             "callbacks": callbacks or [],
             "recursion_limit": 50,
