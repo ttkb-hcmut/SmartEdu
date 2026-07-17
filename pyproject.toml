@@ -42,6 +42,8 @@ dependencies = [
     "python-multipart>=0.0.28",
     "json-repair>=0.44.1",
     "uuid-v7>=1.0.0",
+    "pymysql>=1.2.0",
+    "pytest>=9.0.3",
 ]
 [[tool.uv.index]]
 name = "pytorch-cu124"
@@ -56,5 +58,6 @@ en-core-web-sm = { url = "https://github.com/explosion/spacy-models/releases/dow
 
 [dependency-groups]
 dev = [
+    "deepeval>=4.0.7",
     "pytest>=9.0.3",
 ]
