@@ -43,3 +43,8 @@ CYPHER_get_mastery = """
 MATCH (s:Student {id: $sid})-[r:MASTERY]->(n:Entity {name: $name})
 RETURN coalesce(r.level, 0) AS mastery
 """
+
+CYPHER_delete_student = """
+MATCH (s:Student {id: $sid})
+DETACH DELETE s
+"""

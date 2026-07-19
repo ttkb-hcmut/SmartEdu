@@ -10,7 +10,8 @@ MERGE (p)-[:CONTAINS]->(n)
 CYPHER_write_passages = """
 UNWIND $passages AS p
 MERGE (n:Passage {id: p.id})
-SET n.p_lo=p.p_num[0], n.p_hi=p.p_num[1], n.text=p.text, n.emb=p.emb, n.uri=$uri
+SET n.p_lo=p.p_num[0], n.p_hi=p.p_num[1], n.text=p.text, n.emb=p.emb,
+    n.uri=coalesce(p.uri, $uri)
 WITH n, p
 MATCH (s:Section {id: p.section_id})
 MERGE (s)-[:HAS_PASSAGE]->(n)
@@ -32,4 +33,10 @@ OPTIONAL MATCH (parent:Section)-[:CONTAINS]->(s)
 RETURN s.id AS id, s.title AS title, s.level AS level,
        s.p_lo AS p_lo, s.p_hi AS p_hi, s.order AS order, parent.id AS parent_id
 ORDER BY s.level, s.order
+"""
+
+CYPHER_list_passage_uris = """
+MATCH (p:Passage)
+WHERE p.uri STARTS WITH $prefix
+RETURN p.uri AS uri
 """

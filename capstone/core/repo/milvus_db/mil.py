@@ -1,5 +1,6 @@
 import time
 import logging
+import json
 from pymilvus import connections, Collection, FieldSchema, CollectionSchema, DataType, utility
 from typing import List, Dict
 from core.config import Mil_conf
@@ -66,7 +67,7 @@ class MilvusDB:
         collection.load()
         return collection
 
-    def insert_data(self, nodes: List[Dict], embedder):
+    def insert_data(self, nodes: List[Dict], embedder, community: str = ""):
         insert_data = []
         for node in nodes:
             rrole = node.get("rrole")
@@ -82,7 +83,7 @@ class MilvusDB:
             text_to_embed = f"{name}: {content}".split("\n**ARTICLE:")[0]
             
             topic = str(node.get("topic", ""))
-            community = str(node.get("community", ""))
+            row_community = community or str(node.get("community", ""))
             
             vector = embedder.get_embedding(text_to_embed)
             
@@ -92,7 +93,7 @@ class MilvusDB:
                 "name": name,
                 "rrole": str(rrole),
                 "topic": topic,
-                "community": community,
+                "community": row_community,
                 "embedding": vector
             })
 
@@ -100,9 +101,32 @@ class MilvusDB:
             self.collection.insert(insert_data)
             self.collection.flush()
 
-    def search(self, query: str, embedder, top_k: int = 5, expr: str = None) -> List[Dict]:
+    def search(
+        self,
+        query: str,
+        embedder,
+        top_k: int = 5,
+        expr: str = None,
+        course_scope: str = None,
+    ) -> List[Dict]:
+        if expr and course_scope:
+            raise ValueError("expr and course_scope are mutually exclusive")
+        if course_scope:
+            expr = self._course_expr(course_scope)
         query_vector = embedder.get_embedding(query)
         return self.search_vec(query_vector, top_k=top_k, expr=expr)
+
+    @staticmethod
+    def _course_expr(course_scope: str) -> str:
+        return f"community == {json.dumps(course_scope, ensure_ascii=False)}"
+
+    def list_ids(self, course_scope: str, limit: int = 10000) -> set[str]:
+        rows = self.collection.query(
+            expr=self._course_expr(course_scope),
+            output_fields=["id"],
+            limit=limit,
+        )
+        return {row["id"] for row in rows}
 
     def search_vec(self, vector: List[float], top_k: int = 5, expr: str = None) -> List[Dict]:
         ## search by precomputed embedding — segments carry their own vector, no re-embed

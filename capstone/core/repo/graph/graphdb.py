@@ -12,12 +12,13 @@ from core.repo.graph.cypher.kg_const.crud import (
 )
 from core.repo.graph.cypher.kg_const.textbook import (
     CYPHER_write_sections, CYPHER_write_passages,
-    CYPHER_get_toc_scoped, CYPHER_get_toc,
+    CYPHER_get_toc_scoped, CYPHER_get_toc, CYPHER_list_passage_uris,
 )
 from core.repo.graph.cypher.kg_const.bind import (
     CYPHER_update_links, CYPHER_write_anchors, CYPHER_write_segment_anchors,
     CYPHER_get_concept_page, CYPHER_get_concept_anchors,
-    CYPHER_anchor_search, CYPHER_passage_search_vec,
+    CYPHER_anchor_search, CYPHER_anchor_search_scoped,
+    CYPHER_passage_search_vec, CYPHER_passage_search_vec_scoped,
     CYPHER_passage_search_ft, CYPHER_get_passage_context,
 )
 from core.repo.graph.cypher.kg_const.video import (
@@ -26,6 +27,7 @@ from core.repo.graph.cypher.kg_const.video import (
 from core.repo.graph.cypher.kg_const.learn import (
     CYPHER_get_learning_graph, CYPHER_update_learn_mastery,
     CYPHER_update_learn_transition, CYPHER_get_mastery,
+    CYPHER_delete_student,
 )
 
 
@@ -163,11 +165,12 @@ class GraphDB:
                       uri_prefix: Optional[str] = None) -> List[Dict]:
         ## top-k by vec (anchor target lookup)
         db_name = db_name or self.db_name
-        ## vec index cannot pre-filter, probe wide then trim
-        probe = top_k * 4 if uri_prefix else top_k
+        query = CYPHER_anchor_search_scoped if uri_prefix else CYPHER_anchor_search
+        params = {"k": top_k, "emb": emb, "prefix": uri_prefix}
+        if not uri_prefix:
+            params["probe"] = top_k
         try:
-            return self.run_query(db_name, CYPHER_anchor_search, {"probe": probe, "k": top_k,
-                                               "emb": emb, "prefix": uri_prefix})
+            return self.run_query(db_name, query, params)
         except ClientError:
             ## index absent on slide-only db
             return []
@@ -188,20 +191,18 @@ class GraphDB:
                        db_name=None, uri_prefix: Optional[str] = None) -> List[Dict]:
         ## hybrid textbook retrieval: vector ANN + fulltext, RRF merge
         db_name = db_name or self.db_name
-        ## vec index cannot pre-filter, probe wide then trim
-        probe = top_k * 4 if uri_prefix else top_k
-        try:
-            vec_rows = self.run_query(db_name, CYPHER_passage_search_vec,
-                                      {"probe": probe, "k": top_k, "emb": emb, "prefix": uri_prefix})
-        except ClientError:
-            vec_rows = []
+        vec_query = CYPHER_passage_search_vec_scoped if uri_prefix else CYPHER_passage_search_vec
+        vec_params = {"k": top_k, "emb": emb, "prefix": uri_prefix}
+        if not uri_prefix:
+            vec_params["probe"] = top_k
+        vec_rows = self.run_query(db_name, vec_query, vec_params)
         ft_rows = []
         if query_text:
-            try:
-                ft_rows = self.run_query(db_name, CYPHER_passage_search_ft,
-                                         {"q": query_text, "k": top_k, "prefix": uri_prefix})
-            except ClientError:
-                ft_rows = []
+            ft_rows = self.run_query(
+                db_name,
+                CYPHER_passage_search_ft,
+                {"q": query_text, "k": top_k, "prefix": uri_prefix},
+            )
         ## RRF, raw merge lets Lucene beat cosine
         merged: Dict[str, Dict] = {}
         for rows in (vec_rows, ft_rows):
@@ -237,6 +238,15 @@ class GraphDB:
             params = {}
         return self.run_query(db_name, q, params)
 
+    def list_passage_uris(self, uri_prefix: str, db_name=None) -> set[str]:
+        db_name = db_name or self.db_name
+        rows = self.run_query(
+            db_name,
+            CYPHER_list_passage_uris,
+            {"prefix": uri_prefix},
+        )
+        return {row["uri"] for row in rows}
+
     def query(self, q = None, param = {}):
         if q == None or len(q) <=3:
             return
@@ -265,3 +275,6 @@ class GraphDB:
         with self.driver.session(database=self.db_name) as session:
             result = session.run(CYPHER_get_mastery, sid=student_id, name=node_name).single()
             return result["mastery"] if result else 0
+
+    def delete_student(self, student_id: str) -> None:
+        self.query(CYPHER_delete_student, {"sid": student_id})
