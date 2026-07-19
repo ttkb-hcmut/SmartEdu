@@ -1,5 +1,6 @@
-from typing import List, Dict, Callable
 from collections import OrderedDict
+from typing import Callable, Dict, List
+
 import numpy as np
 
 from core.config import Ingest_param, MergeStrat
@@ -16,7 +17,7 @@ def _cuts_threshold(sims: List[float], cfg: Ingest_param) -> List[int]:
 
 
 def _smooth(sims: List[float], w: int) -> List[float]:
-    if w <= 1 or len(sims) < 3 * w:        # too short to smooth -> raw signal
+    if w <= 1 or len(sims) < 3 * w:
         return list(sims)
     r, n, out = w // 2, len(sims), []
     for i in range(n):
@@ -27,7 +28,7 @@ def _smooth(sims: List[float], w: int) -> List[float]:
 
 def _depth(s: List[float], i: int, n: int) -> float:
     li = i
-    while li > 0 and s[li - 1] >= s[li]:   # walk uphill to left peak
+    while li > 0 and s[li - 1] >= s[li]:
         li -= 1
     ri = i
     while ri < n - 1 and s[ri + 1] >= s[ri]:
@@ -58,7 +59,7 @@ def _split(items: List[dict], cuts: List[int]) -> List[List[dict]]:
 
 def group_passages(items: List[dict], embed: Callable[[str], List[float]],
                    cfg: Ingest_param = None) -> List[Dict]:
-    ## merge adjacent docling items into :Passage units, capped at section boundary
+    ## merge adjacent items, never cross section
     cfg = cfg or Ingest_param()
     embs = {it["id"]: embed(it["text"]) for it in items}
 
@@ -67,7 +68,7 @@ def group_passages(items: List[dict], embed: Callable[[str], List[float]],
         by_sec.setdefault(it["section_id"], []).append(it)
 
     passages, pc = [], 0
-    for sec_id, sec_items in by_sec.items():          # never crosses a section
+    for sec_id, sec_items in by_sec.items():
         if not cfg.semantic_merge:
             groups = [[it] for it in sec_items]
         else:
@@ -79,7 +80,7 @@ def group_passages(items: List[dict], embed: Callable[[str], List[float]],
 
         for g in groups:
             text = "\n".join(it["text"] for it in g)
-            ## mean of members blurs, re-embed merged text (512-token truncation)
+            ## mean blur risk, re-embed merged text
             emb = embs[g[0]["id"]] if len(g) == 1 else embed(text)
             passages.append({
                 "id": f"{sec_id}_p{pc}",
