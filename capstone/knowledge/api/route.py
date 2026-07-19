@@ -1,6 +1,8 @@
+import json
+import os
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Depends, Response
 from pydantic import BaseModel, field_validator
-from typing import List
+from typing import List, Optional
 
 from core.dependencies import get_ingestion_service
 from knowledge.service.pdf_loader import topic_pdf_bytes
@@ -16,10 +18,14 @@ def _canon_course(name: str) -> str:
     return " ".join(name.split()).title()
 
 
+VIDEO_EXTS = (".mp4", ".mkv", ".webm", ".mp3", ".m4a", ".wav")
+
+
 class CourseIngestionRequest(BaseModel):
     course_name: str = "Machine Learning"
     slide_files: List[str]                         # finished files
     textbook_files: List[str]
+    video_files: List[str] = []
     reset: bool = True
 
     _canon = field_validator("course_name")(_canon_course)
@@ -51,8 +57,8 @@ async def get_upload_urls(
 ):
     targets = []
     for fn in req.file_names:
-        if not fn.lower().endswith(".pdf"):
-            raise HTTPException(status_code=400, detail=f"Only PDF allowed: {fn}")
+        if not fn.lower().endswith((".pdf",) + VIDEO_EXTS):
+            raise HTTPException(status_code=400, detail=f"Unsupported file type: {fn}")
         url = service.minio_repo.presigned_put_url(course_name=req.course_name, file_name=fn)
         targets.append(PresignedTarget(file_name=fn, url=url))
     return UploadUrlResponse(targets=targets)
@@ -68,13 +74,37 @@ async def ingest_course(
     _: User = Depends(require_admin),
 ):
     # confirm files are in storage, then ingest in background and answer fast
-    service.validate_files(req.course_name, req.slide_files + req.textbook_files)
+    service.validate_files(
+        req.course_name, req.slide_files + req.textbook_files, req.video_files
+    )
 
-    background_tasks.add_task(service.run, req)
+    flow_run_id = None
+    ## inline = parity escape hatch, prefect = worker path (ADR-0005)
+    if os.getenv("INGEST_ORCHESTRATOR", "prefect") == "prefect":
+        import inspect
+        from prefect.deployments import run_deployment
+        ## run_deployment is sync/async-dual — await only when it hands back a coroutine
+        fr = run_deployment(
+            name="course-flow/course-ingest",
+            parameters={
+                "course_name": req.course_name,
+                "slide_files": req.slide_files,
+                "textbook_files": req.textbook_files,
+                "video_files": req.video_files,
+                "reset": req.reset,
+            },
+            timeout=0,
+        )
+        if inspect.isawaitable(fr):
+            fr = await fr
+        flow_run_id = str(fr.id)
+    else:
+        background_tasks.add_task(service.run, req)
 
     return {
         "status": "accepted",
-        "message": f"Course {req.course_name} ingestion started in background",
+        "message": f"Course {req.course_name} ingestion started",
+        "flow_run_id": flow_run_id,
         "details": {
             "slides_count": len(req.slide_files),
             "textbooks_count": len(req.textbook_files),
@@ -84,10 +114,19 @@ async def ingest_course(
 
 @router.get("/ingest-report")
 async def ingest_report(
+    course: Optional[str] = None,
+    run_id: Optional[str] = None,
     service=Depends(get_ingestion_service),
     _: User = Depends(require_admin),
 ):
-    # outcome of the last background ingestion run
+    ## worker-run reports live in minio, in-memory only covers inline mode
+    if course:
+        obj = f"{_canon_course(course)}/_reports/{run_id or 'latest'}.json"
+        try:
+            data = service.minio_repo.get_object_bytes(obj)
+            return json.loads(data)
+        except Exception:
+            raise HTTPException(status_code=404, detail=f"No report found for {course}.")
     return service.last_report or {"status": "no ingestion run yet"}
 
 

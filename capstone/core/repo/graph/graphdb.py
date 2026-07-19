@@ -15,10 +15,13 @@ from core.repo.graph.cypher.kg_const.textbook import (
     CYPHER_get_toc_scoped, CYPHER_get_toc,
 )
 from core.repo.graph.cypher.kg_const.bind import (
-    CYPHER_update_links, CYPHER_write_anchors,
+    CYPHER_update_links, CYPHER_write_anchors, CYPHER_write_segment_anchors,
     CYPHER_get_concept_page, CYPHER_get_concept_anchors,
     CYPHER_anchor_search, CYPHER_passage_search_vec,
     CYPHER_passage_search_ft, CYPHER_get_passage_context,
+)
+from core.repo.graph.cypher.kg_const.video import (
+    CYPHER_write_video, CYPHER_write_segments,
 )
 from core.repo.graph.cypher.kg_const.learn import (
     CYPHER_get_learning_graph, CYPHER_update_learn_mastery,
@@ -128,6 +131,33 @@ class GraphDB:
     @staticmethod
     def _write_passages(tx, passages: List[Dict], book_uri: str):
         tx.run(CYPHER_write_passages, passages=passages, uri=book_uri)
+
+    def create_video_indexes(self, db_name: str, dim: int = 768):
+        ## fulltext + vector over :Segment, mirror of passage indexes
+        ft = "CREATE FULLTEXT INDEX segment_text_index IF NOT EXISTS FOR (n:Segment) ON EACH [n.text]"
+        vec = (f"CREATE VECTOR INDEX segment_vec_index IF NOT EXISTS FOR (n:Segment) ON n.emb "
+               f"OPTIONS {{indexConfig: {{`vector.dimensions`: {dim}, `vector.similarity_function`: 'cosine'}}}}")
+        with self.driver.session(database=db_name) as session:
+            session.run(ft)
+            session.run(vec)
+
+    def write_video(self, video: Dict, segments: List[Dict], db_name=None, dim: int = 768):
+        ## :Video root + :Segment children, anchor-only substrate (ADR-0006)
+        db_name = db_name or self.db_name
+        self.create_video_indexes(db_name, dim)
+        with self.driver.session(database=db_name) as session:
+            session.execute_write(self._write_video, video, segments)
+
+    @staticmethod
+    def _write_video(tx, video: Dict, segments: List[Dict]):
+        tx.run(CYPHER_write_video, video=video)
+        tx.run(CYPHER_write_segments, segments=segments, uri=video["uri"], video_id=video["id"])
+
+    def write_segment_anchors(self, links: List[Dict], db_name=None):
+        ## batch concept->segment anchors, mirror of write_anchors
+        db_name = db_name or self.db_name
+        with self.driver.session(database=db_name) as session:
+            session.run(CYPHER_write_segment_anchors, links=links)
 
     def anchor_search(self, emb: List[float], top_k: int = 5, db_name=None,
                       uri_prefix: Optional[str] = None) -> List[Dict]:

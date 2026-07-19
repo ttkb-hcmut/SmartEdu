@@ -60,9 +60,13 @@ class Ingest_param:
 
     anchor_index: AnchorIdx = AnchorIdx.HYBRID
     anchor_top_k: int = 5
-    anchor_score_min: float = 0.55          
+    anchor_score_min: float = 0.55
     anchor_llm_rerank: bool = False         # off: anchoring pure retrieval
     extract_textbook_entities: bool = False  # off: concepts born from teaching, book = pure anchor
+
+    # video: anchor-only substrate (ADR-0006), novelty stored not decided
+    segment_top_k: int = 5
+    anchor_gradient_g: float = 1.5          ## cliff ratio, keep successor while s_i > s_prev/g
 
 ### Infratructure Layer
 @dataclass
@@ -78,7 +82,13 @@ class Emb_conf:
     model_name: str = os.getenv("EMBEDDING_MODEL", 'allenai/scibert_scivocab_uncased')
     dim: int = int(os.getenv("DIM", 768))
     retries = 5
-    max_token = 512 
+    max_token = 512
+
+@dataclass
+class ASR_conf:
+    model_name: str = os.getenv("WHISPER_MODEL", "large-v3-turbo")
+    compute_type: str = os.getenv("WHISPER_COMPUTE", "int8")   ## ~1.5GB VRAM on cuda
+    device: str = os.getenv("WHISPER_DEVICE", "auto")
     
 @dataclass
 class Neo:

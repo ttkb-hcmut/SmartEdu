@@ -1,50 +1,31 @@
 # Utis
 from typing import List, Dict, Optional
-import os
 import uuid
 import logging
-import tempfile
 from time import time
-import re
 import asyncio
-
-try:
-    import fitz  # PyMuPDF — slice pdfs into small page pieces
-except ImportError:
-    fitz = None
 
 # Logic
 from core.schema.graph.graph import KG_Instance
-from core.util.file_extractor import extract_pdf, extract_tree
 from core.repo.graph.insert import serialize_kg_to_dict
-from core.schema.graph.type import Ref
+from core.ingest.stages.fetch import fetch_raw_pdf
+from core.ingest.stages.parse import parse_slide_pdf, parse_textbook_tree, parse_textbook_chunks
+from core.ingest.stages.publish import publish_slide_chunks
+from core.ingest.stages.segment import group_passages
+from core.ingest.stages.anchor import anchor_concepts
+from core.ingest.stages.persist import persist_slide_kg
 from core.repo.storage.minio_repo import make_topic_name
 from knowledge.engine.extract import GraphExtractionService
 from knowledge.engine.graph.graph_constructor import KG_Handler
-from knowledge.engine.graph.helper.semantic_merge import group_passages
 
 #shared
-from core.dependencies import * 
+from fastapi import HTTPException
+from core.repo.graph.graphdb import GraphDB
+from core.repo.milvus_db.mil import MilvusDB
+from core.repo.storage.minio_repo import MinioDB
+from core.model.embedding import Embedder
 from core.config import *
 
-
-def clean_content(text: str) -> str:
-    pattern = r'==== PAGE \d+ ====\s*\n?'
-    return re.sub(pattern, '', text).strip()
-
-
-def clean_slide_name(name: str) -> str:
-    if not name: return ""
-        
-    name = re.sub(r'\.[a-z0-9]+$', '', name, flags=re.IGNORECASE)
-    
-
-    name = re.sub(r'^(chapter|chap|ch|slide|lecture|bài|chương)\s*\d*\s*[:\-\.]?\s*', '', name, flags=re.IGNORECASE)
-    
-    name = re.sub(r'[^\w\s]', ' ', name).lower().strip()
-    name = re.sub(r'\s+', ' ', name) 
-    
-    return name
 
 class CourseIngestionService:
     def __init__(self, llm, graph_db, milvus_db, minio_repo, embedder):
@@ -60,84 +41,28 @@ class CourseIngestionService:
 
         self.config = Ingest_param()
 
-    @staticmethod
-    def _slice_pages_pdf(doc, start_page: int, end_page: int) -> bytes:
-        # cut pages [start..end] (1-indexed, inclusive) into a new small pdf
-        sub = fitz.open()
-        sub.insert_pdf(doc, from_page=start_page - 1, to_page=end_page - 1)
-        data = sub.tobytes()
-        sub.close()
-        return data
-
     async def _process_slide(self, name: str, course_name, num_workers: int = 3):
-        # pull the raw pdf from minio staging (browser dropped it via presigned url)
-        raw_obj = self.minio_repo.raw_object_name(course_name, name)
-        file_bytes = await asyncio.to_thread(self.minio_repo.get_object_bytes, raw_obj)
+        file_bytes = await asyncio.to_thread(fetch_raw_pdf, self.minio_repo, course_name, name)
 
-        # docling wants a path: write bytes to temp, extract, then remove
-        tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
-        tmp.write(file_bytes)
-        tmp.close()
-        try:
-            async with self.ocr_sem:
-                chunks: List[Dict[str, str]] = await asyncio.to_thread(
-                    extract_pdf, tmp.name, pages_per_batch=self.config.PAGE_PER_SLIDE,
-                    step=self.config.PAGE_PER_SLIDE - self.config.slide_overlap
-                )
-        finally:
-            try:
-                os.unlink(tmp.name)
-            except OSError:
-                pass
+        async with self.ocr_sem:
+            chunks: List[Dict[str, str]] = await asyncio.to_thread(
+                parse_slide_pdf, file_bytes, self.config
+            )
 
         if not chunks:
             return None
 
-        if fitz is None:
-            raise RuntimeError("PyMuPDF (fitz) not installed — cannot split page pdfs.")
-        # open the big pdf once so each chunk's page range can be sliced out
-        big_doc = fitz.open(stream=file_bytes, filetype="pdf")
-
-        q = asyncio.Queue(maxsize=10)
-        hard_refs = []
-        texts = []
-
-        for i, c in enumerate(chunks):
-            content = c.get('content', None)
-            if not content: continue
-            content: str = clean_content(text=content)
-
-            heading = c.get('heading') or name
-            texts.append((heading, content))
-
-            # one unique topic folder per chunk
-            chunk_id = c.get("chunk_id")
-            topic = make_topic_name(file_name=name, heading=c.get("heading"), chunk_id=chunk_id)
-
-            # page_num is a (start, end) tuple from the extractor; slice that range
-            start_p, end_p = c["page_num"]
-            page_pdf = self._slice_pages_pdf(big_doc, start_p, end_p)
-            self.minio_repo.upload_topic_pdf(topic=topic, course_name=course_name, file_data=page_pdf)
-
-            uri = self.minio_repo.upload_chunk(
-                chunk_id=chunk_id, content=c.get("content"), topic=topic, course_name=course_name
-            )
-
-            ref = Ref(
-                db="minio",
-                id=uri,
-                name=clean_slide_name(heading),
-                summary=f"{content[:100]} ......".replace("\n", " "),
-                p_num=c["page_num"]
-            )
-            hard_refs.append(ref)
-            await q.put((i, heading, content, ref))
-
-        big_doc.close()
+        texts, _, items = publish_slide_chunks(
+            self.minio_repo, file_bytes, chunks, course_name, name
+        )
 
         if not texts:
             return None
 
+        ## queue built after publish: unbounded, removes latent >10-chunk deadlock
+        q = asyncio.Queue()
+        for item in items:
+            await q.put(item)
         for _ in range(num_workers):
             await q.put(None)
 
@@ -152,22 +77,10 @@ class CourseIngestionService:
         nodes, edges, clusters = serialize_kg_to_dict(kg)
         return nodes, edges, clusters
 
-
-
     async def _process_textbook(self, name: str, course_name):
         ## textbook = primitive anchor: build :Section tree + :Passage units, no LLM
-        raw_obj = self.minio_repo.raw_object_name(course_name, name)
-        file_bytes = await asyncio.to_thread(self.minio_repo.get_object_bytes, raw_obj)
-        tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
-        tmp.write(file_bytes)
-        tmp.close()
-        try:
-            tree = await asyncio.to_thread(extract_tree, tmp.name)
-        finally:
-            try:
-                os.unlink(tmp.name)
-            except OSError:
-                pass
+        file_bytes = await asyncio.to_thread(fetch_raw_pdf, self.minio_repo, course_name, name)
+        tree = await asyncio.to_thread(parse_textbook_tree, file_bytes)
 
         if not tree.get("items"):
             return {"file": name, "sections": 0, "passages": 0}
@@ -175,6 +88,7 @@ class CourseIngestionService:
         passages = await asyncio.to_thread(
             group_passages, tree["items"], self.embedder.get_embedding, self.config
         )
+        raw_obj = self.minio_repo.raw_object_name(course_name, name)
         await asyncio.to_thread(
             self.graph_db.write_textbook_tree,
             tree["sections"], passages, raw_obj, self.db_name, Emb_conf().dim
@@ -182,49 +96,14 @@ class CourseIngestionService:
         return {"file": name, "sections": len(tree["sections"]), "passages": len(passages)}
 
     async def _anchor_concepts(self, concept_nodes: List[Dict], course_name: str) -> int:
-        ## linked-after: concept -> passage by vector ANN, scoped to own course
-        seen, names, texts = set(), [], []
-        for c in concept_nodes:
-            name = c.get("name")
-            if not name or name.lower() in seen:
-                continue
-            seen.add(name.lower())
-            names.append(name)
-            texts.append(f"{name}. {c.get('content', '')}".strip())
-        if not names:
-            return 0
-
-        embs = await asyncio.to_thread(self.embedder.get_embeddings, texts)
-        links = []
-        for name, emb in zip(names, embs):
-            hits = await asyncio.to_thread(
-                self.graph_db.anchor_search, emb, self.config.anchor_top_k,
-                self.db_name, f"{course_name}/"
-            )
-            for h in hits:
-                if h.get("score", 0) >= self.config.anchor_score_min:
-                    links.append({"entity_name": name, "passage_id": h["passage_id"],
-                                  "score": h["score"], "justification": ""})
-        if links:
-            await asyncio.to_thread(self.graph_db.write_anchors, links, self.db_name)
-        return len(links)
+        return await asyncio.to_thread(
+            anchor_concepts, self.embedder, self.graph_db, concept_nodes,
+            course_name, self.db_name, self.config
+        )
 
     async def _process_textbook_legacy(self, name: str, course_name, num_workers: int = 3):
-        # pull raw textbook from minio staging, temp-file for docling, then remove
-        raw_obj = self.minio_repo.raw_object_name(course_name, name)
-        file_bytes = await asyncio.to_thread(self.minio_repo.get_object_bytes, raw_obj)
-        tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
-        tmp.write(file_bytes)
-        tmp.close()
-        try:
-            chunks = await asyncio.to_thread(
-                extract_pdf, tmp.name, pages_per_batch=self.config.PAGE_PER_TB
-            )
-        finally:
-            try:
-                os.unlink(tmp.name)
-            except OSError:
-                pass
+        file_bytes = await asyncio.to_thread(fetch_raw_pdf, self.minio_repo, course_name, name)
+        chunks = await asyncio.to_thread(parse_textbook_chunks, file_bytes, self.config)
 
         sem = asyncio.Semaphore(num_workers)
 
@@ -247,10 +126,10 @@ class CourseIngestionService:
                 )
                 search_query = f"{heading}: {text_content}"
                 candidates = self.milvus_db.search(query=search_query, embedder=self.embedder, top_k=10)
-                
+
                 if not candidates:
                     return
-                    
+
                 links = await self.extractor.link_textbook_chunk(text=text_content, candidates=candidates)
                 if not links:
                     virtual_id = f"ref_{uuid.uuid5(uuid.NAMESPACE_DNS, chunk_id).hex[:8]}"
@@ -260,7 +139,7 @@ class CourseIngestionService:
                     }]
                 if links:
                     self.graph_db.update_links(chunk_id, heading, storage_uri, links, self.db_name)
-        
+
         tasks = [asyncio.create_task(_handle_chunk(chunk)) for chunk in chunks]
         await asyncio.gather(*tasks)
 
@@ -298,8 +177,8 @@ class CourseIngestionService:
             if res is None:
                 continue
             nodes, edges, clusters = res
-            self.graph_db.import_data(db_name=self.db_name, nodes=nodes, edges=edges, clusters=clusters)
-            self.milvus_db.insert_data(nodes=nodes, embedder=self.embedder)
+            persist_slide_kg(self.graph_db, self.milvus_db, self.embedder,
+                             self.db_name, nodes, edges, clusters)
             concept_nodes += [n for n in nodes if n.get("typeNode") == "Concept"]
             report["slides"].append({"file": f, "nodes": len(nodes), "edges": len(edges)})
 
@@ -317,17 +196,20 @@ class CourseIngestionService:
         self.last_report = report
         return report
 
-    def validate_files(self, course_name: str, names: List[str]):
- 
-        if not names:
+    def validate_files(self, course_name: str, pdf_names: List[str],
+                       video_names: List[str] = None):
+        video_names = video_names or []
+        if not pdf_names and not video_names:
             raise HTTPException(status_code=400, detail="File list is empty.")
 
-        for name in names:
-            # extension check
-            if not name.lower().endswith('.pdf'):
+        video_exts = (".mp4", ".mkv", ".webm", ".mp3", ".m4a", ".wav")
+        checks = [(n, (".pdf",)) for n in pdf_names] + [(n, video_exts) for n in video_names]
+
+        for name, allowed in checks:
+            if not name.lower().endswith(allowed):
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Unsupported file type: {name}. Only PDF is allowed."
+                    detail=f"Unsupported file type: {name}."
                 )
 
             # presence check (object must already exist via presigned PUT)
@@ -337,5 +219,5 @@ class CourseIngestionService:
                     status_code=404,
                     detail=f"File not uploaded to storage: {name}. PUT it via the presigned URL first."
                 )
-        
+
         return True

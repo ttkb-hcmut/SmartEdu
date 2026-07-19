@@ -16,6 +16,14 @@ MERGE (e)-[r:ANCHORED_IN]->(p)
 SET r.score=l.score, r.justification=coalesce(l.justification, '')
 """
 
+CYPHER_write_segment_anchors = """
+UNWIND $links AS l
+MATCH (e:Entity {name: l.entity_name})
+MATCH (s:Segment {id: l.segment_id})
+MERGE (e)-[r:ANCHORED_IN]->(s)
+SET r.score=l.score
+"""
+
 CYPHER_get_concept_page = """
 MATCH (e:Entity)-[r:ANCHORED_IN]->(p:Passage)
 WHERE toLower(e.name) CONTAINS toLower($name)
