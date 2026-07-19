@@ -2,9 +2,9 @@ import asyncio
 import uuid
 
 from core.config import Ingest_param, DB_NAME
-from core.ingest.stages.fetch import fetch_raw_pdf
-from core.ingest.stages.parse import parse_textbook_chunks
 from core.repo.storage.minio_repo import make_topic_name
+from knowledge.ingest.fetch import fetch_raw_pdf
+from knowledge.ingest.parse import parse_textbook_chunks
 from knowledge.engine.extract import GraphExtractionService
 from knowledge.pipeline import deps
 
