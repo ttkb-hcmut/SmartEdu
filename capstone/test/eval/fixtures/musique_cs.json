@@ -1,0 +1,62 @@
+[
+  {
+    "id": "2hop__354635_174222",
+    "track": "musique",
+    "question": "What company succeeded the owner of Empire Sports Network?",
+    "gold_answer": "Time Warner Cable",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/2hop__354635_174222/2",
+      "Bench_MuSiQue/2hop__354635_174222/16"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__726717_610238",
+    "track": "musique",
+    "question": "What is the network which National Cycle Route 57 is part of an example of?",
+    "gold_answer": "national cycling route network",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/2hop__726717_610238/12",
+      "Bench_MuSiQue/2hop__726717_610238/14"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__42027_42004",
+    "track": "musique",
+    "question": "Since 2004, what is the location of the body to which, if a matter is not specifically reserved, it is devolved?",
+    "gold_answer": "Scottish Parliament Building",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/2hop__42027_42004/3",
+      "Bench_MuSiQue/2hop__42027_42004/7"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__817096_15463",
+    "track": "musique",
+    "question": "What company merged in 2002 with the CEMM developer?",
+    "gold_answer": "Hewlett Packard",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/2hop__817096_15463/0",
+      "Bench_MuSiQue/2hop__817096_15463/12"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__14095_15463",
+    "track": "musique",
+    "question": "In 2002, what company merged with the top PC manufacturer from 1994?",
+    "gold_answer": "Hewlett Packard",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/2hop__14095_15463/2",
+      "Bench_MuSiQue/2hop__14095_15463/16"
+    ],
+    "hops": 2,
+    "type": "open"
+  }
+]

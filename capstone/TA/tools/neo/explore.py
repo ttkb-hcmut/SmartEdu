@@ -7,6 +7,13 @@ from TA.tools.neo.schema import (
     BackboneOutput, HubConnection, RelevanceOutput, ConceptNode
 )
 from TA.tools.tool_config import PREREQUISITE_WEIGHT
+from core.repo.graph.cypher.tools.course import (
+    CYPHER_recommend_new, CYPHER_recommend_new_course, CYPHER_recommend_new_from_node,
+    CYPHER_course_backbone_hub, CYPHER_course_backbone_rel, CYPHER_course_relevance,
+)
+from core.repo.graph.cypher.tools.algoritms import (
+    CYPHER_optimal_path, CYPHER_optimal_path_fallback,
+)
 
 
 class RecommendNew(NeoTool):
@@ -27,51 +34,13 @@ class RecommendNew(NeoTool):
         print(f"Run {self.name} | course_filter={course_filter}, from_node={from_node}, max={max_results}")
 
         if from_node:
-            cypher = """
-            MATCH (src:Entity {name: $from_node})-[r]->(m:Entity)
-            WHERE type(r) <> 'CONTENT' AND m.rrole IS NULL
-            OPTIONAL MATCH (m)-[r2]->(other:Entity)
-            WHERE type(r2) <> 'CONTENT' AND other.rrole IS NULL
-            WITH m, sum(CASE WHEN type(r2) = 'PREREQUISITE' THEN $prereq_weight ELSE 1.0 END) AS semantic_out_degree
-            ORDER BY semantic_out_degree DESC
-            LIMIT $max_results
-            OPTIONAL MATCH (m)-[:BELONGS_TO|PART_OF*1..2]->(c:Entity)
-            WHERE c.typeNode = 'Community'
-            RETURN m.name AS name, m.content AS content,
-                   m.typeNode AS type, semantic_out_degree AS out_degree,
-                   c.name AS course_name
-            """
+            cypher = CYPHER_recommend_new_from_node
             params = {"from_node": from_node, "max_results": max_results, "prereq_weight": PREREQUISITE_WEIGHT}
         elif course_filter:
-            cypher = """
-            MATCH (course:Entity {name: $course_filter})
-            MATCH (n:Entity)-[:BELONGS_TO|PART_OF*1..2]->(course)
-            WHERE n.rrole IS NULL AND n.id <> course.id
-            OPTIONAL MATCH (n)-[r]->(m:Entity)
-            WHERE type(r) <> 'CONTENT' AND m.rrole IS NULL
-            WITH n, course, sum(CASE WHEN type(r) = 'PREREQUISITE' THEN $prereq_weight ELSE 1.0 END) AS semantic_out_degree
-            ORDER BY semantic_out_degree DESC
-            LIMIT $max_results
-            RETURN n.name AS name, n.content AS content, 
-                   n.typeNode AS type, semantic_out_degree AS out_degree,
-                   course.name AS course_name
-            """
+            cypher = CYPHER_recommend_new_course
             params = {"course_filter": course_filter, "max_results": max_results, "prereq_weight": PREREQUISITE_WEIGHT}
         else:
-            cypher = """
-            MATCH (n:Entity)
-            WHERE n.rrole IS NULL
-            OPTIONAL MATCH (n)-[r]->(m:Entity)
-            WHERE type(r) <> 'CONTENT' AND m.rrole IS NULL
-            WITH n, sum(CASE WHEN type(r) = 'PREREQUISITE' THEN $prereq_weight ELSE 1.0 END) AS semantic_out_degree
-            ORDER BY semantic_out_degree DESC
-            LIMIT $max_results
-            OPTIONAL MATCH (n)-[:BELONGS_TO|PART_OF*1..2]->(c:Entity)
-            WHERE c.typeNode = 'Community'
-            RETURN n.name AS name, n.content AS content, 
-                   n.typeNode AS type, semantic_out_degree AS out_degree,
-                   c.name AS course_name
-            """
+            cypher = CYPHER_recommend_new
             params = {"max_results": max_results, "prereq_weight": PREREQUISITE_WEIGHT}
 
         results = self.run_query(query=cypher, params=params)
@@ -125,19 +94,7 @@ class CourseBackbone(NeoTool):
         course_name = self._norm_name(course_name)
         print(f"Run {self.name} | course={course_name}, max_hubs={max_hubs}")
 
-        hub_cypher = """
-        MATCH (course:Entity {name: $course_name})
-        MATCH (n:Entity)-[:BELONGS_TO|PART_OF*1..2]->(course)
-        WHERE n.rrole IS NULL AND n.id <> course.id
-        OPTIONAL MATCH (n)-[r]->(m:Entity)
-        WHERE type(r) <> 'CONTENT' AND m.rrole IS NULL
-        WITH n, course, sum(CASE WHEN type(r) = 'PREREQUISITE' THEN $prereq_weight ELSE 1.0 END) AS out_degree
-        ORDER BY out_degree DESC
-        LIMIT $max_hubs
-        RETURN n.id AS id, n.name AS name, n.content AS content,
-               n.typeNode AS type, out_degree, course.name AS course_name
-        """
-        hubs = self.run_query(query=hub_cypher, params={
+        hubs = self.run_query(query=CYPHER_course_backbone_hub, params={
             "course_name": course_name, "max_hubs": max_hubs, "prereq_weight": PREREQUISITE_WEIGHT
         })
         
@@ -159,16 +116,7 @@ class CourseBackbone(NeoTool):
                 mastery=mastery
             ))
 
-        rel_cypher = """
-        UNWIND $hub_ids AS h1_id
-        UNWIND $hub_ids AS h2_id
-        WITH h1_id, h2_id WHERE h1_id < h2_id
-        MATCH (h1:Entity {id: h1_id})-[r]-(h2:Entity {id: h2_id})
-        WHERE type(r) <> 'CONTENT'
-        RETURN h1.name AS from_node, h2.name AS to_node, type(r) AS relationship,
-               CASE WHEN startNode(r) = h1 THEN 'FORWARD' ELSE 'REVERSE' END AS direction
-        """
-        rels = self.run_query(query=rel_cypher, params={"hub_ids": hub_ids})
+        rels = self.run_query(query=CYPHER_course_backbone_rel, params={"hub_ids": hub_ids})
 
         connections = [HubConnection(**r) for r in rels] if rels else []
 
@@ -205,35 +153,7 @@ class CourseRelevance(NeoTool):
         target_course = self._norm_name(target_course)
         print(f"Run {self.name} | target={target_course}, min_degree={min_degree}")
 
-        cypher = """
-        MATCH (target_course:Entity {name: $target_course})
-        MATCH (inner:Entity)-[:BELONGS_TO|PART_OF*1..2]->(target_course)
-        WHERE inner.rrole IS NULL
-
-        OPTIONAL MATCH (inner)-[ri]->(mi:Entity)
-        WHERE type(ri) <> 'CONTENT' AND mi.rrole IS NULL
-        WITH target_course, inner, count(ri) AS inner_degree
-        WHERE inner_degree >= $min_degree
-
-        MATCH (outer:Entity)-[r]->(inner)
-        WHERE outer.rrole IS NULL AND type(r) <> 'CONTENT'
-          AND NOT (outer)-[:BELONGS_TO|PART_OF*1..2]->(target_course)
-
-        OPTIONAL MATCH (outer)-[ro]->(mo:Entity)
-        WHERE type(ro) <> 'CONTENT' AND mo.rrole IS NULL
-        WITH target_course, inner, outer, count(ro) AS outer_degree
-        WHERE outer_degree >= $min_degree
-
-        OPTIONAL MATCH (outer)-[:BELONGS_TO|PART_OF*1..2]->(other_course:Entity)
-        WHERE other_course.typeNode = 'Community'
-
-        RETURN other_course.name AS related_course,
-               count(DISTINCT outer) AS hub_overlap,
-               collect(DISTINCT outer.name)[..3] AS key_concepts
-        ORDER BY hub_overlap DESC
-        LIMIT 10
-        """
-        results = self.run_query(query=cypher, params={
+        results = self.run_query(query=CYPHER_course_relevance, params={
             "target_course": target_course, 
             "min_degree": min_degree
         })
@@ -269,27 +189,13 @@ class OptimalPath(NeoTool):
         end_node = self._norm_name(end_node)
         print(f"Run {self.name} | start={start_node}, end={end_node}")
 
-        cypher = """
-        MATCH (start:Entity {name: $start_node}), (end:Entity {name: $end_node})
-        CALL apoc.algo.dijkstra(start, end, '', 'weight') YIELD path, weight
-        UNWIND nodes(path) AS n
-        RETURN n.name AS name, n.typeNode AS type, n.content AS content
-        """
-        results = self.run_query(query=cypher, params={
+        results = self.run_query(query=CYPHER_optimal_path, params={
             "start_node": start_node,
             "end_node": end_node,
         })
 
         if not results:
-            cypher_fallback = """
-            MATCH (start:Entity {name: $start_node}), (end:Entity {name: $end_node}),
-                  path = shortestPath((start)-[*..10]-(end))
-            WHERE ALL(r IN relationships(path) WHERE type(r) <> 'CONTENT')
-            UNWIND nodes(path) AS n
-            WHERE n.rrole IS NULL
-            RETURN n.name AS name, n.typeNode AS type, n.content AS content
-            """
-            results = self.run_query(query=cypher_fallback, params={
+            results = self.run_query(query=CYPHER_optimal_path_fallback, params={
                 "start_node": start_node,
                 "end_node": end_node,
             })

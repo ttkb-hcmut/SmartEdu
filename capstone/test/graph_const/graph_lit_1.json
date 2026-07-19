@@ -1,0 +1,181 @@
+{
+  "og": "Machine Learning\nPhases of Machine Learning\nK-fold cross validation:\n-Randomly partitioned k equal sized sub-samples.\n-k - 1 for training and 1 for testing.\n-k times (folds) of validation and taking the average.\nPhases of Machine Learning\nStatistical significance test : to reject the null-hypothesis that the two compared systems are equivalently efficient although their performance measures are different.\nMachine Learning\nPhases of Machine Learning\nOverfitting\nThere is noise in the data\nThe number of training examples is too small to produce a representative sample of the target concept.\nMachine Learning\nPrecision:\nP = number of correct system answers number of system answers\nRecall:\nR = number of correct system answers number of correct problem answers\nF1 score : want to seek a balance between Precision and Recall It is good when there is an uneven class distribution .\nInductive Bias\nA learner that makes no prior assumptions regarding the identity of the target concept cannot classify any unseen instances.\nA learner that makes no prior assumptions regarding the identity of the target concept cannot classify any unseen instances.\nA learner that makes no a priori assumptions regarding the identity of the target concept has no rational basic for classifying any unseen instances.\nA learner that makes no prior assumptions regarding the identity of the target concept cannot classify any unseen instances.\nA learner that makes no a priori assumptions regarding the identity of the target concept has no rational basic for classifying any unseen instances.\nThe inductive bias (learning bias): the set of assumptions that the learner uses to predict outputs given inputs that it has not encountered.\nInductive Bias\nCommon inductive bias in ML:\nMaximum conditional independence : if the hypothesis can be cast in a Bayesian framework, try to maximize conditional independence (Naive Bayes classifier).\nCommon inductive bias in ML:\nMaximum conditional independence : if the hypothesis can be cast in a Bayesian framework, try to maximize conditional independence (Naive Bayes classifier).\nMinimum cross-validation error : when trying to choose among hypotheses, select the hypothesis with the lowest cross-validation error.",
+  "meta": {
+    "model": "gpt-oss:120b-cloud",
+    "concept_count": 9,
+    "relation_count": 11
+  },
+  "skeleton_phase": {
+    "tree": [
+      {
+        "name": "K-fold cross validation",
+        "content": "K-fold cross validation partitions data into k equal sized subsets, using k‑1 for training and 1 for testing, repeated k times and averaged.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "K-fold cross validation partitions data into k equal sized subsets, using k‑1 for training and 1 for testing, repeated k times and averaged.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "Statistical significance test",
+        "content": "Statistical significance test evaluates whether performance differences between two systems are unlikely due to chance, rejecting the null hypothesis of equal efficiency.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Statistical significance test evaluates whether performance differences between two systems are unlikely due to chance, rejecting the null hypothesis of equal efficiency.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "Overfitting",
+        "content": "Overfitting occurs when a model captures noise and limited training examples, leading to poor generalization on unseen data.",
+        "details": [
+          {
+            "role": "Problem",
+            "content": "Overfitting occurs when noise in the data and insufficient training examples cause a model to fit the training set too closely, harming generalization.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "Precision",
+        "content": "Precision is the proportion of correct system answers among all system answers, calculated as P = correct answers / total system answers.",
+        "details": [
+          {
+            "role": "Formula",
+            "content": "Precision = number of correct system answers / number of system answers.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "Recall",
+        "content": "Recall measures the proportion of correct system answers among all correct problem answers, computed as R = correct answers / total correct problem answers.",
+        "details": [
+          {
+            "role": "Formula",
+            "content": "Recall = number of correct system answers / number of correct problem answers.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "F1 score",
+        "content": "F1 score combines precision and recall into a single metric, seeking balance especially when class distribution is uneven.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "F1 score seeks a balance between precision and recall and is useful when class distribution is uneven.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "Inductive bias",
+        "content": "Inductive bias is the set of assumptions a learner uses to predict outputs for inputs it has not encountered, enabling classification of unseen instances.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Inductive bias is the set of assumptions a learner uses to predict outputs for inputs it has not encountered.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "Maximum conditional independence",
+        "content": "Maximum conditional independence is an inductive bias where, in a Bayesian framework, the hypothesis is chosen to maximize conditional independence, as used by Naive Bayes classifier.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Maximum conditional independence bias suggests maximizing conditional independence in a Bayesian hypothesis, exemplified by the Naive Bayes classifier.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "Minimum cross-validation error",
+        "content": "Minimum cross-validation error is an inductive bias that selects the hypothesis with the lowest cross‑validation error among competing models.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Minimum cross-validation error bias selects the hypothesis with the lowest cross-validation error among alternatives.",
+            "confidence": 0.9
+          }
+        ]
+      }
+    ]
+  },
+  "relation_phase": {
+    "edges": [
+      {
+        "rel": "F1 score combines precision and recall, thus it includes precision as a component.",
+        "name": "INCLUDES",
+        "src": "F1 score",
+        "tgt": "Precision"
+      },
+      {
+        "rel": "F1 score combines precision and recall, thus it includes recall as a component.",
+        "name": "INCLUDES",
+        "src": "F1 score",
+        "tgt": "Recall"
+      },
+      {
+        "rel": "Precision and recall are complementary evaluation metrics often used together.",
+        "name": "RELATED_TO",
+        "src": "Precision",
+        "tgt": "Recall"
+      },
+      {
+        "rel": "Statistical significance tests are applied to precision scores to determine if differences are meaningful.",
+        "name": "RELATED_TO",
+        "src": "Statistical significance test",
+        "tgt": "Precision"
+      },
+      {
+        "rel": "Statistical significance tests are applied to recall scores to assess significance of differences.",
+        "name": "RELATED_TO",
+        "src": "Statistical significance test",
+        "tgt": "Recall"
+      },
+      {
+        "rel": "Statistical significance tests can be used to compare F1 scores between systems.",
+        "name": "RELATED_TO",
+        "src": "Statistical significance test",
+        "tgt": "F1 score"
+      },
+      {
+        "rel": "Maximum conditional independence is an example of an inductive bias used in learning algorithms.",
+        "name": "INCLUDES",
+        "src": "Inductive bias",
+        "tgt": "Maximum conditional independence"
+      },
+      {
+        "rel": "Choosing the hypothesis with minimum cross-validation error is a form of inductive bias.",
+        "name": "INCLUDES",
+        "src": "Inductive bias",
+        "tgt": "Minimum cross-validation error"
+      },
+      {
+        "rel": "K-fold cross validation provides the error estimates that are minimized by the minimum cross-validation error criterion.",
+        "name": "RELATED_TO",
+        "src": "K-fold cross validation",
+        "tgt": "Minimum cross-validation error"
+      },
+      {
+        "rel": "Selecting the hypothesis with the minimum cross-validation error helps reduce overfitting.",
+        "name": "CAUSES",
+        "src": "Minimum cross-validation error",
+        "tgt": "Overfitting"
+      },
+      {
+        "rel": "A proper inductive bias can mitigate overfitting, while its absence may lead to overfitting.",
+        "name": "RELATED_TO",
+        "src": "Inductive bias",
+        "tgt": "Overfitting"
+      }
+    ]
+  }
+}

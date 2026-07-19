@@ -1,12 +1,12 @@
 """
-AgentTracer — per-session in-memory tracer với async flush ra JSON.
+AgentTracer — per-session in-memory tracer with async flush to JSON.
 
 Usage:
     tracer = AgentTracer(session_id="student_123")
     chat_id = tracer.begin_chat(query="What is ML?")
     tracer.log_step(chat_id, node="TA_Router", prompt="...", state={}, output="retrieve")
-    tracer.log_step(chat_id, node="RAG_Core",  prompt="...", state={}, tool_result={...}, output="...")
-    await tracer.end_chat(chat_id, final_output="...", intent="retrieve")
+    tracer.log_step(chat_id, node="Fusion", chunks=[...], latency_ms=12.5)
+    await tracer.end_chat(chat_id, final_output="...", intent="retrieve", preset="FULL")
 
 Langfuse integration:
     Activate by default if found env vars LANGFUSE_SECRET_KEY + LANGFUSE_PUBLIC_KEY. More docs on this shortly
@@ -18,7 +18,7 @@ from __future__ import annotations
 import logging
 import os
 from datetime import datetime
-from typing import Any, Dict, Optional, Literal
+from typing import Any, Dict, List, Optional, Literal
 
 from TA.tracing.schema import ChatTrace, StepTrace, TraceSession
 from TA.tracing.writer import TraceWriter
@@ -140,10 +140,13 @@ class AgentTracer:
         state: Any = None,
         tool_result: Optional[Dict[str, Any]] = None,
         output: str = "",
+        chunks: Optional[List[Dict[str, Any]]] = None,
+        latency_ms: float = 0.0,
+        tokens: Optional[Dict[str, int]] = None,
     ):
         """
-        Ghi một bước suy luận vào buffer.
-        Thread-safe (chỉ append vào in-memory list, không I/O).
+        Append one reasoning step to the buffer.
+        Thread-safe (in-memory append only, no I/O).
         """
         chat = self._active_chats.get(chat_id)
         if chat is None:
@@ -152,10 +155,13 @@ class AgentTracer:
 
         step = StepTrace(
             node=node,
-            prompt=prompt[:3000] if prompt else "",  # cap để tránh file quá lớn
+            prompt=prompt[:3000] if prompt else "",  # cap, file size
             state=_serialize_student_state(state),
             tool_result=tool_result or {},
             output=str(output)[:2000] if output else "",
+            chunks=[{**c, "text": str(c.get("text", ""))[:1000]} for c in (chunks or [])],
+            latency_ms=latency_ms,
+            tokens=tokens or {},
         )
         chat.agent.append(step)
 
@@ -165,10 +171,12 @@ class AgentTracer:
         final_output: str = "",
         intent: str = "",
         status: str = "SUCCESS",
+        retrieve_flags: Optional[Dict[str, bool]] = None,
+        preset: str = "",
     ):
         """
-        Kết thúc chat turn: flush buffer ra JSON file.
-        Gọi sau khi SmartEdu.execute() hoàn thành.
+        Close the chat turn: flush buffer to JSON file.
+        Called after SmartEdu.execute() completes.
         """
         chat = self._active_chats.pop(chat_id, None)
         if chat is None:
@@ -178,6 +186,8 @@ class AgentTracer:
         chat.final_output = str(final_output)[:2000]
         chat.intent = intent
         chat.status = status
+        chat.retrieve_flags = retrieve_flags or {}
+        chat.preset = preset
 
         self._session.chat.append(chat)
         path = await self._writer.write_async(self._session)

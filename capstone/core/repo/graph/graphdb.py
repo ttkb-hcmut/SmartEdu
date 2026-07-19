@@ -2,10 +2,33 @@ import os
 import logging
 from typing import List, Dict, Optional
 from neo4j import GraphDatabase
+from neo4j.exceptions import ClientError
 from time import time
 
 from core.config import Neo
-from core.util.cypher import concept_pred
+from core.repo.graph.cypher.kg_const.crud import (
+    CYPHER_insert_nodes, CYPHER_insert_edges, CYPHER_insert_clusters,
+    CYPHER_get_entity_by_id,
+)
+from core.repo.graph.cypher.kg_const.textbook import (
+    CYPHER_write_sections, CYPHER_write_passages,
+    CYPHER_get_toc_scoped, CYPHER_get_toc,
+)
+from core.repo.graph.cypher.kg_const.bind import (
+    CYPHER_update_links, CYPHER_write_anchors, CYPHER_write_segment_anchors,
+    CYPHER_get_concept_page, CYPHER_get_concept_anchors,
+    CYPHER_anchor_search, CYPHER_passage_search_vec,
+    CYPHER_passage_search_ft, CYPHER_get_passage_context,
+)
+from core.repo.graph.cypher.kg_const.video import (
+    CYPHER_write_video, CYPHER_write_segments,
+)
+from core.repo.graph.cypher.kg_const.learn import (
+    CYPHER_get_learning_graph, CYPHER_update_learn_mastery,
+    CYPHER_update_learn_transition, CYPHER_get_mastery,
+)
+
+
 class GraphDB:
     def __init__(self, config: Neo = Neo):
         self.driver = GraphDatabase.driver(config.uri, auth=config.auth)
@@ -56,47 +79,16 @@ class GraphDB:
     @staticmethod
     def _insert_nodes(tx, nodes: List[Dict]) -> None:
         nodes = [n for n in nodes if n.get('name') and str(n.get('name')).strip()]
-        query = """
-        WITH {`Rhetorical Node`: 1, `Knowledge Concept`: 2, `Knowledge Topic`: 3, `Knowledge Community`: 4} AS rank
-        UNWIND $nodes AS node_item
-        MERGE (n:Entity {name: node_item.name})
-        ON MATCH SET
-            n.definition = coalesce(n.definition, node_item.definition),
-            n.typeNode = CASE
-                WHEN coalesce(rank[n.typeNode], 0) < coalesce(rank[node_item.typeNode], 0)
-                THEN node_item.typeNode
-                ELSE n.typeNode
-            END
-        ON CREATE SET n = node_item
-        WITH n, node_item
-        CALL apoc.create.addLabels(n, [node_item.name]) YIELD node
-        RETURN count(*)
-        """
-        tx.run(query, nodes=nodes)
+        tx.run(CYPHER_insert_nodes, nodes=nodes)
 
     @staticmethod
     def _insert_edges(tx, edges: List[Dict]):
         edges = [e for e in edges if e.get('source_name') and e.get('target_name')]
-        query = """
-        UNWIND $edges AS edge_item
-        MATCH (s:Entity {name: edge_item.source_name})
-        MATCH (t:Entity {name: edge_item.target_name})
-        WITH s, t, edge_item
-        CALL apoc.merge.relationship(s, edge_item.type, {}, edge_item.props, t) YIELD rel
-        RETURN count(*)
-        """
-        tx.run(query, edges=edges)
+        tx.run(CYPHER_insert_edges, edges=edges)
 
     @staticmethod
     def _insert_clusters(tx, clusters: List[Dict]):
-        
-        query = """
-        UNWIND $clusters AS c
-        MATCH (n:Entity {name: c.name})
-        SET n.cluster_id = c.cluster_id,
-            n.cluster_level = c.level
-        """
-        tx.run(query, clusters=clusters)
+        tx.run(CYPHER_insert_clusters, clusters=clusters)
 
     def run_query(self, db_name: str, query: str, params: Dict = None) -> List[Dict]:
         with self.driver.session(database=db_name) as session:
@@ -104,24 +96,15 @@ class GraphDB:
             return [record.data() for record in result]
         
     def get_entity_by_id(self, db_name: str, node_id: str) -> Optional[Dict]:
-        query = "MATCH (n:Entity {id: $id}) RETURN n"
         with self.driver.session(database=db_name) as session:
-            result = session.run(query, id=node_id).single()
+            result = session.run(CYPHER_get_entity_by_id, id=node_id).single()
             return result["n"] if result else None
         
     def update_links(self,chunk_id, heading, storage_uri, links, db_name = "test"):
         with self.driver.session(database=db_name) as session:
                     session.run(
-                        """
-                        MERGE (c:TextbookChunk {id: $chunk_id})
-                        SET c.heading = $heading, c.storage_uri = $storage_uri
-                        WITH c
-                        UNWIND $links AS link
-                        MATCH (anchor {id: link.anchor_id})
-                        MERGE (c)-[r:ELABORATES_ON]->(anchor)
-                        SET r.justification = link.justification
-                        """,
-                        chunk_id=chunk_id, heading=heading, 
+                        CYPHER_update_links,
+                        chunk_id=chunk_id, heading=heading,
                         storage_uri=storage_uri, links=links
                     )
     def create_tb_indexes(self, db_name: str, dim: int = 768):
@@ -143,110 +126,100 @@ class GraphDB:
 
     @staticmethod
     def _write_sections(tx, sections: List[Dict]):
-        q = """
-        UNWIND $sections AS s
-        MERGE (n:Section {id: s.id})
-        SET n.title=s.title, n.level=s.level, n.p_lo=s.p_num[0], n.p_hi=s.p_num[1], n.order=s.order
-        WITH n, s WHERE s.parent_id IS NOT NULL
-        MATCH (p:Section {id: s.parent_id})
-        MERGE (p)-[:CONTAINS]->(n)
-        """
-        tx.run(q, sections=sections)
+        tx.run(CYPHER_write_sections, sections=sections)
 
     @staticmethod
     def _write_passages(tx, passages: List[Dict], book_uri: str):
-        q = """
-        UNWIND $passages AS p
-        MERGE (n:Passage {id: p.id})
-        SET n.p_lo=p.p_num[0], n.p_hi=p.p_num[1], n.text=p.text, n.emb=p.emb, n.uri=$uri
-        WITH n, p
-        MATCH (s:Section {id: p.section_id})
-        MERGE (s)-[:HAS_PASSAGE]->(n)
-        """
-        tx.run(q, passages=passages, uri=book_uri)
+        tx.run(CYPHER_write_passages, passages=passages, uri=book_uri)
 
-    def anchor_search(self, emb: List[float], top_k: int = 5, db_name=None) -> List[Dict]:
-        ## top-k passages by vector similarity (anchor target lookup)
+    def create_video_indexes(self, db_name: str, dim: int = 768):
+        ## fulltext + vector over :Segment, mirror of passage indexes
+        ft = "CREATE FULLTEXT INDEX segment_text_index IF NOT EXISTS FOR (n:Segment) ON EACH [n.text]"
+        vec = (f"CREATE VECTOR INDEX segment_vec_index IF NOT EXISTS FOR (n:Segment) ON n.emb "
+               f"OPTIONS {{indexConfig: {{`vector.dimensions`: {dim}, `vector.similarity_function`: 'cosine'}}}}")
+        with self.driver.session(database=db_name) as session:
+            session.run(ft)
+            session.run(vec)
+
+    def write_video(self, video: Dict, segments: List[Dict], db_name=None, dim: int = 768):
+        ## :Video root + :Segment children, anchor-only substrate (ADR-0006)
         db_name = db_name or self.db_name
-        q = """
-        CALL db.index.vector.queryNodes('passage_vec_index', $k, $emb) YIELD node, score
-        RETURN node.id AS passage_id, score
-        """
-        return self.run_query(db_name, q, {"k": top_k, "emb": emb})
+        self.create_video_indexes(db_name, dim)
+        with self.driver.session(database=db_name) as session:
+            session.execute_write(self._write_video, video, segments)
+
+    @staticmethod
+    def _write_video(tx, video: Dict, segments: List[Dict]):
+        tx.run(CYPHER_write_video, video=video)
+        tx.run(CYPHER_write_segments, segments=segments, uri=video["uri"], video_id=video["id"])
+
+    def write_segment_anchors(self, links: List[Dict], db_name=None):
+        ## batch concept->segment anchors, mirror of write_anchors
+        db_name = db_name or self.db_name
+        with self.driver.session(database=db_name) as session:
+            session.run(CYPHER_write_segment_anchors, links=links)
+
+    def anchor_search(self, emb: List[float], top_k: int = 5, db_name=None,
+                      uri_prefix: Optional[str] = None) -> List[Dict]:
+        ## top-k by vec (anchor target lookup)
+        db_name = db_name or self.db_name
+        ## vec index cannot pre-filter, probe wide then trim
+        probe = top_k * 4 if uri_prefix else top_k
+        try:
+            return self.run_query(db_name, CYPHER_anchor_search, {"probe": probe, "k": top_k,
+                                               "emb": emb, "prefix": uri_prefix})
+        except ClientError:
+            ## index absent on slide-only db
+            return []
 
     def write_anchors(self, links: List[Dict], db_name=None):
         ## batch concept->passage anchors in one UNWIND MERGE (idempotent)
         db_name = db_name or self.db_name
-        q = """
-        UNWIND $links AS l
-        MATCH (e:Entity {name: l.entity_name})
-        MATCH (p:Passage {id: l.passage_id})
-        MERGE (e)-[r:ANCHORED_IN]->(p)
-        SET r.score=l.score, r.justification=coalesce(l.justification, '')
-        """
         with self.driver.session(database=db_name) as session:
-            session.run(q, links=links)
+            session.run(CYPHER_write_anchors, links=links)
 
     def get_concept_page(self, name: str, db_name=None) -> Optional[Dict]:
         ## concept -> best anchored passage -> (minio pdf uri, page)
         db_name = db_name or self.db_name
-        q = """
-        MATCH (e:Entity)-[r:ANCHORED_IN]->(p:Passage)
-        WHERE toLower(e.name) CONTAINS toLower($name)
-        RETURN p.uri AS uri, p.p_lo AS page, r.score AS score, e.name AS concept
-        ORDER BY r.score DESC LIMIT 1
-        """
-        rows = self.run_query(db_name, q, {"name": name})
+        rows = self.run_query(db_name, CYPHER_get_concept_page, {"name": name})
         return rows[0] if rows else None
 
     def passage_search(self, emb: List[float], query_text: str = "", top_k: int = 5,
-                       db_name=None) -> List[Dict]:
-        ## hybrid textbook retrieval: vector ANN + fulltext, merged by max score
+                       db_name=None, uri_prefix: Optional[str] = None) -> List[Dict]:
+        ## hybrid textbook retrieval: vector ANN + fulltext, RRF merge
         db_name = db_name or self.db_name
-        vec_q = """
-        CALL db.index.vector.queryNodes('passage_vec_index', $k, $emb) YIELD node, score
-        RETURN node.id AS id, node.text AS text, node.uri AS uri,
-               node.p_lo AS p_lo, node.p_hi AS p_hi, score
-        """
-        rows = self.run_query(db_name, vec_q, {"k": top_k, "emb": emb})
-        merged = {r["id"]: dict(r) for r in rows}
+        ## vec index cannot pre-filter, probe wide then trim
+        probe = top_k * 4 if uri_prefix else top_k
+        try:
+            vec_rows = self.run_query(db_name, CYPHER_passage_search_vec,
+                                      {"probe": probe, "k": top_k, "emb": emb, "prefix": uri_prefix})
+        except ClientError:
+            vec_rows = []
+        ft_rows = []
         if query_text:
-            ft_q = """
-            CALL db.index.fulltext.queryNodes('passage_text_index', $q) YIELD node, score
-            RETURN node.id AS id, node.text AS text, node.uri AS uri,
-                   node.p_lo AS p_lo, node.p_hi AS p_hi, score
-            LIMIT $k
-            """
-            for r in self.run_query(db_name, ft_q, {"q": query_text, "k": top_k}):
-                cur = merged.get(r["id"])
-                if cur is None or r["score"] > cur["score"]:
-                    merged[r["id"]] = dict(r)
+            try:
+                ft_rows = self.run_query(db_name, CYPHER_passage_search_ft,
+                                         {"q": query_text, "k": top_k, "prefix": uri_prefix})
+            except ClientError:
+                ft_rows = []
+        ## RRF, raw merge lets Lucene beat cosine
+        merged: Dict[str, Dict] = {}
+        for rows in (vec_rows, ft_rows):
+            for rank, r in enumerate(rows, start=1):
+                cur = merged.setdefault(r["id"], {**dict(r), "score": 0.0})
+                cur["score"] += 1.0 / (60 + rank)
         out = sorted(merged.values(), key=lambda x: x["score"], reverse=True)
         return out[:top_k]
 
     def get_concept_anchors(self, name: str, db_name=None) -> List[Dict]:
         ## all passages a concept is anchored in (primary + secondary citations)
         db_name = db_name or self.db_name
-        q = """
-        MATCH (e:Entity)-[r:ANCHORED_IN]->(p:Passage)
-        WHERE toLower(e.name) CONTAINS toLower($name)
-        RETURN e.name AS concept, p.uri AS uri, p.p_lo AS p_lo, p.p_hi AS p_hi,
-               r.score AS score, substring(p.text, 0, 160) AS preview
-        ORDER BY r.score DESC LIMIT 10
-        """
-        return self.run_query(db_name, q, {"name": name})
+        return self.run_query(db_name, CYPHER_get_concept_anchors, {"name": name})
 
     def get_passage_context(self, passage_id: str, window: int = 1, db_name=None) -> List[Dict]:
         ## sibling passages in the same section, page-ordered, around the target
         db_name = db_name or self.db_name
-        q = """
-        MATCH (s:Section)-[:HAS_PASSAGE]->(target:Passage {id: $pid})
-        MATCH (s)-[:HAS_PASSAGE]->(p:Passage)
-        WITH p, target ORDER BY p.p_lo
-        RETURN p.id AS id, p.p_lo AS p_lo, p.p_hi AS p_hi, p.text AS text,
-               (p.id = target.id) AS is_target
-        """
-        rows = self.run_query(db_name, q, {"pid": passage_id})
+        rows = self.run_query(db_name, CYPHER_get_passage_context, {"pid": passage_id})
         idx = next((i for i, r in enumerate(rows) if r["is_target"]), None)
         if idx is None:
             return rows
@@ -257,24 +230,10 @@ class GraphDB:
         ## authored :Section tree, optionally scoped to a course via passage uri
         db_name = db_name or self.db_name
         if course_hint:
-            q = """
-            MATCH (s:Section)-[:HAS_PASSAGE]->(p:Passage)
-            WHERE p.uri STARTS WITH $hint
-            WITH DISTINCT s
-            OPTIONAL MATCH (parent:Section)-[:CONTAINS]->(s)
-            RETURN s.id AS id, s.title AS title, s.level AS level,
-                   s.p_lo AS p_lo, s.p_hi AS p_hi, s.order AS order, parent.id AS parent_id
-            ORDER BY s.level, s.order
-            """
+            q = CYPHER_get_toc_scoped
             params = {"hint": f"{course_hint}/"}
         else:
-            q = """
-            MATCH (s:Section)
-            OPTIONAL MATCH (parent:Section)-[:CONTAINS]->(s)
-            RETURN s.id AS id, s.title AS title, s.level AS level,
-                   s.p_lo AS p_lo, s.p_hi AS p_hi, s.order AS order, parent.id AS parent_id
-            ORDER BY s.level, s.order
-            """
+            q = CYPHER_get_toc
             params = {}
         return self.run_query(db_name, q, params)
 
@@ -286,59 +245,23 @@ class GraphDB:
                     session.run(q,param)
 
     def get_learning_graph(self, student_id: Optional[str] = None) -> Dict:
-        query = f"""
-        MATCH (n:Entity)
-        WHERE {concept_pred('n')}
-        OPTIONAL MATCH (n)-[r]->(m:Entity)
-        WHERE type(r) <> 'CONTENT'
-        WITH n, count(r) AS out_degree
-        OPTIONAL MATCH (n)-[:BELONGS_TO|PART_OF*1..2]->(c:Entity)
-        WHERE c.typeNode = 'Community'
-        OPTIONAL MATCH (s:Student {id: $sid})-[mas:MASTERY]->(n)
-        RETURN n.name AS name, 
-               n.typeNode AS type, 
-               c.name AS course_name,
-               out_degree,
-               substring(coalesce(n.content, ''), 0, 50) AS description,
-               coalesce(mas.level, 0) AS mastery
-        """
-        results = self.run_query(self.db_name, query, {"sid": student_id or ""})
+        results = self.run_query(self.db_name, CYPHER_get_learning_graph(), {"sid": student_id or ""})
         return {"nodes": results}
 
     def update_learn(self, student_id: str, current_pos, new_node) -> None:
         if not new_node or not student_id:
             return
 
-        mastery_query = """
-        MERGE (s:Student {id: $sid})
-        MERGE (n:Entity {name: $new_name})
-        MERGE (s)-[r:MASTERY]->(n)
-        SET r.level = CASE WHEN coalesce(r.level, 0) < 6 THEN coalesce(r.level, 0) + 1 ELSE 6 END,
-            r.last_visited = datetime()
-        """
-        self.query(mastery_query, {"sid": student_id, "new_name": new_node.name})
+        self.query(CYPHER_update_learn_mastery, {"sid": student_id, "new_name": new_node.name})
 
         if current_pos:
-            transition_query = """
-            MERGE (s:Student {id: $sid})
-            WITH s
-            MATCH (curr:Entity {name: $curr_name}), (next:Entity {name: $new_name})
-            MERGE (s)-[r:LEARNED_PATH]->(next)
-            SET r.from_node = $curr_name,
-                r.count = coalesce(r.count, 0) + 1,
-                r.last_visited = datetime()
-            """
-            self.query(transition_query, {
+            self.query(CYPHER_update_learn_transition, {
                 "sid": student_id,
                 "curr_name": current_pos.name,
                 "new_name": new_node.name
             })
 
     def get_mastery(self, student_id: str, node_name: str) -> int:
-        query = """
-        MATCH (s:Student {id: $sid})-[r:MASTERY]->(n:Entity {name: $name})
-        RETURN coalesce(r.level, 0) AS mastery
-        """
         with self.driver.session(database=self.db_name) as session:
-            result = session.run(query, sid=student_id, name=node_name).single()
+            result = session.run(CYPHER_get_mastery, sid=student_id, name=node_name).single()
             return result["mastery"] if result else 0

@@ -102,21 +102,24 @@ class MilvusDB:
 
     def search(self, query: str, embedder, top_k: int = 5, expr: str = None) -> List[Dict]:
         query_vector = embedder.get_embedding(query)
-        
+        return self.search_vec(query_vector, top_k=top_k, expr=expr)
+
+    def search_vec(self, vector: List[float], top_k: int = 5, expr: str = None) -> List[Dict]:
+        ## search by precomputed embedding — segments carry their own vector, no re-embed
         search_params = {
             "metric_type": "COSINE",
             "params": {"ef": 64}
         }
-        
+
         results = self.collection.search(
-            data=[query_vector],
+            data=[vector],
             anns_field="embedding",
             param=search_params,
             limit=top_k,
             expr=expr,
             output_fields=["id", "text", "name", "rrole", "topic", "community"]
         )
-        
+
         output = []
         for hits in results:
             for hit in hits:

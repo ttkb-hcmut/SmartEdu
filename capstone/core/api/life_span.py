@@ -42,19 +42,18 @@ async def lifespan(app: FastAPI):
     embedder = Embedder(config=Emb_conf())
     minio_repo = MinioDB(config=Minio_conf())
     mongo = Mongo_DB()
-    sql = SQL_DB()
+    sql = SQL_DB(config=MySQL_conf())
 
     graph_db_student = GraphDB(config=NeoStudent)
 
     student_tracker = Student_Tracker(graphdb=graph_db_student, sqldb=sql, mongodb=mongo)
 
     knowledge_mod = KnowledgeModule(
-        llm=llm, 
-        graph_db=graph_db, 
-        milvus_db=milvus_db, 
-        embedder=embedder, 
-        minio_repo=minio_repo,
-        config=K_conf()
+        llm=llm,
+        graph_db=graph_db,
+        milvus_db=milvus_db,
+        embedder=embedder,
+        minio_repo=minio_repo
     )
     app.state.knowledge = knowledge_mod
 

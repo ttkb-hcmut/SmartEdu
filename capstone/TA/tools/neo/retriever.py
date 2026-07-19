@@ -7,6 +7,10 @@ from TA.tools.neo.base import *
 from TA.tools.neo.schema import *
 from knowledge.engine.graph.helper.normalize import wiki_resolver
 from core.repo.milvus_db.mil import MilvusDB
+from core.repo.graph.cypher.tools.search import (
+    CYPHER_entity_finder, CYPHER_rhetorical_retriever,
+    CYPHER_rhetorical_retriever_role, CYPHER_edge_explorer,
+)
 from pydantic import Field
 from typing import Any
 
@@ -25,15 +29,8 @@ class EntityFinder(NeoTool):
         wiki_id = wiki_data.get("id")
         print("wiki: ", wiki_id)
         
-        cypher = """
-        MATCH (n:Entity) 
-        WHERE n.id = $wiki_id 
-           OR toLower(n.name) = toLower($query)
-           OR n.id = $query
-        RETURN n.id AS id, n.name AS name LIMIT 1
-        """
         params = {"wiki_id": wiki_id if wiki_id else "NO_WIKI_ID", "query": query}
-        res = self.run_query(query=cypher, params=params)
+        res = self.run_query(query=CYPHER_entity_finder, params=params)
 
         print("Ent finder: ", res)
         if res:
@@ -49,17 +46,10 @@ class RhetoricalRetriever(NeoTool):
         print(f"Run {self.name} with node_id {node_id}, role {role}, limit {limit} | Fetching content...")
         
         if role:
-            cypher = """
-            MATCH (n:Entity {id: $id})-[:CONTENT]->(c:Entity)
-            WHERE toLower(c.rrole) = toLower($role)
-            RETURN c.rrole AS role, c.content AS content LIMIT $limit
-            """
+            cypher = CYPHER_rhetorical_retriever_role
             params = {"id": node_id, "role": role, "limit": limit}
         else:
-            cypher = """
-            MATCH (n:Entity {id: $id})-[:CONTENT]->(c:Entity)
-            RETURN c.rrole AS role, c.content AS content LIMIT $limit
-            """
+            cypher = CYPHER_rhetorical_retriever
             params = {"id": node_id, "limit": limit}
 
         results = self.run_query(cypher, params)
@@ -81,21 +71,7 @@ class EdgeExplorer(NeoTool):
 
     def _run(self, node_id: str):
         print("Run ", self.name , " with node_id: ", node_id)
-        cypher = """
-        MATCH (n:Entity {id: $id})
-        OPTIONAL MATCH path = (n)-[r*1..2]-(m:Entity)
-        WHERE ALL(rel IN relationships(path) WHERE type(rel) <> 'CONTENT')
-          AND m.id <> $id AND m.rrole IS NULL
-        WITH n, m, path
-        LIMIT 20
-        RETURN 
-            m.name as name, 
-            m.id as id, 
-            type(relationships(path)[0]) as rel_type,
-            CASE WHEN startNode(relationships(path)[0]) = n THEN 'OUTGOING' ELSE 'INCOMING' END as direction,
-            length(path) as distance
-        """
-        results = self.run_query(cypher, {"id": node_id})
+        results = self.run_query(CYPHER_edge_explorer, {"id": node_id})
         print(results)
         
         if not results or not any(r['id'] for r in results):

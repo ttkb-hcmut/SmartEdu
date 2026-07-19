@@ -1,0 +1,111 @@
+{
+  "og": "t-SNE\nWhat is t-SNE\nt-Distributed Stochastic Neighbor Embedding (t-SNE) : an unsupervised, non-linear technique.\nWhat is t-SNE\nt-Distributed Stochastic Neighbor Embedding (t-SNE) : an unsupervised, non-linear technique.\nPrimarily used for data exploration and visualizing high-dimensional data.\nWhat is t-SNE\nt-Distributed Stochastic Neighbor Embedding (t-SNE) : an unsupervised, non-linear technique.\nPrimarily used for data exploration and visualizing high-dimensional data.\nt-SNE gives an intuition of how data is arranged in high dimensional space .\nCalculating the probability of similarity of points in high-dimensional space and calculating the probability of similarity of points in the corresponding low-dimensional space .\n1 https://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf\nMachine Learning\nCalculating the probability of similarity of points in high-dimensional space and calculating the probability of similarity of points in the corresponding low-dimensional space .\nMinimize the difference between these conditional probabilities (or similarities) in higher-dimensional and lower-dimensional space for a perfect representation of data points in lower-dimensional space.\n1 https://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf\nMachine Learning\nCalculating the probability of similarity of points in high-dimensional space and calculating the probability of similarity of points in the corresponding low-dimensional space .\nMinimize the difference between these conditional probabilities (or similarities) in higher-dimensional and lower-dimensional space for a perfect representation of data points in lower-dimensional space.\nMinimizes the sum of Kullback-Leibler divergence of overall data points using a gradient descent method. 1\n1 https://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf\nMachine Learning\nWhat is t-SNE\n· PCA vs. t-SNE ?",
+  "meta": {
+    "model": "gpt-oss:120b-cloud",
+    "concept_count": 4,
+    "relation_count": 5
+  },
+  "skeleton_phase": {
+    "tree": [
+      {
+        "name": "t-Distributed Stochastic Neighbor Embedding",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "t-Distributed Stochastic Neighbor Embedding (t-SNE) is an unsupervised, non-linear technique primarily used for data exploration and visualizing high-dimensional data.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Statement",
+            "content": "t-Distributed Stochastic Neighbor Embedding gives an intuition of how data is arranged in high dimensional space by calculating the probability of similarity of points in high-dimensional space and the probability of similarity of points in the corresponding low-dimensional space.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Objective",
+            "content": "t-Distributed Stochastic Neighbor Embedding minimizes the difference between conditional probabilities (similarities) in higher-dimensional and lower-dimensional spaces for a perfect representation of data points in lower-dimensional space.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Solution",
+            "content": "t-Distributed Stochastic Neighbor Embedding minimizes the sum of Kullback-Leibler divergence of overall data points using a gradient descent method.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Kullback-Leibler divergence",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Kullback-Leibler divergence measures the difference between two probability distributions.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Application",
+            "content": "Kullback-Leibler divergence is minimized in t-Distributed Stochastic Neighbor Embedding to achieve a faithful low-dimensional representation.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Gradient descent method",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Gradient descent method is an optimization algorithm that iteratively updates parameters in the direction of the negative gradient of a loss function.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Application",
+            "content": "Gradient descent method is used to minimize the sum of Kullback-Leibler divergence in t-Distributed Stochastic Neighbor Embedding.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Principal Component Analysis",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Principal Component Analysis (PCA) is a linear dimensionality reduction technique that projects data onto orthogonal components capturing maximum variance.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Statement",
+            "content": "PCA is a linear technique, whereas t-Distributed Stochastic Neighbor Embedding is a non-linear technique.",
+            "confidence": 0.7
+          }
+        ]
+      }
+    ]
+  },
+  "relation_phase": {
+    "edges": [
+      {
+        "name": "RELATED_TO",
+        "src": "t-Distributed Stochastic Neighbor Embedding",
+        "tgt": "Kullback-Leibler divergence"
+      },
+      {
+        "name": "RELATED_TO",
+        "src": "t-Distributed Stochastic Neighbor Embedding",
+        "tgt": "Gradient descent method"
+      },
+      {
+        "name": "RELATED_TO",
+        "src": "t-Distributed Stochastic Neighbor Embedding",
+        "tgt": "Principal Component Analysis"
+      },
+      {
+        "name": "PREREQUISITE",
+        "src": "Kullback-Leibler divergence",
+        "tgt": "t-Distributed Stochastic Neighbor Embedding"
+      },
+      {
+        "name": "PREREQUISITE",
+        "src": "Gradient descent method",
+        "tgt": "t-Distributed Stochastic Neighbor Embedding"
+      }
+    ]
+  }
+}

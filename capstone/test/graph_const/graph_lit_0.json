@@ -1,0 +1,183 @@
+{
+  "og": "Machine Learning\nChapter 1 - Introduction\nMachine Learning\nWhat is Machine learning?\nMachine Learning\nWhat is Machine learning?\nArthur Samuel (1959): \"Field of study that gives computers the ability to learn without being explicitly programmed\"\nTom Mitchell (1997): \"A computer program is said to learn from experience E with respect to some class of tasks T and performance measure P, if its performance at tasks in T, as measured by P, improves with experience E\".\nMachine Learning\nMachine Learning\nHow to construct programs that automatically improve with experience.\nMachine Learning\nMachine Learning\nHow to construct programs that automatically improve with experience.\nThe scientific study of algorithms and statistical models that computer systems use to perform a specific task without using explicit instructions, relying on patterns and inference instead.\nMachine Learning\nMachine Learning\nHow to construct programs that automatically improve with experience.\nThe scientific study of algorithms and statistical models that computer systems use to perform a specific task without using explicit instructions, relying on patterns and inference instead.\nA subset of artificial intelligence.\nExperience\nPrediction\nMachine Learning\nWhat is learning?\nLearning is an (endless) generalization or induction process.\nTypes of Machine Learning\nSupervised learning: the learner (learning algorithm) are trained on labeled examples, i.e., input where the desired output is known.\nUnsupervised learning: the learner operates on unlabeled examples, i.e., input where the desired output is unknown.\nTypes of Machine Learning\nReinforcement learning: between supervised and unsupervised learning. It is told when an answer is wrong, but not how to correct it.\nEvolutionary learning: biological evolution can be seen as a learning process, to improve survival rates and chance of having offspring.\nTypes of Machine Learning\nThe most common type: supervised learning.\n-Classification: to find the class of an instance given its selected features.\n-Regression: to find a function whose curve passes as close as possible to all of the given data points.\nHow many phase do we have in machine learning?\nMachine Learning\nPhases of Machine Learning\nK-fold cross validation:\n-Randomly partitioned k equal sized sub-samples.\n-k - 1 for training and 1 for testing.\n-k times (folds) of validation and taking the average.",
+  "meta": {
+    "model": "gpt-oss:120b-cloud",
+    "concept_count": 9,
+    "relation_count": 8
+  },
+  "skeleton_phase": {
+    "tree": [
+      {
+        "name": "Machine Learning",
+        "content": "Machine Learning is the scientific study of algorithms and statistical models enabling computers to learn from data without explicit programming.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Machine Learning is a field of study that gives computers the ability to learn without being explicitly programmed.",
+            "confidence": 0.95
+          },
+          {
+            "role": "Statement",
+            "content": "A computer program is said to learn from experience E with respect to some class of tasks T and performance measure P, if its performance at tasks in T, as measured by P, improves with experience E.",
+            "confidence": 0.95
+          },
+          {
+            "role": "Objective",
+            "content": "How to construct programs that automatically improve with experience.",
+            "confidence": 0.95
+          },
+          {
+            "role": "Statement",
+            "content": "Machine Learning is the scientific study of algorithms and statistical models that computer systems use to perform a specific task without using explicit instructions, relying on patterns and inference instead.",
+            "confidence": 0.95
+          },
+          {
+            "role": "Statement",
+            "content": "Machine Learning is a subset of artificial intelligence.",
+            "confidence": 0.95
+          }
+        ]
+      },
+      {
+        "name": "Learning",
+        "content": "Learning is a process of generalization or induction where knowledge is inferred from observed examples and applied to future situations.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Learning is an (endless) generalization or induction process.",
+            "confidence": 0.95
+          }
+        ]
+      },
+      {
+        "name": "Supervised Learning",
+        "content": "Supervised Learning trains a learning algorithm on labeled examples where each input’s desired output is known, enabling prediction for data.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Supervised learning: the learner (learning algorithm) are trained on labeled examples, i.e., input where the desired output is known.",
+            "confidence": 0.95
+          }
+        ]
+      },
+      {
+        "name": "Unsupervised Learning",
+        "content": "Unsupervised Learning operates on unlabeled examples where the desired output is unknown, discovering hidden structure or patterns in data alone.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Unsupervised learning: the learner operates on unlabeled examples, i.e., input where the desired output is unknown.",
+            "confidence": 0.95
+          }
+        ]
+      },
+      {
+        "name": "Reinforcement Learning",
+        "content": "Reinforcement Learning lies between supervised and unsupervised learning; it receives feedback when an answer is wrong but not correction method.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Reinforcement learning is told when an answer is wrong, but not how to correct it.",
+            "confidence": 0.95
+          }
+        ]
+      },
+      {
+        "name": "Evolutionary Learning",
+        "content": "Evolutionary Learning views biological evolution as a learning process that improves survival rates and the chance of producing offspring over.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Evolutionary learning: biological evolution can be seen as a learning process, to improve survival rates and chance of having offspring.",
+            "confidence": 0.95
+          }
+        ]
+      },
+      {
+        "name": "Classification",
+        "content": "Classification determines the class label of an instance based on its selected features, enabling categorical decision making in machine learning.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Classification: to find the class of an instance given its selected features.",
+            "confidence": 0.95
+          }
+        ]
+      },
+      {
+        "name": "Regression",
+        "content": "Regression finds a function whose curve passes as close as possible to all given data points, modeling continuous relationships accurately.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Regression: to find a function whose curve passes as close as possible to all of the given data points.",
+            "confidence": 0.95
+          }
+        ]
+      },
+      {
+        "name": "K-fold Cross Validation",
+        "content": "K-fold Cross Validation partitions data into k sub‑samples, using k‑1 for training and 1 for testing, then averages results overall.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "K-fold cross validation: Randomly partitioned k equal sized sub-samples. k - 1 for training and 1 for testing. k times (folds) of validation and taking the average.",
+            "confidence": 0.95
+          }
+        ]
+      }
+    ]
+  },
+  "relation_phase": {
+    "edges": [
+      {
+        "rel": "Machine Learning includes Supervised Learning as one of its primary categories.",
+        "name": "INCLUDES",
+        "src": "Machine Learning",
+        "tgt": "Supervised Learning"
+      },
+      {
+        "rel": "Machine Learning includes Unsupervised Learning as one of its primary categories.",
+        "name": "INCLUDES",
+        "src": "Machine Learning",
+        "tgt": "Unsupervised Learning"
+      },
+      {
+        "rel": "Machine Learning includes Reinforcement Learning as one of its primary categories.",
+        "name": "INCLUDES",
+        "src": "Machine Learning",
+        "tgt": "Reinforcement Learning"
+      },
+      {
+        "rel": "Machine Learning includes Evolutionary Learning as one of its primary categories.",
+        "name": "INCLUDES",
+        "src": "Machine Learning",
+        "tgt": "Evolutionary Learning"
+      },
+      {
+        "rel": "Supervised Learning includes Classification as a typical task.",
+        "name": "INCLUDES",
+        "src": "Supervised Learning",
+        "tgt": "Classification"
+      },
+      {
+        "rel": "Supervised Learning includes Regression as a typical task.",
+        "name": "INCLUDES",
+        "src": "Supervised Learning",
+        "tgt": "Regression"
+      },
+      {
+        "rel": "Machine Learning includes K-fold Cross Validation as a common validation technique.",
+        "name": "INCLUDES",
+        "src": "Machine Learning",
+        "tgt": "K-fold Cross Validation"
+      },
+      {
+        "rel": "Learning is the broader concept that includes Machine Learning as a specific form of learning.",
+        "name": "INCLUDES",
+        "src": "Learning",
+        "tgt": "Machine Learning"
+      }
+    ]
+  }
+}

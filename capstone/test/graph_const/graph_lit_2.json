@@ -1,0 +1,183 @@
+{
+  "og": "Inductive Bias\nCommon inductive bias in ML:\nMaximum conditional independence : if the hypothesis can be cast in a Bayesian framework, try to maximize conditional independence (Naive Bayes classifier).\nCommon inductive bias in ML:\nMaximum conditional independence : if the hypothesis can be cast in a Bayesian framework, try to maximize conditional independence (Naive Bayes classifier).\nMinimum cross-validation error : when trying to choose among hypotheses, select the hypothesis with the lowest cross-validation error.\nCommon inductive bias in ML:\nMaximum conditional independence : if the hypothesis can be cast in a Bayesian framework, try to maximize conditional independence (Naive Bayes classifier).\nMinimum cross-validation error : when trying to choose among hypotheses, select the hypothesis with the lowest cross-validation error.\nMaximum margin : when drawing a boundary between two classes, attempt to maximize the width of the boundary (SVM). The assumption is that distinct classes tend to be separated by wide boundaries.\nCommon inductive bias in ML:\nMinimum description length : when forming a hypothesis, attempt to minimize the length of the description of the hypothesis. The assumption is that simpler hypotheses are more likely to be true.\nCommon inductive bias in ML:\nMinimum description length : when forming a hypothesis, attempt to minimize the length of the description of the hypothesis. The assumption is that simpler hypotheses are more likely to be true.\nMinimum features : unless there is good evidence that a feature is useful, it should be deleted.\nCommon inductive bias in ML:\nMinimum description length : when forming a hypothesis, attempt to minimize the length of the description of the hypothesis. The assumption is that simpler hypotheses are more likely to be true.\nMinimum features : unless there is good evidence that a feature is useful, it should be deleted.\nNearest neighbors : assume that most of the cases in a small neighborhood in feature space belong to the same class.",
+  "meta": {
+    "model": "gpt-oss:120b-cloud",
+    "concept_count": 7,
+    "relation_count": 10
+  },
+  "skeleton_phase": {
+    "tree": [
+      {
+        "name": "Inductive Bias",
+        "content": "Inductive bias comprises assumptions that guide a learning algorithm to prefer certain hypotheses over others, shaping model selection.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Inductive bias is the set of assumptions that influence hypothesis preference in machine learning.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Maximum Conditional Independence",
+        "content": "Maximum conditional independence bias favors hypotheses where features are conditionally independent given the class, exemplified by Naive Bayes.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Maximum conditional independence is applied when the hypothesis can be cast in a Bayesian framework, trying to maximize conditional independence (Naive Bayes classifier).",
+            "confidence": 0.7
+          },
+          {
+            "role": "Application",
+            "content": "Maximum conditional independence encourages the use of Naive Bayes classifier as it assumes feature independence given the class.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Minimum Cross-Validation Error",
+        "content": "Minimum cross-validation error bias selects the hypothesis that achieves the lowest error estimate across validation folds.",
+        "details": [
+          {
+            "role": "Solution",
+            "content": "When choosing among hypotheses, select the hypothesis with the lowest cross-validation error.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Objective",
+            "content": "Minimum cross-validation error aims to reduce overfitting by evaluating model performance on held‑out data.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Maximum Margin",
+        "content": "Maximum margin bias prefers decision boundaries that maximize the distance between classes, forming the basis of Support Vector Machines.",
+        "details": [
+          {
+            "role": "Solution",
+            "content": "When drawing a boundary between two classes, attempt to maximize the width of the boundary (SVM).",
+            "confidence": 0.7
+          },
+          {
+            "role": "Statement",
+            "content": "Maximum margin assumes distinct classes tend to be separated by wide boundaries.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Minimum Description Length",
+        "content": "Minimum description length bias favors simpler hypotheses with shorter descriptive length, assuming simplicity correlates with truth.",
+        "details": [
+          {
+            "role": "Solution",
+            "content": "When forming a hypothesis, attempt to minimize the length of the description of the hypothesis.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Statement",
+            "content": "The assumption is that simpler hypotheses are more likely to be true.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Minimum Features",
+        "content": "Minimum features bias removes features unless strong evidence demonstrates their usefulness, simplifying the model.",
+        "details": [
+          {
+            "role": "Solution",
+            "content": "Unless there is good evidence that a feature is useful, it should be deleted.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Statement",
+            "content": "Minimum features bias encourages feature elimination to avoid unnecessary complexity.",
+            "confidence": 0.7
+          }
+        ]
+      },
+      {
+        "name": "Nearest Neighbor",
+        "content": "Nearest neighbor bias assumes that instances close in feature space are likely to share the same class label.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Assume that most of the cases in a small neighborhood in feature space belong to the same class.",
+            "confidence": 0.7
+          },
+          {
+            "role": "Application",
+            "content": "Nearest neighbor bias underlies k‑nearest neighbor classification methods.",
+            "confidence": 0.7
+          }
+        ]
+      }
+    ]
+  },
+  "relation_phase": {
+    "edges": [
+      {
+        "rel": "Maximum Conditional Independence is listed as a common inductive bias, so it is a specific instance that falls under the broader category of Inductive Bias.",
+        "name": "INCLUDES",
+        "src": "Inductive Bias",
+        "tgt": "Maximum Conditional Independence"
+      },
+      {
+        "rel": "Minimum Cross-Validation Error is presented as a common inductive bias, making it a particular bias included within the general concept of Inductive Bias.",
+        "name": "INCLUDES",
+        "src": "Inductive Bias",
+        "tgt": "Minimum Cross-Validation Error"
+      },
+      {
+        "rel": "Maximum Margin is described as a common inductive bias (used in SVM), therefore it is a specific bias that is part of the broader Inductive Bias category.",
+        "name": "INCLUDES",
+        "src": "Inductive Bias",
+        "tgt": "Maximum Margin"
+      },
+      {
+        "rel": "Minimum Description Length is identified as a common inductive bias, so it is included under the umbrella of Inductive Bias.",
+        "name": "INCLUDES",
+        "src": "Inductive Bias",
+        "tgt": "Minimum Description Length"
+      },
+      {
+        "rel": "Minimum Features is mentioned as a common inductive bias, thus it is a specific bias contained within Inductive Bias.",
+        "name": "INCLUDES",
+        "src": "Inductive Bias",
+        "tgt": "Minimum Features"
+      },
+      {
+        "rel": "Nearest Neighbor is listed as a common inductive bias, making it a particular instance of the broader concept Inductive Bias.",
+        "name": "INCLUDES",
+        "src": "Inductive Bias",
+        "tgt": "Nearest Neighbor"
+      },
+      {
+        "rel": "Both biases promote simpler models: MDL minimizes the length of a hypothesis description, while Minimum Features removes unnecessary attributes; they share the goal of reducing model complexity.",
+        "name": "RELATED_TO",
+        "src": "Minimum Description Length",
+        "tgt": "Minimum Features"
+      },
+      {
+        "rel": "Both are criteria used to select hypotheses that generalize well: maximizing the margin often leads to lower cross‑validation error, linking the two biases.",
+        "name": "RELATED_TO",
+        "src": "Maximum Margin",
+        "tgt": "Minimum Cross-Validation Error"
+      },
+      {
+        "rel": "Both biases favor simpler, more independent representations: maximizing conditional independence reduces dependencies, akin to minimizing description length.",
+        "name": "RELATED_TO",
+        "src": "Maximum Conditional Independence",
+        "tgt": "Minimum Description Length"
+      },
+      {
+        "rel": "Nearest Neighbor performance degrades with many irrelevant dimensions; the Minimum Features bias, which removes unnecessary features, aligns with the assumptions of Nearest Neighbor.",
+        "name": "RELATED_TO",
+        "src": "Nearest Neighbor",
+        "tgt": "Minimum Features"
+      }
+    ]
+  }
+}

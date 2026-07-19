@@ -1,4 +1,5 @@
 from collections import deque
+import operator
 from typing import Annotated, TypedDict, List, Dict, Any, Optional, Literal
 from langgraph.graph.message import add_messages
 from pydantic import BaseModel, Field
@@ -54,6 +55,10 @@ class AgentState(TypedDict):
     ui_action: Optional[Dict[str, Any]]
     _teach_mode: Literal["LECTURE", "REVIEW", "QUIZ", "IDLE"]
     _teach_context: Dict[str, Any]
+    # retrieve fan-out
+    _retrieve_flags: Dict[str, bool]
+    ## or_ reducer -> parallel component writes merge instead of clash
+    retrieval_pool: Annotated[Dict[str, Any], operator.or_]
     # middleware
     current_node: str
     # roadmap workflow control
