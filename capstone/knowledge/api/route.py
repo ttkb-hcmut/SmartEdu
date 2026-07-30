@@ -5,6 +5,7 @@ from pydantic import BaseModel, field_validator
 from typing import List, Optional
 
 from core.dependencies import get_ingestion_service
+from knowledge.pipeline.submit import course_submit
 from knowledge.service.pdf_loader import topic_pdf_bytes
 from student.auth import require_admin, get_current_student, User
 
@@ -79,25 +80,15 @@ async def ingest_course(
     )
 
     flow_run_id = None
-    ## inline = parity escape hatch, prefect = worker path (ADR-0005)
+    ## inline parity escape, Prefect submit seam per ADR-0007
     if os.getenv("INGEST_ORCHESTRATOR", "prefect") == "prefect":
-        import inspect
-        from prefect.deployments import run_deployment
-        ## run_deployment is sync/async-dual — await only when it hands back a coroutine
-        fr = run_deployment(
-            name="course-flow/course-ingest",
-            parameters={
-                "course_name": req.course_name,
-                "slide_files": req.slide_files,
-                "textbook_files": req.textbook_files,
-                "video_files": req.video_files,
-                "reset": req.reset,
-            },
-            timeout=0,
-        )
-        if inspect.isawaitable(fr):
-            fr = await fr
-        flow_run_id = str(fr.id)
+        flow_run_id = await course_submit({
+            "course_name": req.course_name,
+            "slide_files": req.slide_files,
+            "textbook_files": req.textbook_files,
+            "video_files": req.video_files,
+            "reset": req.reset,
+        })
     else:
         background_tasks.add_task(service.run, req)
 

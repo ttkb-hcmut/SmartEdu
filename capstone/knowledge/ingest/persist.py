@@ -3,11 +3,11 @@ import json
 from typing import Dict, List
 
 
-def persist_slide_kg(graph_db, milvus_db, embedder, db_name: str,
+def persist_slide_kg(graph_db, milvus_db, embedder, db_name: str, course: str,
                      nodes: List[Dict], edges: List[Dict], clusters: List[Dict]):
     ## dual-store write atomic-ish, one seam
     graph_db.import_data(db_name=db_name, nodes=nodes, edges=edges, clusters=clusters)
-    milvus_db.insert_data(nodes=nodes, embedder=embedder)
+    milvus_db.insert_data(nodes=nodes, embedder=embedder, course=course)
 
 
 def persist_report(minio_repo, course_name: str, run_id: str, report: Dict) -> str:

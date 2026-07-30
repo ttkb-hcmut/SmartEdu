@@ -1,3 +1,4 @@
+import json
 from typing import Dict, List, Tuple
 
 from core.config import Ingest_param
@@ -16,16 +17,18 @@ def _to_items(video_id: str, whisper_segments: List[Dict]) -> List[Dict]:
     } for i, seg in enumerate(whisper_segments)]
 
 
-def build_video_segments(embedder, milvus_db, video_id: str, whisper_segments: List[Dict],
+def build_video_segments(embedder, milvus_db, video_id: str, course: str,
+                         whisper_segments: List[Dict],
                          cfg: Ingest_param) -> Tuple[List[Dict], List[Dict], List[Dict]]:
     if not whisper_segments:
         return [], [], []
 
     merged = group_passages(_to_items(video_id, whisper_segments), embedder.get_embedding, cfg)
+    expr = f'typeNode == "Concept" and course == {json.dumps(course, ensure_ascii=False)}'
 
     seg_nodes, anchor_links, novel_entries = [], [], []
     for order, p in enumerate(merged):
-        hits = milvus_db.search_vec(p["emb"], top_k=cfg.segment_top_k)
+        hits = milvus_db.search_vec(p["emb"], top_k=cfg.segment_top_k, expr=expr)
         scores = [h["score"] for h in hits]
         kept, novel = cliff_partition(scores, cfg.anchor_gradient_g, cfg.anchor_score_min)
         best_score = scores[0] if scores else 0.0
