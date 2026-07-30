@@ -57,8 +57,10 @@ class AgentState(TypedDict):
     _teach_context: Dict[str, Any]
     # retrieve fan-out
     _retrieve_flags: Dict[str, bool]
+    _retrieve_harness: str
     ## or_ reducer -> parallel component writes merge instead of clash
     retrieval_pool: Annotated[Dict[str, Any], operator.or_]
+    retrieval_artifacts: Annotated[Dict[str, Any], operator.or_]
     # middleware
     current_node: str
     # roadmap workflow control

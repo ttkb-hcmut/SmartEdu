@@ -71,6 +71,21 @@ class Student_Tracker:
         self._session_map.pop(session_id, None)
         self._sessions.pop(session_id, None)
 
+    def delete_student(self, student_id: str) -> None:
+        sessions = [sid for sid, owner in self._session_map.items() if owner == student_id]
+        for session_id in sessions:
+            self.drop_session(session_id)
+        self._student_states.pop(student_id, None)
+
+        errors = []
+        for repository in (self.graphdb, self.mongodb, self.sqldb):
+            try:
+                repository.delete_student(student_id)
+            except Exception as exc:
+                errors.append(f"{type(repository).__name__}: {exc}")
+        if errors:
+            raise RuntimeError("; ".join(errors))
+
     def get_session(self, session_id: str) -> "StudentSession":
         """
         Lấy StudentSession theo Chat Session ID.

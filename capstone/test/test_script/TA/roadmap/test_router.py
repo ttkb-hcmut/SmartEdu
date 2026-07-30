@@ -6,8 +6,8 @@ import pytest
 def _stub():
     for m in [
         "langgraph.graph", "langchain_core.runnables", "core.schema.wf_state",
-        "TA.edu.helper.schema", "TA.edu.helper.prompt", "TA.edu.helper.few_shot",
-        "TA.edu.helper.utils", "TA.edu.helper.context", "TA.tracing.tracer",
+        "TA.helper.schema", "TA.helper.prompt", "TA.helper.few_shot",
+        "TA.helper.utils", "TA.helper.context", "TA.tracing.tracer",
     ]:
         if m not in sys.modules:
             sys.modules[m] = types.ModuleType(m)
@@ -29,7 +29,7 @@ def _stub():
 def _router():
     _stub()
     import importlib
-    import TA.edu.workflow.roadmap as rm
+    import TA.workflow.roadmap as rm
     importlib.reload(rm)
     return rm._explore_router, rm.END
 

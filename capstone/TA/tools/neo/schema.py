@@ -11,11 +11,6 @@ class ContentInput(BaseModel):
     node_id: str = Field(description="Internal Graph ID of the concept")
     limit: int = Field(default=10, description="Limit of results")
     
-class SemanticSearchInput(BaseModel):
-    query: str = Field(description="The text query to search for.")
-    topic: Optional[str] = Field(default=None, description="Topic name to filter by.")
-    community: Optional[str] = Field(default=None, description="Community name to filter by.")
-
 class ExplorerInput(BaseModel):
     node_id: str = Field(description="ID của node gốc để tìm kiếm các thực thể liên quan qua các cạnh.")
 

@@ -2,11 +2,11 @@ import json
 import logging
 from langgraph.graph import StateGraph, END
 from core.schema.wf_state import AgentState, ConceptNode
-from TA.edu.helper.schema import TeachEvalOutput, TeachLectureOutput, NextTopicOutput
-import TA.edu.helper.prompt as prompt_lib
-from TA.edu.helper.few_shot import get_language_instruction
-from TA.edu.helper.utils import safe_parse_structured, extract_llm_raw_text, extract_agent_result
-from TA.edu.helper.context import extract_ta_context
+from TA.helper.schema import TeachEvalOutput, TeachLectureOutput, NextTopicOutput
+import TA.helper.prompt as prompt_lib
+from TA.helper.few_shot import get_language_instruction
+from TA.helper.utils import safe_parse_structured, extract_llm_raw_text, extract_agent_result
+from TA.helper.context import extract_ta_context
 from TA.tools.tool_config import PREREQUISITE_WEIGHT
 from core.repo.graph.cypher.tools.course import CYPHER_get_recommendations
 import os
@@ -244,7 +244,7 @@ async def teach_lookup(state: AgentState, config):
 
 async def teach_rag(state: AgentState, rag_agent, config):
     """ Reuse rag_core from retrieve.py as fallback"""
-    from TA.edu.workflow.retrieve import rag_core
+    from TA.workflow.retrieve import rag_core
 
     sid = config["configurable"]["session_id"]
     tracker = config["configurable"]["student_tracker"]

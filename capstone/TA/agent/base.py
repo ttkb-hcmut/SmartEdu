@@ -1,6 +1,6 @@
 from sympy import false
 
-from TA.edu.helper.schema import RAGCore, RAGDeep, RoadmapExplore, TeachLectureOutput
+from TA.helper.schema import RAGCore, RAGDeep, RoadmapExplore, TeachLectureOutput
 from core.schema.wf_state import TAOutput
 
 AGENT_SPECS = {

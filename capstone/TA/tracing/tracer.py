@@ -18,11 +18,14 @@ from __future__ import annotations
 import logging
 import os
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Literal
+from typing import Any, Dict, List, Optional, Literal, TYPE_CHECKING
 
 from TA.tracing.schema import ChatTrace, StepTrace, TraceSession
 from TA.tracing.writer import TraceWriter
 from core.config import langfuse_config
+
+if TYPE_CHECKING:
+    from core.schema.retrieval import RetrievalRunContext
 
 logger = logging.getLogger(__name__)
 
@@ -173,6 +176,8 @@ class AgentTracer:
         status: str = "SUCCESS",
         retrieve_flags: Optional[Dict[str, bool]] = None,
         preset: str = "",
+        errors: Optional[List[str]] = None,
+        retrieval_context: Optional["RetrievalRunContext"] = None,
     ):
         """
         Close the chat turn: flush buffer to JSON file.
@@ -188,6 +193,24 @@ class AgentTracer:
         chat.status = status
         chat.retrieve_flags = retrieve_flags or {}
         chat.preset = preset
+        chat.errors = errors or []
+        if retrieval_context is not None:
+            context = retrieval_context
+            chat.retrieve_flags = {
+                tool.value: True for tool in context.policy.allowed_tools
+            }
+            chat.preset = context.preset.name
+            chat.policy_id = context.policy.id.value
+            chat.policy_digest = context.policy.digest
+            chat.harness_id = context.harness.id.value
+            chat.run_id = context.case.run_id
+            chat.question_id = context.case.question_id
+            chat.warmup = context.case.kind.value == "warmup"
+            chat.model_profile = context.policy.model_profile
+            chat.model = context.policy.model_name
+            chat.temperature = context.policy.temperature
+            chat.code_revision = context.code.revision
+            chat.dirty = context.code.dirty
 
         self._session.chat.append(chat)
         path = await self._writer.write_async(self._session)

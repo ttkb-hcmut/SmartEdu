@@ -15,6 +15,7 @@ import asyncio
 import json
 import random
 import statistics
+import subprocess
 import time
 from pathlib import Path
 
@@ -49,38 +50,156 @@ def boot_ta():
     return ta, tracker
 
 
-def session_name(preset: str, track: str) -> str:
-    return f"bench_{preset.lower()}_{track}"
+def session_name(preset: str, track: str, run_id: str) -> str:
+    return f"bench_{preset.lower()}_{track}_{run_id}"
 
 
-async def run_preset(ta, tracker, preset: str, fixture: list, track: str, course: str):
+def read_code_state():
+    from core.schema.retrieval import RetrievalCodeState
+
+    root = Path(__file__).resolve().parents[2]
+    revision = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    dirty = bool(
+        subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+    )
+    return RetrievalCodeState(revision=revision, dirty=dirty)
+
+
+def validate_run_sessions(sessions, expected_ids: set[str], run_id: str):
+    chats = [chat for session in sessions for chat in session.chat]
+    ids = [chat.question_id for chat in chats]
+    if any(chat.run_id != run_id for chat in chats):
+        raise ValueError(f"stale trace found outside run {run_id}")
+    if any(chat.warmup for chat in chats):
+        raise ValueError("warm-up trace mixed into scored cases")
+    if any(chat.status != "SUCCESS" for chat in chats):
+        failed = [chat.question_id for chat in chats if chat.status != "SUCCESS"]
+        raise ValueError(f"invalid benchmark cases: {failed}")
+    if len(ids) != len(set(ids)):
+        raise ValueError("duplicate benchmark case trace")
+    if set(ids) != expected_ids:
+        raise ValueError(
+            f"incomplete run: missing={sorted(expected_ids - set(ids))}, "
+            f"extra={sorted(set(ids) - expected_ids)}"
+        )
+    return chats
+
+
+def verify_corpus_ready(milvus_db, graph_db, manifest_path: Path, course: str) -> None:
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    expected = set(manifest.get("paragraphs", {}))
+    if not expected:
+        raise ValueError(f"no canonical paragraphs in {manifest_path}")
+    milvus_ids = milvus_db.list_ids(course)
+    neo4j_ids = graph_db.list_passage_uris(f"{course}/")
+    missing_milvus = expected - milvus_ids
+    missing_neo4j = expected - neo4j_ids
+    if missing_milvus or missing_neo4j:
+        raise ValueError(
+            f"dual-index corpus gate failed: Milvus missing {len(missing_milvus)}, "
+            f"Neo4j missing {len(missing_neo4j)}"
+        )
+
+
+async def run_case(
+    ta,
+    tracker,
+    preset: str,
+    item: dict,
+    track: str,
+    course: str,
+    run_id: str,
+    harness_id,
+    code_state,
+    warmup: bool = False,
+):
     from core.config import Retrieve_param
-    rp = Retrieve_param.from_preset(preset, benchmark_course=course) if course else Retrieve_param.from_preset(preset)
+    from core.schema.retrieval import RetrievalCase, RetrievalCaseKind, RetrievalRoute
+
+    question_id = f"warmup-{item['id']}" if warmup else item["id"]
+    prefix = "WARMUP" if warmup else preset
+    sid = f"{session_name(prefix, track, run_id)}__{question_id}"
+    rp = Retrieve_param.from_preset(
+        preset,
+        harness_id=harness_id,
+        course_scope=course,
+    )
+    tracker.create_chat_session(BENCH_STUDENT, sid)
+    t0 = time.time()
+    try:
+        result = await ta.run(
+            user_input=item["question"],
+            session_id=sid,
+            language="eng",
+            retrieve_param=rp,
+            retrieval_case=RetrievalCase(
+                run_id=run_id,
+                question_id=question_id,
+                kind=RetrievalCaseKind.WARMUP if warmup else RetrievalCaseKind.BENCHMARK,
+                forced_route=RetrievalRoute.RETRIEVE,
+            ),
+            code_state=code_state,
+        )
+        label = "WARMUP" if warmup else preset
+        if result["status"] == "SUCCESS":
+            print(f"[{label}] {item['id']} ({time.time()-t0:.1f}s)")
+        else:
+            print(f"[{label}] {item['id']} FAILED: {result['errors']}")
+    finally:
+        tracker.drop_session(sid)
+
+
+async def run_preset(
+    ta,
+    tracker,
+    preset: str,
+    fixture: list,
+    track: str,
+    course: str,
+    run_id: str,
+    harness_id,
+    code_state,
+):
     for i, q in enumerate(fixture):
-        ## fresh session per question -> no history leak between fixture items
-        sid = f"{session_name(preset, track)}__{q['id']}"
-        tracker.create_chat_session(BENCH_STUDENT, sid)
-        t0 = time.time()
-        try:
-            await ta.run(user_input=q["question"], session_id=sid, language="eng", retrieve_param=rp)
-            print(f"[{preset}] {i+1}/{len(fixture)} {q['id']} ({time.time()-t0:.1f}s)")
-        except Exception as e:
-            print(f"[{preset}] {i+1}/{len(fixture)} {q['id']} FAILED: {e}")
-        finally:
-            tracker.drop_session(sid)
+        print(f"[{preset}] {i+1}/{len(fixture)}", end=" ")
+        await run_case(
+            ta,
+            tracker,
+            preset,
+            q,
+            track,
+            course,
+            run_id,
+            harness_id,
+            code_state,
+        )
 
 
-def score(fixture: list, presets: list, track: str, judge: bool) -> None:
+def score(fixture: list, presets: list, track: str, run_id: str, judge: bool) -> None:
     from TA.tracing.evaluator import load_session, evaluate_session, render_table, judge_chat
 
     rows = []
+    expected_ids = {item["id"] for item in fixture}
     for preset in presets:
-        paths = sorted(TRACE_DIR.glob(f"{session_name(preset, track)}__*.json"))
+        paths = sorted(TRACE_DIR.glob(f"{session_name(preset, track, run_id)}__*.json"))
         if not paths:
-            print(f"no traces for {preset}: {TRACE_DIR / (session_name(preset, track) + '__*.json')}")
-            continue
-        for path in paths:
-            rows += evaluate_session(load_session(path), fixture)
+            raise ValueError(f"no traces for {preset} in run {run_id}")
+        sessions = [load_session(path) for path in paths]
+        validate_run_sessions(sessions, expected_ids, run_id)
+        for session in sessions:
+            rows += evaluate_session(session, fixture)
 
     if judge:
         for row in rows:
@@ -132,6 +251,8 @@ async def main():
     ap.add_argument("--presets", default="plain,rag,full")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--course", default="", help="benchmark course scope, e.g. Bench_MuSiQue")
+    ap.add_argument("--harness", default="agentic-v1", choices=("agentic-v1", "fanout-v1"))
+    ap.add_argument("--run-id", default="")
     ap.add_argument("--score-only", action="store_true")
     ap.add_argument("--judge", action="store_true")
     ap.add_argument("--calibrate", action="store_true")
@@ -143,17 +264,58 @@ async def main():
         fixture = fixture[:args.limit]
     track = fixture[0]["track"] if fixture else "unknown"
     presets = [p.strip().upper() for p in args.presets.split(",")]
+    run_id = args.run_id or time.strftime("%Y%m%d_%H%M%S")
 
     if args.calibrate:
         calibrate(fixture, Path(args.corpus))
         return
 
     if not args.score_only:
-        ta, tracker = boot_ta()
-        for preset in presets:
-            await run_preset(ta, tracker, preset, fixture, track, args.course)
+        from core.schema.retrieval import RetrievalHarnessId
 
-    score(fixture, presets, track, judge=args.judge)
+        ta, tracker = boot_ta()
+        if not args.course:
+            raise SystemExit("live benchmark requires --course for dual-index scoping")
+        verify_corpus_ready(
+            ta.tools_factory.milvus_db,
+            ta.tools_factory.graph_db,
+            Path(args.corpus) / "manifest.json",
+            args.course,
+        )
+        code_state = read_code_state()
+        harness_id = RetrievalHarnessId(args.harness)
+        try:
+            if fixture:
+                await run_case(
+                    ta,
+                    tracker,
+                    "FULL",
+                    fixture[0],
+                    track,
+                    args.course,
+                    run_id,
+                    harness_id,
+                    code_state,
+                    warmup=True,
+                )
+            for preset in presets:
+                await run_preset(
+                    ta,
+                    tracker,
+                    preset,
+                    fixture,
+                    track,
+                    args.course,
+                    run_id,
+                    harness_id,
+                    code_state,
+                )
+        finally:
+            tracker.delete_student(BENCH_STUDENT)
+    elif not args.run_id:
+        raise SystemExit("--score-only requires the exact --run-id")
+
+    score(fixture, presets, track, run_id, judge=args.judge)
 
 
 if __name__ == "__main__":

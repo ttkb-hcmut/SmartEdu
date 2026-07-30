@@ -62,6 +62,11 @@ class SQL_DB:
                     (student_id, username, name, email, hashed_pw, 1 if is_admin else 0)
                 )
 
+    def delete_student(self, student_id: str) -> None:
+        with self._connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("DELETE FROM students WHERE id = %s", (student_id,))
+
     def is_admin(self, student_id: str) -> bool:
         # read admin flag for a student
         with self._connect() as conn:

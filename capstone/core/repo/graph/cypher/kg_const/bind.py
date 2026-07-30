@@ -46,11 +46,32 @@ RETURN node.id AS passage_id, score
 LIMIT $k
 """
 
+CYPHER_anchor_search_scoped = """
+MATCH (node:Passage)
+WHERE node.uri STARTS WITH $prefix AND node.emb IS NOT NULL
+WITH node, vector.similarity.cosine(node.emb, $emb) AS score
+WHERE score IS NOT NULL
+RETURN node.id AS passage_id, score
+ORDER BY score DESC
+LIMIT $k
+"""
+
 CYPHER_passage_search_vec = """
 CALL db.index.vector.queryNodes('passage_vec_index', $probe, $emb) YIELD node, score
 WHERE $prefix IS NULL OR node.uri STARTS WITH $prefix
 RETURN node.id AS id, node.text AS text, node.uri AS uri,
        node.p_lo AS p_lo, node.p_hi AS p_hi, score
+LIMIT $k
+"""
+
+CYPHER_passage_search_vec_scoped = """
+MATCH (node:Passage)
+WHERE node.uri STARTS WITH $prefix AND node.emb IS NOT NULL
+WITH node, vector.similarity.cosine(node.emb, $emb) AS score
+WHERE score IS NOT NULL
+RETURN node.id AS id, node.text AS text, node.uri AS uri,
+       node.p_lo AS p_lo, node.p_hi AS p_hi, score
+ORDER BY score DESC
 LIMIT $k
 """
 

@@ -70,6 +70,11 @@ class Mongo_DB:
                 "memo": []
             })
 
+    def delete_student(self, student_id: str) -> None:
+        self.students.delete_one({"_id": student_id})
+        self.learning_logs.delete_many({"student_id": student_id})
+        self.learning_trees.delete_many({"student_id": student_id})
+
     def get_language(self, student_id: str) -> str:
         # read saved language, default to vn
         doc = self.students.find_one({"_id": student_id}, {"language": 1})

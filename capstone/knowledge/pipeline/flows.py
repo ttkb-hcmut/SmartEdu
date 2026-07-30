@@ -7,8 +7,8 @@ from prefect import flow
 from prefect.runtime import flow_run
 
 from core.config import Ingest_param, DB_NAME
-from core.ingest.contracts import new_report
-from core.ingest.stages.persist import persist_report
+from core.schema.ingest import new_report
+from knowledge.ingest.persist import persist_report
 from knowledge.pipeline import deps
 from knowledge.pipeline.legacy import process_textbook_legacy
 from knowledge.pipeline.tasks import (
@@ -87,7 +87,7 @@ async def course_flow(course_name: str, slide_files: List[str],
         if res is None:
             continue
         nodes, edges, clusters = res
-        await persist_slide_task(nodes, edges, clusters)
+        await persist_slide_task(course_name, nodes, edges, clusters)
         concept_nodes += [n for n in nodes if n.get("typeNode") == "Concept"]
         report["slides"].append({"file": f, "nodes": len(nodes), "edges": len(edges)})
 

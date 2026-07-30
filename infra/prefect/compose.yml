@@ -1,0 +1,57 @@
+name: capstone-prefect
+
+services:
+  postgres:
+    image: postgres:14.23-alpine3.24
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: prefect
+      POSTGRES_PASSWORD: ${PREFECT_DB_PASSWORD:?set PREFECT_DB_PASSWORD}
+      POSTGRES_DB: prefect
+    volumes:
+      - prefect_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prefect -d prefect"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks: [prefect-private]
+
+  prefect-server:
+    image: prefecthq/prefect:3.7.7-python3.12
+    restart: unless-stopped
+    command: prefect server start --host 0.0.0.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PREFECT_API_DATABASE_CONNECTION_URL: postgresql+asyncpg://prefect:${PREFECT_DB_PASSWORD:?set PREFECT_DB_PASSWORD}@postgres:5432/prefect
+      PREFECT_SERVER_API_HOST: 0.0.0.0
+      PREFECT_SERVER_UI_API_URL: http://${PREFECT_PUBLIC_HOST:-127.0.0.1}:4200/api
+    ports:
+      - "${PREFECT_BIND_ADDR:-127.0.0.1}:4200:4200"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:4200/api/health', timeout=1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks: [prefect-private]
+
+  sftp:
+    image: atmoz/sftp:alpine
+    restart: unless-stopped
+    command: ${PREFECT_SFTP_USER:?set PREFECT_SFTP_USER}:${PREFECT_SFTP_PASSWORD:?set PREFECT_SFTP_PASSWORD}:1001:1001:results
+    volumes:
+      - prefect_results:/home/${PREFECT_SFTP_USER:?set PREFECT_SFTP_USER}/results
+    ports:
+      - "${PREFECT_BIND_ADDR:-127.0.0.1}:2222:22"
+    networks: [prefect-private]
+
+volumes:
+  prefect_db:
+  prefect_results:
+
+networks:
+  prefect-private:
+    internal: true

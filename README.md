@@ -21,19 +21,19 @@ Further reading:
 
 ## 2. Features & engineering highlights
 
-What it does for a user:
+### Featurers
 - **Automated knowledge ingestion.** Drop in raw lecture slides and textbooks; the system reads and analyzes them on its own.
 - **Knowledge graph conversion.** Those documents become a structured Educational Knowledge Graph (EKG) that maps prerequisites and related concepts.
 - **Mastery tracking.** The system scores proficiency per concept, spots gaps, and uses them to decide what comes next.
 - **Grounded teaching assistant.** A multi-agent tutor answers questions strictly from the verified graph, recommends a personal learning path, and pulls up source material matched to where the student is.
 
-What stands behind it:
+### Technical Highlights
 
 **Async ingestion that keeps the graph current without blocking the service.**
 A course upload runs through a three-stage producer-consumer pipeline joined by bounded async queues: one stage parses the PDF and streams chunks to MinIO, a pool of worker coroutines runs the LLM extraction, and a single writer commits nodes and edges to Neo4j. The upload endpoint returns right away while this happens in the background, the bounded queues keep memory flat under load, and a node cache means re-ingesting a course only touches concepts it has not seen before. In testing this ran about 30% faster than a sequential version.
 
 **Dynamic agent injection with task-based harnessing for multi-agent SLM collaboration.**
-Rather than one heavyweight prompt juggling every job, an adaptive middleware rebuilds the agent at each step of the LangGraph workflow. A registry keyed by node name supplies that node's prompt, tools, output schema, and model settings, so a single agent acts as a router at one node and a lecturer at the next, with no extra model instances spun up. Each step sees only the context its task needs, which keeps small local models (run on Ollama) accurate and cheap.
+The problem is one SLM for every job cause context overhead and dumb execution, while multi SLM cost linearly for weight and cache. This, by using Langchain adaptive middleware, this workflow rebuilds the agent at each step of the LangGraph workflow, creating multiagents with different task-oriented harness. A registry keyed by node name supplies that node's prompt, tools, output schema, and model settings, so a single agent acts as a router at one node and a lecturer at the next, with no extra model instances spun up. Each step sees only the context its task needs, which keeps small local models (run on Ollama) accurate and cheap.
 
 **A platform built as independent microservices with dependency injection for isolated scaling.**
 The backend ships as one FastAPI process so the multi-step agent workflow avoids network hops, but the modules (core, student, knowledge, TA) never import each other's logic. They talk only through shared Pydantic contracts and receive their dependencies through an injection layer. Any module can be lifted into its own service by swapping its provider for an HTTP client, with zero change to the business logic inside.
@@ -86,7 +86,7 @@ The backend runs as one FastAPI process, with expensive resources built once at 
 Five databases each hold what they are best at: Neo4j for the knowledge graph and per-student mastery, Milvus for SciBERT vector search, MongoDB for session state and chat history, MinIO for PDFs and text chunks, and SQLite for credentials. To stop modules from fighting over shared storage, each collection has exactly one writer and everyone else reads, a rule the system calls the one-write policy. Every agent step is traced to disk and to Langfuse, so a black-box pipeline stays debuggable in production.
 
 ### Where it stands today
-The infrastructure, ingestion, authentication, and the retrieve and roadmap workflows are running. The full teaching loop is still being finished. Ingestion takes roughly 250 seconds per 50 pages with three workers, and graphs past about 100 nodes get hard to read. DBpedia occasionally accepts an odd or unnormalized name, which is the main quality wrinkle to clean up. Formal benchmarks come next.
+The infrastructure, ingestion, authentication, and all five agent workflows (retrieve, roadmap, teach, confirm, unknown) are wired end-to-end, including the teaching loop's lecture-evaluate-advance cycle. A typed retrieval policy and dual-harness ablation instrument (agentic tool-loop as the default, a deterministic fan-out+RRF harness kept as a frozen control) is built to benchmark retrieval quality across PLAIN/RAG/FULL arms; the harness itself is unit-tested (100+ passing), but a live scored run against real data is still blocked on a corpus loader that has to dual-write canonical paragraphs into both Milvus and Neo4j. Ingestion takes roughly 250 seconds per 50 pages with three workers, and graphs past about 100 nodes get hard to read. DBpedia occasionally accepts an odd or unnormalized name, which is the main quality wrinkle to clean up. Formal benchmark numbers come next.
 
 ## 5. Infrastructure & how to run
 ### Infrastructure

@@ -119,40 +119,24 @@ class MySQL_conf:
     password: str = os.getenv("MYSQL_ROOT_PASSWORD", "")
     db_name: str = os.getenv("MYSQL_DATABASE", "capstone_db")
 
+from core.schema.retrieval import (
+    RetrievalHarnessId,
+    RetrievalPolicyId,
+    RetrievalPreset,
+)
+
+
 ## frozen -> module singleton shared across sessions, mutate via from_preset only
 @dataclass(frozen=True)
 class Retrieve_param:
-    ## ablation study of harness components
-    use_rag: bool = True
-    use_graphrag: bool = True
-
-    # search params
-    top_k: int = 5
-    rrf_k: int = 60
-    per_component_k: int = 8
-
-    benchmark_course: str = ""   ## empty -> product corpus; set -> URI-prefix scope
-
-    def flag_set(self) -> dict:
-        return {"rag": self.use_rag, "graphrag": self.use_graphrag}
-
-    @property
-    def preset(self) -> str:
-        flags = self.flag_set()
-        if not any(flags.values()):
-            return "PLAIN"
-        if all(flags.values()):
-            return "FULL"
-        return "RAG" if self.use_rag else "CUSTOM"  ## CUSTOM = graphrag-only, hand-built
+    preset: RetrievalPreset = RetrievalPreset.FULL
+    policy_id: RetrievalPolicyId = RetrievalPolicyId.BASELINE_V1
+    harness_id: RetrievalHarnessId = RetrievalHarnessId.AGENTIC_V1
+    course_scope: str = ""
 
     @classmethod
     def from_preset(cls, name: str, **overrides) -> "Retrieve_param":
-        presets = {
-            "PLAIN": dict(use_rag=False, use_graphrag=False),
-            "RAG": dict(use_rag=True, use_graphrag=False),
-            "FULL": dict(use_rag=True, use_graphrag=True),
-        }
-        return cls(**{**presets[name.upper()], **overrides})
+        return cls(preset=RetrievalPreset(name.lower()), **overrides)
 
 retrieve_param = Retrieve_param()
 
