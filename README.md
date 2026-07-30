@@ -21,19 +21,19 @@ Further reading:
 
 ## 2. Features & engineering highlights
 
-Featurers:
+### Featurers
 - **Automated knowledge ingestion.** Drop in raw lecture slides and textbooks; the system reads and analyzes them on its own.
 - **Knowledge graph conversion.** Those documents become a structured Educational Knowledge Graph (EKG) that maps prerequisites and related concepts.
 - **Mastery tracking.** The system scores proficiency per concept, spots gaps, and uses them to decide what comes next.
 - **Grounded teaching assistant.** A multi-agent tutor answers questions strictly from the verified graph, recommends a personal learning path, and pulls up source material matched to where the student is.
 
-Technical Highlights:
+### Technical Highlights
 
 **Async ingestion that keeps the graph current without blocking the service.**
 A course upload runs through a three-stage producer-consumer pipeline joined by bounded async queues: one stage parses the PDF and streams chunks to MinIO, a pool of worker coroutines runs the LLM extraction, and a single writer commits nodes and edges to Neo4j. The upload endpoint returns right away while this happens in the background, the bounded queues keep memory flat under load, and a node cache means re-ingesting a course only touches concepts it has not seen before. In testing this ran about 30% faster than a sequential version.
 
 **Dynamic agent injection with task-based harnessing for multi-agent SLM collaboration.**
-Rather than one heavyweight prompt juggling every job, an adaptive middleware rebuilds the agent at each step of the LangGraph workflow. A registry keyed by node name supplies that node's prompt, tools, output schema, and model settings, so a single agent acts as a router at one node and a lecturer at the next, with no extra model instances spun up. Each step sees only the context its task needs, which keeps small local models (run on Ollama) accurate and cheap.
+The problem is one SLM for every job cause context overhead and dumb execution, while multi SLM cost linearly for weight and cache. This, by using Langchain adaptive middleware, this workflow rebuilds the agent at each step of the LangGraph workflow, creating multiagents with different task-oriented harness. A registry keyed by node name supplies that node's prompt, tools, output schema, and model settings, so a single agent acts as a router at one node and a lecturer at the next, with no extra model instances spun up. Each step sees only the context its task needs, which keeps small local models (run on Ollama) accurate and cheap.
 
 **A platform built as independent microservices with dependency injection for isolated scaling.**
 The backend ships as one FastAPI process so the multi-step agent workflow avoids network hops, but the modules (core, student, knowledge, TA) never import each other's logic. They talk only through shared Pydantic contracts and receive their dependencies through an injection layer. Any module can be lifted into its own service by swapping its provider for an HTTP client, with zero change to the business logic inside.
