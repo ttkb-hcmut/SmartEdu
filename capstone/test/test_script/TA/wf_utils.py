@@ -1,5 +1,5 @@
-from TA.edu.utils import safe_parse_structured, auto_default_schema, extract_llm_raw_text
-from TA.edu.workflow.schema import RAGCore, RAGDeep, DeepDecision
+from TA.helper.utils import safe_parse_structured, auto_default_schema, extract_llm_raw_text
+from TA.helper.schema import RAGCore, RAGDeep, DeepDecision
 from core.schema.wf_state import TAOutput
 
 
@@ -42,4 +42,3 @@ def test_safe_parse_structured():
 
 if __name__ == "__main__":
     test_safe_parse_structured()
-

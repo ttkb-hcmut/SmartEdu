@@ -1,6 +1,6 @@
 """These shots are synthesis by Sonnet 4.5
 These shots are the hard boundary cases only — no obvious anchor spam"""
-# TA/edu/workflow/few_shot.py 
+# TA/helper/few_shot.py
 ## -- Few-shot examples for TA_Router intent classification
 ## -- Design principles:
 ##    1. Hard boundary cases ONLY — no obvious anchor spam

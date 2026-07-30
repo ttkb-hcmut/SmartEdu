@@ -4,20 +4,22 @@ import logging
 from datetime import datetime
 from typing import List, Optional, Any, Dict
 from langgraph.graph import StateGraph, END
+from langgraph.runtime import Runtime
 from langchain_core.runnables import RunnableConfig
 from langchain_core.messages import AIMessage
 
-import TA.edu.helper.prompt as prompt_lib
-from TA.edu.helper.few_shot import format_few_shot, get_language_instruction
-from TA.edu.helper.schema import RouterDecision
+import TA.helper.prompt as prompt_lib
+from TA.helper.few_shot import format_few_shot, get_language_instruction
+from TA.helper.schema import RouterDecision
 from core.schema.wf_state import AgentState, ConceptNode, TAOutput
 
-from TA.edu.workflow.retrieve import build_retrieve_wf, _get_rp
-from TA.edu.workflow.roadmap import build_roadmap_wf
-from TA.edu.workflow.teach import build_teach_wf
+from TA.workflow.retrieve import build_retrieve_wf
+from core.schema.retrieval import RetrievalRunContext
+from TA.workflow.roadmap import build_roadmap_wf
+from TA.workflow.teach import build_teach_wf
 
-from TA.edu.helper.utils import parse_student_state
-from TA.edu.helper.context import extract_ta_context
+from TA.helper.utils import parse_student_state
+from TA.helper.context import extract_ta_context
 import os
 from TA.tracing.tracer import AgentTracer
 
@@ -68,7 +70,7 @@ class SmartEdu:
         self.app = self._build_graph()
 
     def _build_graph(self):
-        builder = StateGraph(AgentState)
+        builder = StateGraph(AgentState, context_schema=RetrievalRunContext)
 
         builder.add_node("TA_Router", self.ta_router_node)
 
@@ -108,8 +110,25 @@ class SmartEdu:
 
         return builder.compile()
 
-    async def ta_router_node(self, state: AgentState, config: RunnableConfig):
+    async def ta_router_node(
+        self,
+        state: AgentState,
+        config: RunnableConfig,
+        runtime: Runtime[RetrievalRunContext],
+    ):
         """ No-tool node: direct structured output with RouterDecision"""
+        forced = runtime.context.case.forced_route
+        if forced is not None:
+            tracer, chat_id = _tracer_ctx(config)
+            if tracer and chat_id:
+                tracer.log_step(
+                    chat_id=chat_id,
+                    node="TA_Router",
+                    tool_result={"forced": forced.value},
+                    output=forced.value,
+                )
+            return {"intent": forced.value}
+
         sid, _uid, tracker, session_context = _resource_ctx(config)
         tracer, chat_id = _tracer_ctx(config)
         ta = self.agents["TA"]
@@ -169,7 +188,12 @@ class SmartEdu:
 
         return {"intent": intent}
 
-    async def ta_retrieve_finish(self, state: AgentState, config: RunnableConfig):
+    async def ta_retrieve_finish(
+        self,
+        state: AgentState,
+        config: RunnableConfig,
+        runtime: Runtime[RetrievalRunContext],
+    ):
         """ TA synthesis node — tool-calling agent reads context then synthesizes"""
         sid, uid, tracker, session_context = _resource_ctx(config)
         tracer, chat_id = _tracer_ctx(config)
@@ -182,8 +206,7 @@ class SmartEdu:
             tracker.apply_proposal(sid, proposal)
 
         results = state.get("worker_results", {})
-        rp = _get_rp(config)
-        if rp.preset == "PLAIN":
+        if runtime.context.preset.value == "plain":
             ## PLAIN floor: prompt must not point at retrieval data
             refine_prompt = prompt_lib.RETRIEVE_PLAIN_PROMPT.format(
                 language_instruction=language_instruction
@@ -566,7 +589,7 @@ class SmartEdu:
         callbacks: Optional[List[Any]] = None,
         update_callback=None,
         emit=None,
-        retrieve_param=None,
+        retrieval_context: RetrievalRunContext | None = None,
     ):
 
         log_f = f"wf/wf_v0_{datetime.now().strftime('%H%M%S')}_{datetime.now().strftime('%d%m')}.json"
@@ -585,14 +608,18 @@ class SmartEdu:
                 "teach_tools": self.teach_tools,
                 "log_filename": log_f,
                 "emit": emit,  ## finish nodes pull this to stream tokens
-                "retrieve_param": retrieve_param,
             },
             "callbacks": callbacks or [],
             "recursion_limit": 50,
         }
         try:
             final_state = dict(initial_state)
-            async for chunk in self.app.astream(initial_state, config=run_config, stream_mode="updates"):
+            async for chunk in self.app.astream(
+                initial_state,
+                config=run_config,
+                context=retrieval_context,
+                stream_mode="updates",
+            ):
                 for node_name, state_update in chunk.items():
                     _loggable_keys = [k for k in state_update if k not in ("messages", "worker_results")]
                     if _loggable_keys:

@@ -97,6 +97,39 @@ def test_evaluate_session_matches_by_query():
     assert len(rows) == 1 and rows[0]["fixture_id"] == "q1"
 
 
+def test_evaluate_session_matches_case_identity_and_skips_warmup():
+    benchmark = _chat(comp_steps={"Comp_Semantic": GOLD}, fusion_chunks=GOLD)
+    benchmark.question_id = "q2"
+    benchmark.query = "duplicate question"
+    warmup = _chat(comp_steps={"Comp_Semantic": GOLD}, fusion_chunks=GOLD)
+    warmup.question_id = "q1"
+    warmup.query = "duplicate question"
+    warmup.warmup = True
+    session = TraceSession(session_id="run", chat=[warmup, benchmark])
+    fixture = [
+        {"id": "q1", "question": "duplicate question", "gold_chunk_ids": []},
+        {"id": "q2", "question": "duplicate question", "gold_chunk_ids": GOLD},
+    ]
+
+    rows = evaluate_session(session, fixture)
+
+    assert [row["fixture_id"] for row in rows] == ["q2"]
+
+
+def test_agentic_result_chunks_are_scored():
+    chat = ChatTrace(
+        chat_id="c1",
+        query="q",
+        preset="RAG",
+        agent=[StepTrace(node="Agentic_Retrieve", chunks=[_chunk(GOLD[0])])],
+    )
+
+    row = evaluate_chat(chat, {"id": "q", "question": "q", "gold_chunk_ids": GOLD})
+
+    assert row["context_precision"] == 1.0
+    assert row["context_recall"] == 0.5
+
+
 def test_render_table_groups_presets():
     rows = [
         {"preset": "PLAIN", "fixture_id": "q1", "context_precision": None,

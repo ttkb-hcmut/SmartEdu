@@ -6,7 +6,7 @@ from langchain_core.runnables import RunnableConfig
 from TA.tools.neo.base import NeoTool
 from TA.tools.neo.schema import CourseTreeInput
 from TA.tools.tool_config import PREREQUISITE_WEIGHT
-from TA.edu.helper.tree_order import topo_order
+from TA.helper.tree_order import topo_order
 from core.repo.graph.cypher.tools.course import (
     CYPHER_course_tree_concept, CYPHER_course_tree_prereq,
 )

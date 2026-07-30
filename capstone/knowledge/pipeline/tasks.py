@@ -69,10 +69,11 @@ async def extract_slide_task(course_name: str, file_name: str, items: List,
 
 
 @task(name="persist-slide-kg", retries=2)
-async def persist_slide_task(nodes: List[Dict], edges: List[Dict], clusters: List[Dict]):
+async def persist_slide_task(course_name: str, nodes: List[Dict],
+                             edges: List[Dict], clusters: List[Dict]):
     await asyncio.to_thread(
         persist_slide_kg, deps.graph_db(), deps.milvus_db(), deps.embedder(),
-        DB_NAME, nodes, edges, clusters
+        DB_NAME, course_name, nodes, edges, clusters
     )
 
 
@@ -131,7 +132,8 @@ async def video_persist_task(course_name: str, file_name: str, duration: float,
         cfg = Ingest_param()
         video_id = f"{course_name}/{file_name}"
         seg_nodes, anchor_links, novel_entries = build_video_segments(
-            deps.embedder(), deps.milvus_db(), video_id, whisper_segments, cfg
+            deps.embedder(), deps.milvus_db(), video_id, course_name,
+            whisper_segments, cfg
         )
         if not seg_nodes:
             return {"file": file_name, "duration": duration, "segments": 0,

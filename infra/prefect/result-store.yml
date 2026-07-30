@@ -1,0 +1,8 @@
+block:
+  type: remote-file-system
+  name: prefect-sftp-results
+  basepath: sftp://${PREFECT_SFTP_USER}@${PREFECT_RESULT_HOST}:${PREFECT_RESULT_PORT:-2222}/results
+  settings:
+    username: ${PREFECT_SFTP_USER}
+    password: ${PREFECT_SFTP_PASSWORD}
+    port: 2222

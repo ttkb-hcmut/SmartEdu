@@ -5,8 +5,8 @@
     "question": "What company succeeded the owner of Empire Sports Network?",
     "gold_answer": "Time Warner Cable",
     "gold_chunk_ids": [
-      "Bench_MuSiQue/2hop__354635_174222/2",
-      "Bench_MuSiQue/2hop__354635_174222/16"
+      "Bench_MuSiQue/paragraph/ffbe8c8d33569a33ae76724bf6c44c1b8e934b169ad1f95301035459c7bb52a2",
+      "Bench_MuSiQue/paragraph/b220cb7563498ca7016ed790672e1c761d0097cbbd88199b589c7bb2f98556e1"
     ],
     "hops": 2,
     "type": "open"
@@ -17,8 +17,8 @@
     "question": "What is the network which National Cycle Route 57 is part of an example of?",
     "gold_answer": "national cycling route network",
     "gold_chunk_ids": [
-      "Bench_MuSiQue/2hop__726717_610238/12",
-      "Bench_MuSiQue/2hop__726717_610238/14"
+      "Bench_MuSiQue/paragraph/3457004119da838e330d3b2f46b888e4c6ac273beb7eac55479f45e09599b5dd",
+      "Bench_MuSiQue/paragraph/cbc2997517c8527ba5a50f6b0c46fd1e9a86186e4c276546afd5f3ed29d8df72"
     ],
     "hops": 2,
     "type": "open"
@@ -29,8 +29,8 @@
     "question": "Since 2004, what is the location of the body to which, if a matter is not specifically reserved, it is devolved?",
     "gold_answer": "Scottish Parliament Building",
     "gold_chunk_ids": [
-      "Bench_MuSiQue/2hop__42027_42004/3",
-      "Bench_MuSiQue/2hop__42027_42004/7"
+      "Bench_MuSiQue/paragraph/b7fdd89bb2edb69bd500e826ddc94da843f94f8effb93ae38881f496d6adc038",
+      "Bench_MuSiQue/paragraph/d5874137da9cadaf257dad4c0a730f63b1452e622d2587b0ff7683cd7ae64242"
     ],
     "hops": 2,
     "type": "open"
@@ -41,8 +41,8 @@
     "question": "What company merged in 2002 with the CEMM developer?",
     "gold_answer": "Hewlett Packard",
     "gold_chunk_ids": [
-      "Bench_MuSiQue/2hop__817096_15463/0",
-      "Bench_MuSiQue/2hop__817096_15463/12"
+      "Bench_MuSiQue/paragraph/e19927f9c9b6d86128479dd22bd607092d4037eed0730687ec53af4bdb3ebb5c",
+      "Bench_MuSiQue/paragraph/f9b7952aa115ea4b35cfd258e4f986ce1581d828ac79b010bbbc408661ca8924"
     ],
     "hops": 2,
     "type": "open"
@@ -53,8 +53,8 @@
     "question": "In 2002, what company merged with the top PC manufacturer from 1994?",
     "gold_answer": "Hewlett Packard",
     "gold_chunk_ids": [
-      "Bench_MuSiQue/2hop__14095_15463/2",
-      "Bench_MuSiQue/2hop__14095_15463/16"
+      "Bench_MuSiQue/paragraph/e601f6b62dbaa47ffa2baedf9ed5354636b4428c252ccc6998ff738166dacce1",
+      "Bench_MuSiQue/paragraph/f9b7952aa115ea4b35cfd258e4f986ce1581d828ac79b010bbbc408661ca8924"
     ],
     "hops": 2,
     "type": "open"

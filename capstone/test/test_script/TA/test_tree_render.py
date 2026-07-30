@@ -1,4 +1,4 @@
-from TA.edu.helper.tree_render import render_frontier
+from TA.helper.tree_render import render_frontier
 
 TREE = {"course": "ML", "topics": [
     {"name": "Basics", "concepts": [

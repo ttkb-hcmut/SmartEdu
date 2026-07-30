@@ -23,7 +23,7 @@ no verified English subset. Nothing from it is imported.
   "track": "musique",
   "question": "...",
   "gold_answer": "...",
-  "gold_chunk_ids": ["Bench_MuSiQue/2hop__123_456/3", "..."],
+  "gold_chunk_ids": ["Bench_MuSiQue/paragraph/<sha256>", "..."],
   "hops": 2,
   "type": "open"
 }
@@ -34,13 +34,14 @@ no verified English subset. Nothing from it is imported.
 Context precision/recall is **set arithmetic** between trace `chunks[].uri`
 and `gold_chunk_ids`. That only works if ingestion preserves the URI scheme:
 
-- Corpus layout: `corpus/<track>/<question_id>/<para_idx>.txt`
-- Required passage URI after ingest: `Bench_MuSiQue/<question_id>/<para_idx>`
-  (resp. `Bench_NCERT/<chapter>/<para_idx>`) — i.e. course name
-  `Bench_MuSiQue` / `Bench_NCERT`, then the relative path without extension.
+- Corpus layout: `corpus/<track>/<question_id>/<para_idx>.txt` preserves source occurrences.
+- MuSiQue paragraph identity is `sha256(normalize(title) + NUL + normalize(text))`.
+  Identical paragraphs across questions therefore share one URI:
+  `Bench_MuSiQue/paragraph/<sha256>`.
 - Each `.txt` starts with a `# <title>` line; body is the paragraph text.
-  `manifest.json` in each corpus dir maps file → expected URI.
-- Ingest each track as its own course so `Retrieve_param.benchmark_course`
+  `manifest.json` maps every occurrence to its canonical URI and preserves the
+  occurrence list under the canonical paragraph record.
+- Ingest each track as its own course so `Retrieve_param.course_scope`
   scopes retrieval to it (URI prefix filter on graph side, `community` field
   on Milvus side).
 - Distractor paragraphs are included on purpose — they are part of the
@@ -50,5 +51,10 @@ and `gold_chunk_ids`. That only works if ingestion preserves the URI scheme:
 
 ```
 uv run python test/eval/build_musique.py --limit 30
+uv run python test/eval/build_musique.py --canonicalize-existing
 uv run python -c "import json; d=json.load(open('test/eval/fixtures/musique_cs.json')); print(len(d), 'questions')"
 ```
+
+The 30×3 baseline is blocked until the dedicated dual-index corpus loader writes
+these canonical paragraph URIs to both Milvus and Neo4j. The retrieval harness
+does not perform ingestion.

@@ -105,7 +105,7 @@ class PromptSyncer:
 
     def _collect_prompts(self) -> Dict[str, str]:
         """Import and flatten all prompt templates from prompt.py."""
-        from TA.edu.helper.prompt import (
+        from TA.helper.prompt import (
             _ROUTER_PROMPT,
             _RETRIEVE_REFINE_PROMPT,
             _DEEP_CHECK_PROMPT,

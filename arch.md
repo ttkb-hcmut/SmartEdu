@@ -66,6 +66,7 @@
         │   │       └── dbgate.yml
         │   ├── schema/
         │   │   ├── factory.py
+        │   │   ├── retrieval.py            # retrieval contracts: preset/policy/harness IDs, RetrievalRunContext (ADR-0008)
         │   │   ├── wf_state.py             # LangGraph state types (AgentState, StudentState, etc.)
         │   │   └── graph/
         │   │       ├── __init__.py
@@ -109,26 +110,31 @@
         │   ├── ta_module.py                # Top-level chat orchestrator & trace manager
         │   ├── agent/
         │   │   ├── base.py
-        │   │   ├── injector.py
-        │   │   ├── middleware.py           # NodeSchemaMiddleware — dynamic output schema switcher
+        │   │   ├── injector.py             # AgentInjector — registers tool superset; adds retrieval middleware on RAG
+        │   │   ├── middleware.py           # NodeMiddle — dynamic output schema switcher
         │   │   └── ollama_patch.py
         │   ├── api/
         │   │   └── route.py
-        │   ├── edu/
+        │   ├── retrieval/                  # retrieval ablation instrument (see ADR-0008)
+        │   │   ├── policy.py               # frozen typed policy registry + digest; resolve_retrieval_context
+        │   │   └── middleware.py           # RetrievalPolicyMiddleware — per-arm tool filter + mechanical call cap
+        │   ├── workflow/
         │   │   ├── smart_edu.py            # Compiles & runs the main LangGraph StateGraph (router + all sub-graphs)
-        │   │   ├── helper/
-        │   │   │   ├── context.py
-        │   │   │   ├── few_shot.py
-        │   │   │   ├── prompt.py           # All TA workflow prompt templates
-        │   │   │   ├── schema.py           # Structured output schemas per workflow node
-        │   │   │   ├── sync_prompts.py
-        │   │   │   └── utils.py
-        │   │   └── workflow/
-        │   │       ├── retrieve.py         # RAG sub-graph (rag_core → deep_decision → rag_deep)
-        │   │       ├── roadmap.py          # Learning-path generation sub-graph
-        │   │       └── teach.py            # Lesson delivery sub-graph (lecture / quiz / evaluate)
+        │   │   ├── retrieve.py             # dual retrieval harness: agentic tool-loop | fanout fan-out+RRF
+        │   │   ├── roadmap.py              # Learning-path generation sub-graph
+        │   │   └── teach.py                # Lesson delivery sub-graph (lecture / quiz / evaluate)
+        │   ├── helper/
+        │   │   ├── context.py
+        │   │   ├── few_shot.py
+        │   │   ├── prompt.py               # All TA workflow prompt templates
+        │   │   ├── schema.py               # Structured output schemas per workflow node
+        │   │   ├── sync_prompts.py
+        │   │   ├── tree_order.py
+        │   │   ├── tree_render.py
+        │   │   └── utils.py
         │   ├── tools/
         │   │   ├── factory.py             # ToolFactory — binds RAG / TA tool sets per agent
+        │   │   ├── retrieval.py           # SemanticSearch + TextbookSearch adapters (content_and_artifact)
         │   │   ├── tool_config.py
         │   │   ├── neo/
         │   │   │   ├── __init__.py
@@ -301,13 +307,13 @@ See [§7. Textbook-anchor substrate](#7-textbook-anchor-substrate) for the graph
 ## 4. Teaching Assistant (`TA/`)
 
 - **`ta_module.py`** — top-level entry; receives user message, builds `AgentState`, runs `SmartEdu`, serialises trace. Injects **windowed** history (`recent_turns`), reuses the route `chat_id` end-to-end, LRU-bounds the per-session tracer cache.
-- **`edu/smart_edu.py`** — compiles the main `StateGraph`: `TA_Router` → `retrieve` / `roadmap` / `teach` sub-graphs → synthesis finish nodes. Finish nodes **await** persistence (memo + state) before returning; `pending_proposal` is owned by `session.student_state`.
-- **`edu/workflow/retrieve.py`** — RAG sub-graph: `rag_core` (Milvus search) → `deep_decision` → `rag_deep` (graph-augmented retrieval).
-- **`edu/workflow/roadmap.py`** — generates and evaluates learning-path sequences against student history.
-- **`edu/workflow/teach.py`** — lesson delivery: understand intent → lookup slides → lecture/quiz → evaluate answer → advance topic.
-- **`edu/helper/prompt.py`** — all TA workflow prompt templates; changes here directly affect agent behaviour.
-- **`edu/helper/schema.py`** — Pydantic output schemas the agents must conform to (`RAGCore`, `RoadmapExplore`, `TeachLecture`, etc.).
-- **`agent/middleware.py`** — `NodeSchemaMiddleware`; dynamically swaps the active output schema based on the current LangGraph node.
+- **`workflow/smart_edu.py`** — compiles the main `StateGraph`: `TA_Router` → `retrieve` / `roadmap` / `teach` sub-graphs → synthesis finish nodes. The router honours a `forced_route` from the injected retrieval run context (benchmark bypass). Finish nodes **await** persistence (memo + state) before returning; `pending_proposal` is owned by `session.student_state`.
+- **`workflow/retrieve.py`** — retrieval sub-graph with a versioned harness selector: **agentic** (one RAG agent loops over the arm's tools) or **fanout** (fan-out to enabled sources → RRF fusion). Arms and limits come from the frozen policy in `TA/retrieval/`; see ADR-0008. (Legacy `deep_decision`/`rag_deep` remain in-file, unwired.)
+- **`workflow/roadmap.py`** — generates and evaluates learning-path sequences against student history.
+- **`workflow/teach.py`** — lesson delivery: understand intent → lookup slides → lecture/quiz → evaluate answer → advance topic.
+- **`helper/prompt.py`** — all TA workflow prompt templates; changes here directly affect agent behaviour.
+- **`helper/schema.py`** — Pydantic output schemas the agents must conform to (`RAGCore`, `RoadmapExplore`, `TeachLecture`, etc.).
+- **`agent/middleware.py`** — `NodeMiddle`; dynamically swaps the active output schema based on the current LangGraph node. Retrieval-specific tool filtering lives separately in `TA/retrieval/middleware.py`.
 
 ---
 
@@ -328,7 +334,7 @@ flowchart TD
     U([User message]) --> TM["TAModule.run<br/>build AgentState"]
     TM -- "inject windowed history (recent N + skim)<br/>set ContextVar: session_context + tracker" --> R{"TA_Router<br/>classify intent"}
 
-    R -- retrieve --> WR["WF_Retrieve<br/>rag_core → deep_decision → rag_deep"]
+    R -- retrieve --> WR["WF_Retrieve<br/>harness select: agentic tool-loop | fanout + RRF"]
     R -- roadmap --> WM["WF_Roadmap<br/>explore ⇄ evaluate → final"]
     R -- teaching --> WT["WF_Teach<br/>lecture / quiz / evaluate"]
     R -- confirm --> AP["Apply_Proposal"]
@@ -338,7 +344,7 @@ flowchart TD
     WM --> FM["TA_Roadmap_Finish"]
     WT --> FT["TA_Teach_Finish"]
 
-    FR & FM & FT & AP & UF --> SY["TA agent synthesis<br/>NodeSchemaMiddleware swaps output schema per node"]
+    FR & FM & FT & AP & UF --> SY["TA agent synthesis<br/>NodeMiddle swaps output schema per node"]
     SY --> P[("Persist: Memo + MongoDB")]
     P --> OUT([Response + ui_action])
 ```

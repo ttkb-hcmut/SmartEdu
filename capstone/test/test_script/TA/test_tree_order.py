@@ -1,4 +1,4 @@
-from TA.edu.helper.tree_order import topo_order
+from TA.helper.tree_order import topo_order
 
 
 def test_prerequisite_comes_left():

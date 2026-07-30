@@ -1,102 +1,1190 @@
 {
-  "2hop__354635_174222\\0.txt": "Bench_MuSiQue/2hop__354635_174222/0",
-  "2hop__354635_174222\\1.txt": "Bench_MuSiQue/2hop__354635_174222/1",
-  "2hop__354635_174222\\2.txt": "Bench_MuSiQue/2hop__354635_174222/2",
-  "2hop__354635_174222\\3.txt": "Bench_MuSiQue/2hop__354635_174222/3",
-  "2hop__354635_174222\\4.txt": "Bench_MuSiQue/2hop__354635_174222/4",
-  "2hop__354635_174222\\5.txt": "Bench_MuSiQue/2hop__354635_174222/5",
-  "2hop__354635_174222\\6.txt": "Bench_MuSiQue/2hop__354635_174222/6",
-  "2hop__354635_174222\\7.txt": "Bench_MuSiQue/2hop__354635_174222/7",
-  "2hop__354635_174222\\8.txt": "Bench_MuSiQue/2hop__354635_174222/8",
-  "2hop__354635_174222\\9.txt": "Bench_MuSiQue/2hop__354635_174222/9",
-  "2hop__354635_174222\\10.txt": "Bench_MuSiQue/2hop__354635_174222/10",
-  "2hop__354635_174222\\11.txt": "Bench_MuSiQue/2hop__354635_174222/11",
-  "2hop__354635_174222\\12.txt": "Bench_MuSiQue/2hop__354635_174222/12",
-  "2hop__354635_174222\\13.txt": "Bench_MuSiQue/2hop__354635_174222/13",
-  "2hop__354635_174222\\14.txt": "Bench_MuSiQue/2hop__354635_174222/14",
-  "2hop__354635_174222\\15.txt": "Bench_MuSiQue/2hop__354635_174222/15",
-  "2hop__354635_174222\\16.txt": "Bench_MuSiQue/2hop__354635_174222/16",
-  "2hop__354635_174222\\17.txt": "Bench_MuSiQue/2hop__354635_174222/17",
-  "2hop__354635_174222\\18.txt": "Bench_MuSiQue/2hop__354635_174222/18",
-  "2hop__354635_174222\\19.txt": "Bench_MuSiQue/2hop__354635_174222/19",
-  "2hop__726717_610238\\0.txt": "Bench_MuSiQue/2hop__726717_610238/0",
-  "2hop__726717_610238\\1.txt": "Bench_MuSiQue/2hop__726717_610238/1",
-  "2hop__726717_610238\\2.txt": "Bench_MuSiQue/2hop__726717_610238/2",
-  "2hop__726717_610238\\3.txt": "Bench_MuSiQue/2hop__726717_610238/3",
-  "2hop__726717_610238\\4.txt": "Bench_MuSiQue/2hop__726717_610238/4",
-  "2hop__726717_610238\\5.txt": "Bench_MuSiQue/2hop__726717_610238/5",
-  "2hop__726717_610238\\6.txt": "Bench_MuSiQue/2hop__726717_610238/6",
-  "2hop__726717_610238\\7.txt": "Bench_MuSiQue/2hop__726717_610238/7",
-  "2hop__726717_610238\\8.txt": "Bench_MuSiQue/2hop__726717_610238/8",
-  "2hop__726717_610238\\9.txt": "Bench_MuSiQue/2hop__726717_610238/9",
-  "2hop__726717_610238\\10.txt": "Bench_MuSiQue/2hop__726717_610238/10",
-  "2hop__726717_610238\\11.txt": "Bench_MuSiQue/2hop__726717_610238/11",
-  "2hop__726717_610238\\12.txt": "Bench_MuSiQue/2hop__726717_610238/12",
-  "2hop__726717_610238\\13.txt": "Bench_MuSiQue/2hop__726717_610238/13",
-  "2hop__726717_610238\\14.txt": "Bench_MuSiQue/2hop__726717_610238/14",
-  "2hop__726717_610238\\15.txt": "Bench_MuSiQue/2hop__726717_610238/15",
-  "2hop__726717_610238\\16.txt": "Bench_MuSiQue/2hop__726717_610238/16",
-  "2hop__726717_610238\\17.txt": "Bench_MuSiQue/2hop__726717_610238/17",
-  "2hop__726717_610238\\18.txt": "Bench_MuSiQue/2hop__726717_610238/18",
-  "2hop__726717_610238\\19.txt": "Bench_MuSiQue/2hop__726717_610238/19",
-  "2hop__42027_42004\\0.txt": "Bench_MuSiQue/2hop__42027_42004/0",
-  "2hop__42027_42004\\1.txt": "Bench_MuSiQue/2hop__42027_42004/1",
-  "2hop__42027_42004\\2.txt": "Bench_MuSiQue/2hop__42027_42004/2",
-  "2hop__42027_42004\\3.txt": "Bench_MuSiQue/2hop__42027_42004/3",
-  "2hop__42027_42004\\4.txt": "Bench_MuSiQue/2hop__42027_42004/4",
-  "2hop__42027_42004\\5.txt": "Bench_MuSiQue/2hop__42027_42004/5",
-  "2hop__42027_42004\\6.txt": "Bench_MuSiQue/2hop__42027_42004/6",
-  "2hop__42027_42004\\7.txt": "Bench_MuSiQue/2hop__42027_42004/7",
-  "2hop__42027_42004\\8.txt": "Bench_MuSiQue/2hop__42027_42004/8",
-  "2hop__42027_42004\\9.txt": "Bench_MuSiQue/2hop__42027_42004/9",
-  "2hop__42027_42004\\10.txt": "Bench_MuSiQue/2hop__42027_42004/10",
-  "2hop__42027_42004\\11.txt": "Bench_MuSiQue/2hop__42027_42004/11",
-  "2hop__42027_42004\\12.txt": "Bench_MuSiQue/2hop__42027_42004/12",
-  "2hop__42027_42004\\13.txt": "Bench_MuSiQue/2hop__42027_42004/13",
-  "2hop__42027_42004\\14.txt": "Bench_MuSiQue/2hop__42027_42004/14",
-  "2hop__42027_42004\\15.txt": "Bench_MuSiQue/2hop__42027_42004/15",
-  "2hop__42027_42004\\16.txt": "Bench_MuSiQue/2hop__42027_42004/16",
-  "2hop__42027_42004\\17.txt": "Bench_MuSiQue/2hop__42027_42004/17",
-  "2hop__42027_42004\\18.txt": "Bench_MuSiQue/2hop__42027_42004/18",
-  "2hop__42027_42004\\19.txt": "Bench_MuSiQue/2hop__42027_42004/19",
-  "2hop__817096_15463\\0.txt": "Bench_MuSiQue/2hop__817096_15463/0",
-  "2hop__817096_15463\\1.txt": "Bench_MuSiQue/2hop__817096_15463/1",
-  "2hop__817096_15463\\2.txt": "Bench_MuSiQue/2hop__817096_15463/2",
-  "2hop__817096_15463\\3.txt": "Bench_MuSiQue/2hop__817096_15463/3",
-  "2hop__817096_15463\\4.txt": "Bench_MuSiQue/2hop__817096_15463/4",
-  "2hop__817096_15463\\5.txt": "Bench_MuSiQue/2hop__817096_15463/5",
-  "2hop__817096_15463\\6.txt": "Bench_MuSiQue/2hop__817096_15463/6",
-  "2hop__817096_15463\\7.txt": "Bench_MuSiQue/2hop__817096_15463/7",
-  "2hop__817096_15463\\8.txt": "Bench_MuSiQue/2hop__817096_15463/8",
-  "2hop__817096_15463\\9.txt": "Bench_MuSiQue/2hop__817096_15463/9",
-  "2hop__817096_15463\\10.txt": "Bench_MuSiQue/2hop__817096_15463/10",
-  "2hop__817096_15463\\11.txt": "Bench_MuSiQue/2hop__817096_15463/11",
-  "2hop__817096_15463\\12.txt": "Bench_MuSiQue/2hop__817096_15463/12",
-  "2hop__817096_15463\\13.txt": "Bench_MuSiQue/2hop__817096_15463/13",
-  "2hop__817096_15463\\14.txt": "Bench_MuSiQue/2hop__817096_15463/14",
-  "2hop__817096_15463\\15.txt": "Bench_MuSiQue/2hop__817096_15463/15",
-  "2hop__817096_15463\\16.txt": "Bench_MuSiQue/2hop__817096_15463/16",
-  "2hop__817096_15463\\17.txt": "Bench_MuSiQue/2hop__817096_15463/17",
-  "2hop__817096_15463\\18.txt": "Bench_MuSiQue/2hop__817096_15463/18",
-  "2hop__817096_15463\\19.txt": "Bench_MuSiQue/2hop__817096_15463/19",
-  "2hop__14095_15463\\0.txt": "Bench_MuSiQue/2hop__14095_15463/0",
-  "2hop__14095_15463\\1.txt": "Bench_MuSiQue/2hop__14095_15463/1",
-  "2hop__14095_15463\\2.txt": "Bench_MuSiQue/2hop__14095_15463/2",
-  "2hop__14095_15463\\3.txt": "Bench_MuSiQue/2hop__14095_15463/3",
-  "2hop__14095_15463\\4.txt": "Bench_MuSiQue/2hop__14095_15463/4",
-  "2hop__14095_15463\\5.txt": "Bench_MuSiQue/2hop__14095_15463/5",
-  "2hop__14095_15463\\6.txt": "Bench_MuSiQue/2hop__14095_15463/6",
-  "2hop__14095_15463\\7.txt": "Bench_MuSiQue/2hop__14095_15463/7",
-  "2hop__14095_15463\\8.txt": "Bench_MuSiQue/2hop__14095_15463/8",
-  "2hop__14095_15463\\9.txt": "Bench_MuSiQue/2hop__14095_15463/9",
-  "2hop__14095_15463\\10.txt": "Bench_MuSiQue/2hop__14095_15463/10",
-  "2hop__14095_15463\\11.txt": "Bench_MuSiQue/2hop__14095_15463/11",
-  "2hop__14095_15463\\12.txt": "Bench_MuSiQue/2hop__14095_15463/12",
-  "2hop__14095_15463\\13.txt": "Bench_MuSiQue/2hop__14095_15463/13",
-  "2hop__14095_15463\\14.txt": "Bench_MuSiQue/2hop__14095_15463/14",
-  "2hop__14095_15463\\15.txt": "Bench_MuSiQue/2hop__14095_15463/15",
-  "2hop__14095_15463\\16.txt": "Bench_MuSiQue/2hop__14095_15463/16",
-  "2hop__14095_15463\\17.txt": "Bench_MuSiQue/2hop__14095_15463/17",
-  "2hop__14095_15463\\18.txt": "Bench_MuSiQue/2hop__14095_15463/18",
-  "2hop__14095_15463\\19.txt": "Bench_MuSiQue/2hop__14095_15463/19"
+  "schema_version": "2.0",
+  "identity": "sha256(normalize(title) + NUL + normalize(text))",
+  "occurrences": {
+    "2hop__14095_15463/0.txt": "Bench_MuSiQue/paragraph/48b25a4cd712762a6c376694ef0d2addb4afe3c964800e0b681ce2d5681e76fe",
+    "2hop__14095_15463/1.txt": "Bench_MuSiQue/paragraph/3ca14e0221b84091e854de21f116b73f74cb308feed5719b51cc366401497326",
+    "2hop__14095_15463/10.txt": "Bench_MuSiQue/paragraph/7043446da60f23d9fb1a1839da56d9ca8b539213f41500a94a5f293a794feadc",
+    "2hop__14095_15463/11.txt": "Bench_MuSiQue/paragraph/e88fe8e7f743de4207b83d2ce8151203128a2f4773e9df1b48a31b550011d3ec",
+    "2hop__14095_15463/12.txt": "Bench_MuSiQue/paragraph/9d06800bc30db8d7fa2331231cbac0ac25c84dce9fdcef81e6b143156dfda910",
+    "2hop__14095_15463/13.txt": "Bench_MuSiQue/paragraph/98ec01f4e7df67b08e3af7a3bb9704778c2975ba59c36b83c80e2f2feba41901",
+    "2hop__14095_15463/14.txt": "Bench_MuSiQue/paragraph/048535154985dfa8740a132169c80f6816d2fa2f003c9382b85b6ec2764ac56b",
+    "2hop__14095_15463/15.txt": "Bench_MuSiQue/paragraph/06eb1ef44fa339f03756ada1801ef9ceb9bc80378f10715bc3f3652f2608a91d",
+    "2hop__14095_15463/16.txt": "Bench_MuSiQue/paragraph/f9b7952aa115ea4b35cfd258e4f986ce1581d828ac79b010bbbc408661ca8924",
+    "2hop__14095_15463/17.txt": "Bench_MuSiQue/paragraph/6ce7d6e1f0d792f4956af8d31d6a82dcea7bc9780ce8f5b90a5d43bb732442b0",
+    "2hop__14095_15463/18.txt": "Bench_MuSiQue/paragraph/67ff09bbfd517514038c7fb7e12b855312e7fdda6706a33f519db351817052e1",
+    "2hop__14095_15463/19.txt": "Bench_MuSiQue/paragraph/a5091bd31b82b454b14a031c6773a81406755760912149e2ce6f7cf715a0f944",
+    "2hop__14095_15463/2.txt": "Bench_MuSiQue/paragraph/e601f6b62dbaa47ffa2baedf9ed5354636b4428c252ccc6998ff738166dacce1",
+    "2hop__14095_15463/3.txt": "Bench_MuSiQue/paragraph/de3f0c59da108361258d84ce21740b0544e207c7903dc8e00d4e03bf50a25efe",
+    "2hop__14095_15463/4.txt": "Bench_MuSiQue/paragraph/6f7a2c152650ed1df242e049948301e69d99855b90efe1e2fb411a7a6933ee47",
+    "2hop__14095_15463/5.txt": "Bench_MuSiQue/paragraph/50c46a349956a4dde8c5215e535631223de8f15495bec62217237c6829afe7d3",
+    "2hop__14095_15463/6.txt": "Bench_MuSiQue/paragraph/28119c223eecd1cedd2d9cf0a4b254530a006a2f633136e03d9bc36f5625102c",
+    "2hop__14095_15463/7.txt": "Bench_MuSiQue/paragraph/0464f97680c790425c0a70d27696f01c7449d0aa9161fb6523ca152065d8d7a4",
+    "2hop__14095_15463/8.txt": "Bench_MuSiQue/paragraph/5c221360f2274a7bba773a4e59c32d633706fb1b84ff59cd65bae65573593937",
+    "2hop__14095_15463/9.txt": "Bench_MuSiQue/paragraph/744eb0a4ea808e62215f0855ba54029d35135165bf552e3aee743fc4ffa36bc6",
+    "2hop__354635_174222/0.txt": "Bench_MuSiQue/paragraph/078c87c4bd8f7bd6593af01bf2d3159b87cbf9eecce17d81f0bdfea62b671a50",
+    "2hop__354635_174222/1.txt": "Bench_MuSiQue/paragraph/71428c6d74544bb9f648c02d1cf4eae97991e579df43e91ff7d4c1035db95495",
+    "2hop__354635_174222/10.txt": "Bench_MuSiQue/paragraph/b6d7e510fce4f46f86dc145728b2723cbc464ba89fc1971736f867a710d6c398",
+    "2hop__354635_174222/11.txt": "Bench_MuSiQue/paragraph/56b703c1fce30ed0155b754338d3f369ce94d8c82957006436f3e475fb54785e",
+    "2hop__354635_174222/12.txt": "Bench_MuSiQue/paragraph/07f2f54946f69aec0d2188e544cdce941eb2992b385b2231af8823b7ade29d26",
+    "2hop__354635_174222/13.txt": "Bench_MuSiQue/paragraph/84e1296d387e070385f3c459babb9bf6f677b6b6117f00f270e8cc244e414e39",
+    "2hop__354635_174222/14.txt": "Bench_MuSiQue/paragraph/012ed663308230a6af0e53ee994b3485cf40a4254214e89a528b7ead95008eae",
+    "2hop__354635_174222/15.txt": "Bench_MuSiQue/paragraph/abf1bd0c0b81fd3412fc544769e0650bd18dacf021af6c4d11d8713e583ebb99",
+    "2hop__354635_174222/16.txt": "Bench_MuSiQue/paragraph/b220cb7563498ca7016ed790672e1c761d0097cbbd88199b589c7bb2f98556e1",
+    "2hop__354635_174222/17.txt": "Bench_MuSiQue/paragraph/4893ad5b3627c870a3285e7fc7094426e782b61bc7b1d7a72137338261a7571f",
+    "2hop__354635_174222/18.txt": "Bench_MuSiQue/paragraph/f7eda80e876114a0540fc2e257b772e38f08303930e527ccd52540d076607022",
+    "2hop__354635_174222/19.txt": "Bench_MuSiQue/paragraph/19a93be634229e1baa192f3a7a2f0928fcd42a0942dda465c1e81e02d8dc12b8",
+    "2hop__354635_174222/2.txt": "Bench_MuSiQue/paragraph/ffbe8c8d33569a33ae76724bf6c44c1b8e934b169ad1f95301035459c7bb52a2",
+    "2hop__354635_174222/3.txt": "Bench_MuSiQue/paragraph/d0da4d6f16de09310a6b4ec22de3fc27427f02f0dd5f9da81f2be17278245b6b",
+    "2hop__354635_174222/4.txt": "Bench_MuSiQue/paragraph/0b50585f83b8b0dec6172d41168661d45c9b114282d7818d0a1e51da26635215",
+    "2hop__354635_174222/5.txt": "Bench_MuSiQue/paragraph/a3f8b2d432a9771f0919a493eeeede19b1688b589fba46f75df539bb08559bb5",
+    "2hop__354635_174222/6.txt": "Bench_MuSiQue/paragraph/7a9811d42ab566fa99b0e83695943c3c518758a697cbcb833d0ed94a2f3b66ec",
+    "2hop__354635_174222/7.txt": "Bench_MuSiQue/paragraph/46ab25557a3e266c3515d2ac5fe9d32d17b43c8859b5d8f06657bbb616e6c2ea",
+    "2hop__354635_174222/8.txt": "Bench_MuSiQue/paragraph/cbc8bb69e9d769c2187cf8fcc06aa7c8bad7f821a3c4e029dcca913eda9eec18",
+    "2hop__354635_174222/9.txt": "Bench_MuSiQue/paragraph/7c59757eccd72a379fd342117fad2cee4c40af0a7164734d115b52b59a5655cb",
+    "2hop__42027_42004/0.txt": "Bench_MuSiQue/paragraph/4ee313491c8ebfab0383527eaea9a97357336528b8a2ed3b100c149efc207134",
+    "2hop__42027_42004/1.txt": "Bench_MuSiQue/paragraph/e3431fc9a0055c8d19114e7b6806aadf4c9fed01fb7b8fde79ad654bbb550b2e",
+    "2hop__42027_42004/10.txt": "Bench_MuSiQue/paragraph/b5b627961f97b909d9cc70d0076f5585c27e9eb0d060563629ccf74a7cd8a07e",
+    "2hop__42027_42004/11.txt": "Bench_MuSiQue/paragraph/0bfffb35aeea1209f94ca3fac88250207bcddf77a362670d7edbb4d07d54823c",
+    "2hop__42027_42004/12.txt": "Bench_MuSiQue/paragraph/18bfe2ae708979f1543bc9c318ee0ae0dfb7e4c154af0b299e62d58121aa6277",
+    "2hop__42027_42004/13.txt": "Bench_MuSiQue/paragraph/ac1465e0ecd490b78b575c8300665dfa9ee0b4cbe2219a385e208bd94ceccb81",
+    "2hop__42027_42004/14.txt": "Bench_MuSiQue/paragraph/5e4350105d44cfb55355aef034c080df5ee970c92fe577f2e93396cdaf74bcae",
+    "2hop__42027_42004/15.txt": "Bench_MuSiQue/paragraph/aed926709b363e98b5934d3ba7c6d60bff9135d6576fc85f4e79b211c36cf99d",
+    "2hop__42027_42004/16.txt": "Bench_MuSiQue/paragraph/006c405f0210058793d6ce419965d33cb84c6d038568b2e608f6de91e708a7c2",
+    "2hop__42027_42004/17.txt": "Bench_MuSiQue/paragraph/abd6ff6e3e6e26790a9250959fba854c96c355e1f57fa2758a0e3a26d536bfda",
+    "2hop__42027_42004/18.txt": "Bench_MuSiQue/paragraph/d090af38ed263ac673075e7f84a2e38bfa34d25a122c178726d94880bd4257ec",
+    "2hop__42027_42004/19.txt": "Bench_MuSiQue/paragraph/6a00bfcf7c1ba97b2f364832b79634f8a8ce91f495f473a24d0ef7e7887ccb97",
+    "2hop__42027_42004/2.txt": "Bench_MuSiQue/paragraph/55974ff794262eaf78463dff04c14b1b01513ba8139b0a5bac9f7be9bad3aa18",
+    "2hop__42027_42004/3.txt": "Bench_MuSiQue/paragraph/b7fdd89bb2edb69bd500e826ddc94da843f94f8effb93ae38881f496d6adc038",
+    "2hop__42027_42004/4.txt": "Bench_MuSiQue/paragraph/ce9d281178ea34c6dd68cbb0240e075920ce4589333d63411eb9f086df8b8726",
+    "2hop__42027_42004/5.txt": "Bench_MuSiQue/paragraph/a374ab3dae4e936122159184f3c8945b22613bab5a3a98cc0364ee0ed2b60564",
+    "2hop__42027_42004/6.txt": "Bench_MuSiQue/paragraph/7d9636b1b7258d9f0194b89347493f6c36a7a50122f3e55ced46606326fd1949",
+    "2hop__42027_42004/7.txt": "Bench_MuSiQue/paragraph/d5874137da9cadaf257dad4c0a730f63b1452e622d2587b0ff7683cd7ae64242",
+    "2hop__42027_42004/8.txt": "Bench_MuSiQue/paragraph/a94e9cebffa527d782e7c6cda43931fdc2f6d9ef138e70d61c9d809f17457bab",
+    "2hop__42027_42004/9.txt": "Bench_MuSiQue/paragraph/39296558a72dfa60656f7bf8a7720ea5bed8b970473bede9ad594a0fa5d1d7ca",
+    "2hop__726717_610238/0.txt": "Bench_MuSiQue/paragraph/f2f696017d7dd02767e11e6e48ed6161a82957039b268240c00e96bac44c381a",
+    "2hop__726717_610238/1.txt": "Bench_MuSiQue/paragraph/e8b197c42f1160edb1d7c52284ecf1256918d69a3338ef07e4af8fc5d263fbba",
+    "2hop__726717_610238/10.txt": "Bench_MuSiQue/paragraph/292d492a4ad6e3c4eebd8cbc9a28dae5b15233368300f2407f50a50157015ecd",
+    "2hop__726717_610238/11.txt": "Bench_MuSiQue/paragraph/26f00d101f69e3b8c32098d55da4e0cc2b177dba01a97785acb95694e39ca6b9",
+    "2hop__726717_610238/12.txt": "Bench_MuSiQue/paragraph/3457004119da838e330d3b2f46b888e4c6ac273beb7eac55479f45e09599b5dd",
+    "2hop__726717_610238/13.txt": "Bench_MuSiQue/paragraph/7956a36365227eac92c03c968667a9e4715e85c39b4da19a5bf7da8afff2cee2",
+    "2hop__726717_610238/14.txt": "Bench_MuSiQue/paragraph/cbc2997517c8527ba5a50f6b0c46fd1e9a86186e4c276546afd5f3ed29d8df72",
+    "2hop__726717_610238/15.txt": "Bench_MuSiQue/paragraph/a50cf8e74267c93d3b11bdf71bbdbfba477b3372918594560f1b4f62fb12143a",
+    "2hop__726717_610238/16.txt": "Bench_MuSiQue/paragraph/1ba1babd0216a0e096676f56b202dd96450542bd4faa380d52481e8c711e41c8",
+    "2hop__726717_610238/17.txt": "Bench_MuSiQue/paragraph/2890c9e4c50acbd327c8b3d243ecf2cdb847baeb7df988775493931307593290",
+    "2hop__726717_610238/18.txt": "Bench_MuSiQue/paragraph/ac714a77e97dda9171607170f81d5aca7a590a903aa8fbc368e4df22f3d58d3d",
+    "2hop__726717_610238/19.txt": "Bench_MuSiQue/paragraph/e829c9b6933268d165ff137cf7193f51ec40b9e6c1b3ba7c8051669732728743",
+    "2hop__726717_610238/2.txt": "Bench_MuSiQue/paragraph/e2c4d57e6289821643e5c1265da95474e93c3855b7e3a3df080a0894735d6a5d",
+    "2hop__726717_610238/3.txt": "Bench_MuSiQue/paragraph/f9a0b6ae734defbe2c97ddd1b73dd0b1642fcbbf6643cf5f55bca010e3024d2b",
+    "2hop__726717_610238/4.txt": "Bench_MuSiQue/paragraph/43c76211845adacb4fc12e865285c24e78a08a8674ffefe4c858e2cbc9c4e88b",
+    "2hop__726717_610238/5.txt": "Bench_MuSiQue/paragraph/6ddfefd95e0c90f67ee4e1314d687489fc311132e577aeb1869fb2167c182b3c",
+    "2hop__726717_610238/6.txt": "Bench_MuSiQue/paragraph/ae92e482c73c28278b7a6f6d1040943ccbb2e34ec81dde83b99b20802b333318",
+    "2hop__726717_610238/7.txt": "Bench_MuSiQue/paragraph/8c41720c0b060865d989ba1038962fc5ed8aa88eebf1904e824afc5425e70cbf",
+    "2hop__726717_610238/8.txt": "Bench_MuSiQue/paragraph/13742564b323b31aff1ca77e8a176c9d80d6ec859682867b1f2b0e85626ee7bc",
+    "2hop__726717_610238/9.txt": "Bench_MuSiQue/paragraph/caa41bdcf338c4783371459e59cde6b68aac05c8ca0c5770198cd2894bce434d",
+    "2hop__817096_15463/0.txt": "Bench_MuSiQue/paragraph/e19927f9c9b6d86128479dd22bd607092d4037eed0730687ec53af4bdb3ebb5c",
+    "2hop__817096_15463/1.txt": "Bench_MuSiQue/paragraph/e0a1c534cff0cf986fd4c3a7336153ccf6e7f0e49205bdf826ba052267149e1b",
+    "2hop__817096_15463/10.txt": "Bench_MuSiQue/paragraph/8c3471290b8fe970f9c4bb30e9e984d71818b182ec53a597ca708daaeae82ad0",
+    "2hop__817096_15463/11.txt": "Bench_MuSiQue/paragraph/00d9b2fc91a1e9fc2d402f94a40be35ae8e0cef8ccd6faa962d0519f7bc7b301",
+    "2hop__817096_15463/12.txt": "Bench_MuSiQue/paragraph/f9b7952aa115ea4b35cfd258e4f986ce1581d828ac79b010bbbc408661ca8924",
+    "2hop__817096_15463/13.txt": "Bench_MuSiQue/paragraph/4f79d357607bfa561f74b554bb9f77766cce369f7deb66fa7d61d97cb9053c22",
+    "2hop__817096_15463/14.txt": "Bench_MuSiQue/paragraph/5dac7f4777d6dc5624db73ecb0ef7f3f6ebb7290d791fb2cbd357d96e4338eae",
+    "2hop__817096_15463/15.txt": "Bench_MuSiQue/paragraph/1d02b6e83510c68cecde1dd47796bd27c3aa21faf990644f71ada842a9b30035",
+    "2hop__817096_15463/16.txt": "Bench_MuSiQue/paragraph/456aff07b5f10cba59c095b9e53ce99f28641df226be935ed408420e3cbf5d85",
+    "2hop__817096_15463/17.txt": "Bench_MuSiQue/paragraph/92ac4235f3bf5a5d0bb9d64517a5b02d8fe5a142e71005d3a1d195bab170134d",
+    "2hop__817096_15463/18.txt": "Bench_MuSiQue/paragraph/506207bde8be835bfa3f811dda6ebbf31a7d70d486f9dc7b15f7e31e9f73d31d",
+    "2hop__817096_15463/19.txt": "Bench_MuSiQue/paragraph/c87ff513342d41dfc550421593c5827943a68c9d7cec4d8a1587d43f6c787571",
+    "2hop__817096_15463/2.txt": "Bench_MuSiQue/paragraph/ee0589555004e7972f1ebd1f923946b07dc53a59d4ba05c45b9d50052f0dbb83",
+    "2hop__817096_15463/3.txt": "Bench_MuSiQue/paragraph/45ff546cdc25e0411d655221408e74495afaef120dba0ec254f853fc1771b664",
+    "2hop__817096_15463/4.txt": "Bench_MuSiQue/paragraph/55e0f5be3ce58e6e132690b6fb2ad34528dd36d8727924c21079484d8ffd7499",
+    "2hop__817096_15463/5.txt": "Bench_MuSiQue/paragraph/7043446da60f23d9fb1a1839da56d9ca8b539213f41500a94a5f293a794feadc",
+    "2hop__817096_15463/6.txt": "Bench_MuSiQue/paragraph/dc36b0b8dd405115f74ea8c1bec182797f2a0e0f377e3c5919404d6a61365819",
+    "2hop__817096_15463/7.txt": "Bench_MuSiQue/paragraph/324bfb0f9ef834e42dd2e089d7dc5ca5d9f9e26ec22945032b5b87bc69715ee9",
+    "2hop__817096_15463/8.txt": "Bench_MuSiQue/paragraph/de28951dccbabbc799ae907b2e25873f7df6171749e1f8d05f44767e04ff8815",
+    "2hop__817096_15463/9.txt": "Bench_MuSiQue/paragraph/e88fe8e7f743de4207b83d2ce8151203128a2f4773e9df1b48a31b550011d3ec"
+  },
+  "paragraphs": {
+    "Bench_MuSiQue/paragraph/48b25a4cd712762a6c376694ef0d2addb4afe3c964800e0b681ce2d5681e76fe": {
+      "title": "Subaru",
+      "text": "Fuji Heavy Industries started out as The Aircraft Research Laboratory in 1915, headed by Chikuhei Nakajima. In 1932, the company was reorganized as Nakajima Aircraft Company, Ltd and soon became a major manufacturer of aircraft for Japan during World War II. At the end of the Second World War Nakajima Aircraft was again reorganized, this time as Fuji Sangyo Co, Ltd. In 1946, the company created the Fuji Rabbit motor scooter with spare aircraft parts from the war. In 1950, Fuji Sangyo was divided into 12 smaller corporations according to the Japanese Government's 1950 Corporate Credit Rearrangement Act, anti-zaibatsu legislation. Between 1953 and 1955, four of these corporations and a newly formed corporation decided to merge to form Fuji Heavy Industries. These companies were: Fuji Kogyo, a scooter manufacturer; coachbuilders Fuji Jidosha; engine manufacturers Omiya Fuji Kogyo; chassis builders Utsunomiya Sharyo and the Tokyo Fuji Dangyo trading company.",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 0,
+          "path": "2hop__14095_15463/0.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/3ca14e0221b84091e854de21f116b73f74cb308feed5719b51cc366401497326": {
+      "title": "Dell",
+      "text": "In the shrinking PC industry, Dell continued to lose market share, as it dropped below Lenovo in 2011 to fall to number three in the world. Dell and fellow American contemporary Hewlett Packard came under pressure from Asian PC manufacturers Lenovo, Asus, and Acer, all of which had lower production costs and willing to accept lower profit margins. In addition, while the Asian PC vendors had been improving their quality and design, for instance Lenovo's ThinkPad series was winning corporate customers away from Dell's laptops, Dell's customer service and reputation had been slipping. Dell remained the second-most profitable PC vendor, as it took 13 percent of operating profits in the PC industry during Q4 2012, behind Apple Inc.'s Macintosh that took 45 percent, seven percent at Hewlett Packard, six percent at Lenovo and Asus, and one percent for Acer.",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 1,
+          "path": "2hop__14095_15463/1.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/7043446da60f23d9fb1a1839da56d9ca8b539213f41500a94a5f293a794feadc": {
+      "title": "Ensign Manufacturing Company",
+      "text": "Ensign Manufacturing Company, founded as Ensign Car Works in 1872, was a railroad car manufacturing company based in Huntington, West Virginia. In the 1880s and 1890s Ensign's production of wood freight cars made the company one of the three largest sawmill operators in Cabell County. In 1899, Ensign and twelve other companies were merged to form American Car and Foundry Company.",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 10,
+          "path": "2hop__14095_15463/10.txt"
+        },
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 5,
+          "path": "2hop__817096_15463/5.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/e88fe8e7f743de4207b83d2ce8151203128a2f4773e9df1b48a31b550011d3ec": {
+      "title": "American Brass Company",
+      "text": "The American Brass Company was an American brass manufacturing company based in Connecticut and active from 1893 to 1960. The company's predecessors were the Wolcottville Brass Company and the Ansonia Brass and Battery Company. It was the first large brass manufacturing firm in the United States, and for much of its existence was the largest brass manufacturer in the country. It was purchased by the Anaconda Copper Company in 1922, and merged into Anaconda's other brass manufacturing concerns (losing its identity and name in the process) in 1960.",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 11,
+          "path": "2hop__14095_15463/11.txt"
+        },
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 9,
+          "path": "2hop__817096_15463/9.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/9d06800bc30db8d7fa2331231cbac0ac25c84dce9fdcef81e6b143156dfda910": {
+      "title": "Project Space Station",
+      "text": "Project Space Station is a game published in 1985 by HESware, originally written for the Commodore 64 home computer, then ported to the Apple II series and PC compatibles.",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 12,
+          "path": "2hop__14095_15463/12.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/98ec01f4e7df67b08e3af7a3bb9704778c2975ba59c36b83c80e2f2feba41901": {
+      "title": "T-Mobile US",
+      "text": "T - Mobile US traces its roots to the 1994 establishment of VoiceStream Wireless PCS as a subsidiary of Western Wireless Corporation. Spun off from parent Western Wireless on May 3, 1999, VoiceStream Wireless was purchased by Deutsche Telekom AG in 2001 for $35 billion and renamed T - Mobile USA, Inc. in July, 2002. In 2013, T - Mobile and MetroPCS finalized a merger of the two companies. The two companies began trading as T - Mobile US.",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 13,
+          "path": "2hop__14095_15463/13.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/048535154985dfa8740a132169c80f6816d2fa2f003c9382b85b6ec2764ac56b": {
+      "title": "History of Dell",
+      "text": "In 1984, the company produced the first computer of its own design -- the ``Turbo PC '', sold for US $795 -- containing an Intel 8088 - compatible processor running at a speed of 8 MHz. PC's Limited advertised the systems in national computer magazines for sale directly to consumers, and custom assembled each ordered unit according to a selection of options. This offered buyers prices lower than those of retail brands, but with greater convenience than assembling the components themselves. Although not the first company to use this model, PC's Limited became one of the first to succeed with it. The company grossed more than $73 million in its first year of trading.",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 14,
+          "path": "2hop__14095_15463/14.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/06eb1ef44fa339f03756ada1801ef9ceb9bc80378f10715bc3f3652f2608a91d": {
+      "title": "General Electric",
+      "text": "During 1889, Thomas Edison had business interests in many electricity-related companies: Edison Lamp Company, a lamp manufacturer in East Newark, New Jersey; Edison Machine Works, a manufacturer of dynamos and large electric motors in Schenectady, New York; Bergmann & Company, a manufacturer of electric lighting fixtures, sockets, and other electric lighting devices; and Edison Electric Light Company, the patent-holding company and the financial arm backed by J.P. Morgan and the Vanderbilt family for Edison's lighting experiments. In 1889, Drexel, Morgan & Co., a company founded by J.P. Morgan and Anthony J. Drexel, financed Edison's research and helped merge those companies under one corporation to form Edison General Electric Company which was incorporated in New York on April 24, 1889. The new company also acquired Sprague Electric Railway & Motor Company in the same year.",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 15,
+          "path": "2hop__14095_15463/15.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/f9b7952aa115ea4b35cfd258e4f986ce1581d828ac79b010bbbc408661ca8924": {
+      "title": "Dell",
+      "text": "From 1997 to 2004, Dell enjoyed steady growth and it gained market share from competitors even during industry slumps. During the same period, rival PC vendors such as Compaq, Gateway, IBM, Packard Bell, and AST Research struggled and eventually left the market or were bought out. Dell surpassed Compaq to become the largest PC manufacturer in 1999. Operating costs made up only 10 percent of Dell's $35 billion in revenue in 2002, compared with 21 percent of revenue at Hewlett-Packard, 25 percent at Gateway, and 46 percent at Cisco. In 2002, when Compaq merged with Hewlett Packard (the fourth-place PC maker), the newly combined Hewlett Packard took the top spot but struggled and Dell soon regained its lead. Dell grew the fastest in the early 2000s.",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 16,
+          "path": "2hop__14095_15463/16.txt"
+        },
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 12,
+          "path": "2hop__817096_15463/12.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/6ce7d6e1f0d792f4956af8d31d6a82dcea7bc9780ce8f5b90a5d43bb732442b0": {
+      "title": "Macintosh",
+      "text": "Compaq, who had previously held the third place spot among PC manufacturers during the 1980s and early-mid 1990s, initiated a successful price war in 1994 that vaulted them to the biggest by the year end, overtaking a struggling IBM and relegating Apple to third place. Apple's market share further struggled due to the release of the Windows 95 operating system, which unified Microsoft's formerly separate MS-DOS and Windows products. Windows 95 significantly enhanced the multimedia capability and performance of IBM PC compatible computers, and brought the capabilities of Windows to parity with the Mac OS GUI.",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 17,
+          "path": "2hop__14095_15463/17.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/67ff09bbfd517514038c7fb7e12b855312e7fdda6706a33f519db351817052e1": {
+      "title": "Cork (city)",
+      "text": "Cork City is at the heart of industry in the south of Ireland. Its main area of industry is pharmaceuticals, with Pfizer Inc. and Swiss company Novartis being big employers in the region. The most famous product of the Cork pharmaceutical industry is Viagra. Cork is also the European headquarters of Apple Inc. where over 3,000 staff are involved in manufacturing, R&D and customer support. Logitech and EMC Corporation are also important IT employers in the area. Three hospitals are also among the top ten employers in the city (see table below).",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 18,
+          "path": "2hop__14095_15463/18.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/a5091bd31b82b454b14a031c6773a81406755760912149e2ce6f7cf715a0f944": {
+      "title": "USB",
+      "text": "The original USB 1.0 specification, which was introduced in January 1996, defined data transfer rates of 1.5 Mbit/s \"Low Speed\" and 12 Mbit/s \"Full Speed\". Microsoft Windows 95, OSR 2.1 provided OEM support for the devices. The first widely used version of USB was 1.1, which was released in September 1998. The 12 Mbit/s data rate was intended for higher-speed devices such as disk drives, and the lower 1.5 Mbit/s rate for low data rate devices such as joysticks. Apple Inc.'s iMac was the first mainstream product with USB and the iMac's success popularized USB itself. Following Apple's design decision to remove all legacy ports from the iMac, many PC manufacturers began building legacy-free PCs, which led to the broader PC market using USB as a standard.",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 19,
+          "path": "2hop__14095_15463/19.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/e601f6b62dbaa47ffa2baedf9ed5354636b4428c252ccc6998ff738166dacce1": {
+      "title": "Macintosh",
+      "text": "The Macintosh, however, was expensive, which hindered its ability to be competitive in a market already dominated by the Commodore 64 for consumers, as well as the IBM Personal Computer and its accompanying clone market for businesses. Macintosh systems still found success in education and desktop publishing and kept Apple as the second-largest PC manufacturer for the next decade. In the 1990s, improvements in the rival Wintel platform, notably with the introduction of Windows 3.0, then Windows 95, gradually took market share from the more expensive Macintosh systems. The performance advantage of 68000-based Macintosh systems was eroded by Intel's Pentium, and in 1994 Apple was relegated to third place as Compaq became the top PC manufacturer. Even after a transition to the superior PowerPC-based Power Macintosh (later renamed the PowerMac, in line with the PowerBook series) line in 1994, the falling prices of commodity PC components and the release of Windows 95 saw the Macintosh user base decline.",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 2,
+          "path": "2hop__14095_15463/2.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/de3f0c59da108361258d84ce21740b0544e207c7903dc8e00d4e03bf50a25efe": {
+      "title": "Microcomputer",
+      "text": "In 1979, the launch of the VisiCalc spreadsheet (initially for the Apple II) first turned the microcomputer from a hobby for computer enthusiasts into a business tool. After the 1981 release by IBM of its IBM PC, the term personal computer became generally used for microcomputers compatible with the IBM PC architecture (PC compatible).",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 3,
+          "path": "2hop__14095_15463/3.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/6f7a2c152650ed1df242e049948301e69d99855b90efe1e2fb411a7a6933ee47": {
+      "title": "Polonia Warsaw",
+      "text": "In July 2008, Polonia Warsaw merged with Dyskobolia Grodzisk Wielkopolski (3rd in the Ekstraklasa in 2007/08) and took over its place in the Polish top division. Most of Dyskobolia's players moved to Warsaw to form the core of Polonia's new team. Several players from Polonia's old squad stayed in the club too. The team managed to finish 4th at the end of the 2008/2009 season, and subsequently reached the 3rd qualification round of the Europa League. After beating Budućnost Podgorica and thrashing Juvenes/Dogana, Polonia gave in to the Dutch side NAC Breda",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 4,
+          "path": "2hop__14095_15463/4.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/50c46a349956a4dde8c5215e535631223de8f15495bec62217237c6829afe7d3": {
+      "title": "Dragon Knight 4",
+      "text": "Dragon Knight 4 (ドラゴンナイト４) is an erotic role-playing video game developed by ELF Corporation and released only in Japan for several platforms between 1994 and 1997. In 1994, the game first became available for PC MS-DOS, NEC PC-9801 and X68000, with a censored version ported to the Super Nintendo Entertainment System in 1996 and later to the PC-FX, PlayStation and Sega Saturn in 1997. It was also adapted into illustrated novels and an anime miniseries.",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 5,
+          "path": "2hop__14095_15463/5.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/28119c223eecd1cedd2d9cf0a4b254530a006a2f633136e03d9bc36f5625102c": {
+      "title": "Macintosh",
+      "text": "The Macintosh (/ ˈmækɪnˌtɒʃ / MAK - in - tosh; branded as Mac since 1998) is a family of personal computers (PCs) designed, developed, and marketed by Apple Inc. Steve Jobs introduced the original Macintosh computer on January 24, 1984. This was the company's first mass - market personal computer featuring an integral graphical user interface and mouse. This first model was later renamed to ``Macintosh 128k ''for uniqueness amongst a populous family of subsequently updated models which are also based on Apple's same proprietary architecture. Since 1998, Apple has largely phased out the Macintosh name in favor of`` Mac'', though the product family has been nicknamed ``Mac ''or`` the Mac'' since the development of the first model.",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 6,
+          "path": "2hop__14095_15463/6.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/0464f97680c790425c0a70d27696f01c7449d0aa9161fb6523ca152065d8d7a4": {
+      "title": "USS Patriot (PYc-47)",
+      "text": "USS \"Patriot\" (PYc-47), formerly the \"Katoura\", was built in 1930 by the Herreshoff Manufacturing Company in Bristol, Rhode Island United States and purchased by the United States Navy, for $1.00, from Mr. A. Loomis of New York City on 20 September 1940. She was converted for Navy service as a submarine chaser at the Greenport Basin and Construction Company at Greenport, New York and designated PC–455 on 4 November 1940. She was placed in service 27 February 1941.",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 7,
+          "path": "2hop__14095_15463/7.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/5c221360f2274a7bba773a4e59c32d633706fb1b84ff59cd65bae65573593937": {
+      "title": "Celestial Games",
+      "text": "Celestial Games is an independent video game development company based in Johannesburg, South Africa that started in 1994. They published two PC titles then closed their doors in 2001. In 2010, they reopened the company to work on a HD version of their most successful title, \"Toxic Bunny\".",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 8,
+          "path": "2hop__14095_15463/8.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/744eb0a4ea808e62215f0855ba54029d35135165bf552e3aee743fc4ffa36bc6": {
+      "title": "Diamond Multimedia",
+      "text": "Diamond Multimedia is an American company that specializes in many forms of multimedia technology. They have produced graphics cards, motherboards, modems, sound cards and MP3 players, however the company began with the production of the TrackStar, a PC add-on card which emulated Apple II computers. They were one of the major players in the 2D and early 3D graphics card competition throughout the 1990s and early 2000s.",
+      "occurrences": [
+        {
+          "question_id": "2hop__14095_15463",
+          "paragraph_idx": 9,
+          "path": "2hop__14095_15463/9.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/078c87c4bd8f7bd6593af01bf2d3159b87cbf9eecce17d81f0bdfea62b671a50": {
+      "title": "Highway 1 (Afghanistan)",
+      "text": "National Highway 01 or NH01, formally called the Ring Road (; ), is an ancient two-lane road network circulating inside Afghanistan, connecting the following major cities (clockwise): Kabul, Maidan Shar, Ghazni, Kandahar, Delaram, Herat, Maymana, Sheberghan, Mazari Sharif, and Puli Khumri. Originally built and renovated by the Mauryan Empire, it was a part of the Grand Trunk Road project and well documented by Greek and Buddhist sources in the 4th century BCE. It was renovated many times, by Sher Shah Suri, Mughal Empire and the British Empire. It has extensions that also connect Jalalabad, Bamyan, Khost, Lashkargah, Zaranj (Route 606), Farah, Islam Qala, Torghundi, and Kunduz. It is part of AH1, the longest route of the Asian Highway Network. National Highway 01 is broken up into four major sections, NH0101-0104, linking the major economic centers of Afghanistan.",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 0,
+          "path": "2hop__354635_174222/0.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/71428c6d74544bb9f648c02d1cf4eae97991e579df43e91ff7d4c1035db95495": {
+      "title": "Ottoman Empire",
+      "text": "With Constantinople as its capital and control of lands around the Mediterranean basin, the Ottoman Empire was at the centre of interactions between the Eastern and Western worlds for six centuries. Following a long period of military setbacks against European powers, the Ottoman Empire gradually declined into the late nineteenth century. The empire allied with Germany in the early 20th century, with the imperial ambition of recovering its lost territories, joining in World War I to achieve this ambition on the side of Germany and the Central Powers. While the Empire was able to largely hold its own during the conflict, it was struggling with internal dissent, especially with the Arab Revolt in its Arabian holdings. Starting before the war, but growing increasingly common and violent during it, major atrocities were committed by the Ottoman government against the Armenians, Assyrians and Pontic Greeks. The Empire's defeat and the occupation of part of its territory by the Allied Powers in the aftermath of World War I resulted in the emergence of a new state, Turkey, in the Ottoman Anatolian heartland following the Turkish War of Independence, as well as the founding of modern Balkan and Middle Eastern states and the partitioning of the Ottoman Empire.",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 1,
+          "path": "2hop__354635_174222/1.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/b6d7e510fce4f46f86dc145728b2723cbc464ba89fc1971736f867a710d6c398": {
+      "title": "WFAN-FM",
+      "text": "WFAN-FM (101.9 MHz), also known as \"Sports Radio 66 and 101.9 FM\" or \"The Fan\", is a commercial FM sports radio station licensed to New York City. The station is owned and operated by Entercom, and is simulcast with WFAN (660 AM). WFAN-FM's studios are located in the combined Entercom facility in the Hudson Square neighborhood of Manhattan and its transmitter is located at the Empire State Building.",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 10,
+          "path": "2hop__354635_174222/10.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/56b703c1fce30ed0155b754338d3f369ce94d8c82957006436f3e475fb54785e": {
+      "title": "Fox Sports West and Prime Ticket",
+      "text": "Fox Sports West and Prime Ticket are American regional sports networks owned by The Walt Disney Company, and operate as Fox Sports Networks affiliates. The channels broadcast regional coverage of professional and collegiate sports events in California, focusing primarily on professional sports teams based in the Greater Los Angeles area. Fox Sports West and Prime Ticket maintain general offices and studios based at the Staples Center in Downtown Los Angeles.",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 11,
+          "path": "2hop__354635_174222/11.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/07f2f54946f69aec0d2188e544cdce941eb2992b385b2231af8823b7ade29d26": {
+      "title": "WZEI",
+      "text": "WZEI (101.5 FM) is an American licensed radio station with studios located in Bow, New Hampshire. The station is owned by Dirk Nadon, through licensee Lakes Media, LLC. WZEI is licensed to serve the community of Meredith, New Hampshire, and has coverage of central New Hampshire, particularly the Lakes Region area. WZEI is an affiliate of the WEEI Sports Radio Network, based in WEEI-FM in Boston.",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 12,
+          "path": "2hop__354635_174222/12.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/84e1296d387e070385f3c459babb9bf6f677b6b6117f00f270e8cc244e414e39": {
+      "title": "Tennis on CBS",
+      "text": "Tennis on CBS is the branding used for broadcasts of professional tennis tournaments that were produced by CBS Sports, the sports division of the CBS television network in the United States. At the time the network's broadcast agreements with the United States Tennis Association (USTA) ended in 2014, CBS held the broadcast rights to the U.S. Open, the U.S. Open Series and the Sony Ericsson Open. From 1980 to 1982, CBS also televised the French Open (sandwiched in-between stints at NBC).",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 13,
+          "path": "2hop__354635_174222/13.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/012ed663308230a6af0e53ee994b3485cf40a4254214e89a528b7ead95008eae": {
+      "title": "Premier League",
+      "text": "The Premier League is particularly popular in Asia, where it is the most widely distributed sports programme. In Australia, Fox Sports broadcasts almost all of the season's 380 matches live, and Foxtel gives subscribers the option of selecting which Saturday 3pm match to watch. In India, the matches are broadcast live on STAR Sports. In China, the broadcast rights were awarded to Super Sports in a six-year agreement that began in the 2013–14 season. As of the 2013–14 season, Canadian broadcast rights to the Premier League are jointly owned by Sportsnet and TSN, with both rival networks holding rights to 190 matches per season.",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 14,
+          "path": "2hop__354635_174222/14.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/abf1bd0c0b81fd3412fc544769e0650bd18dacf021af6c4d11d8713e583ebb99": {
+      "title": "EA Sports",
+      "text": "EA Sports is a division and brand of Electronic Arts that creates and develops sports video games. Formerly a marketing gimmick of Electronic Arts, in which they tried to imitate real - life sports networks by calling themselves the ``EA Sports Network ''(EASN) with pictures or endorsements with real commentators such as John Madden, it soon grew up to become a sub-label on its own, releasing game series such as NBA Live, FIFA, NHL, Madden NFL, and NASCAR. The best selling EA Sports series is the FIFA series with over 100 million units sold.",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 15,
+          "path": "2hop__354635_174222/15.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/b220cb7563498ca7016ed790672e1c761d0097cbbd88199b589c7bb2f98556e1": {
+      "title": "Windjammer Communications",
+      "text": "Windjammer Cable is a small cable company formed by the sale of 25 systems that served 80,000 customers in rural areas that Time Warner Cable acquired from the bankrupt Adelphia. Windjammer was created specifically for this deal and consisted of Boston private-equity concern MAST Capital Management and Jupiter, Fla.-based small cable operator Communications Construction Services (CCS).",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 16,
+          "path": "2hop__354635_174222/16.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/4893ad5b3627c870a3285e7fc7094426e782b61bc7b1d7a72137338261a7571f": {
+      "title": "Sport in Ecuador",
+      "text": "Sports in Ecuador influence the culture and its people. Futbol the most popular sport, followed by baseball, volleyball, basketball, and tennis.",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 17,
+          "path": "2hop__354635_174222/17.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/f7eda80e876114a0540fc2e257b772e38f08303930e527ccd52540d076607022": {
+      "title": "Fox Sports 1",
+      "text": "Fox Sports 1 Launched August 17, 2013 (2013 - 08 - 17) Network Fox Sports Owned by Fox Entertainment Group (21st Century Fox) Picture format 720p (HDTV) (HD feed downgraded to letterboxed 480i for SD feed) Slogan The 1 Country United States Language English Broadcast area United States Puerto Rico Caribbean Headquarters Los Angeles, California Replaced Speed (2005 -- 2013) Sister channel (s) Fox Sports 2 Fox Soccer Plus Fox Deportes Fox Sports Networks Fox College Sports Big Ten Network Fox Sports Website www.foxsports.com/watch/fs1 www.foxsports.com Availability Satellite DirecTV Channel 219 (HD / SD) Dish Network Channel 150 (HD / SD) Cable Available on most U.S. cable systems Consult your local cable provider for channel availability IPTV AT&T U-verse Channel 1652 (HD) Channel 652 (SD) Verizon FiOS Channel 583 (HD) Channel 83 (SD) Google Fiber Channel 208 (HD) Streaming media Fox Sports Go Watch live (U.S. cable internet subscribers only; requires login to stream content) DirecTV Now Internet Protocol television fuboTV Internet Protocol television Hulu Live TV Internet Protocol television PlayStation Vue Internet Protocol television Sling TV Internet Protocol television YouTube TV Internet Protocol television",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 18,
+          "path": "2hop__354635_174222/18.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/19a93be634229e1baa192f3a7a2f0928fcd42a0942dda465c1e81e02d8dc12b8": {
+      "title": "Hockey Night in Canada",
+      "text": "The \"Hockey Night in Canada\" brand is owned by the CBC and was exclusively used by CBC Sports through the end of the 2013–14 NHL season. Beginning in the 2014–15 NHL season, the brand is being licensed to Rogers Communications for Sportsnet-produced Saturday NHL broadcasts airing on CBC Television as well as the Rogers-owned City and Sportsnet networks. Rogers had secured exclusive national multimedia rights to NHL games beginning in 2014–15, and sublicensed Saturday night and playoff games to CBC. This sub-license agreement has been extended through the end of the Rogers deal with the NHL.",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 19,
+          "path": "2hop__354635_174222/19.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/ffbe8c8d33569a33ae76724bf6c44c1b8e934b169ad1f95301035459c7bb52a2": {
+      "title": "Empire Sports Network",
+      "text": "Empire Sports Network was an American regional sports network that was owned by the Adelphia Communications Corporation. The network was available on cable providers in much of upstate New York (stretching from Buffalo to Albany), as well as parts of northern Pennsylvania and eastern Ohio. The network ceased operations on March 7, 2005, in the midst of Adelphia's financial collapse and bankruptcy.",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 2,
+          "path": "2hop__354635_174222/2.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/d0da4d6f16de09310a6b4ec22de3fc27427f02f0dd5f9da81f2be17278245b6b": {
+      "title": "Swimming at the Commonwealth Games",
+      "text": "Swimming is one of the sports at the quadrennial Commonwealth Games competition. It has been a Commonwealth Games sport since the inaugural edition of the event's precursor, the 1930 British Empire Games. It is a core sport and must be included in the sporting programme of each edition of the Games. Synchronised swimming and Diving events are optional. Water polo is a recognised (i.e. not yet optional) sport.",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 3,
+          "path": "2hop__354635_174222/3.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/0b50585f83b8b0dec6172d41168661d45c9b114282d7818d0a1e51da26635215": {
+      "title": "Andrea Kremer",
+      "text": "Andrea Kremer (born February 25, 1959 in Philadelphia, Pennsylvania) is a multi-Emmy Award Winning American television sports journalist. She currently calls \"Thursday Night Football\" games for Amazon Prime Video making sports history, along with Hannah Storm, by becoming the first all-women booth to call any major men's team sport, not just football.. Kremer is also Chief Correspondent for the NFL Network and previously led the network's coverage and in-depth reporting on health and safety. Her other current roles include correspondent for HBO's \"Real Sports with Bryant Gumbel\" as well as co-host of \"We Need To Talk\", the first ever all-female nationally televised weekly sports show on CBS. Until the 2011 season, she worked as a sideline reporter for NBC on the network's coverage of \"Sunday Night Football\".",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 4,
+          "path": "2hop__354635_174222/4.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/a3f8b2d432a9771f0919a493eeeede19b1688b589fba46f75df539bb08559bb5": {
+      "title": "Comcast Sports Southwest",
+      "text": "Comcast Sports Southwest (CSS) was an American regional sports network that served Greater Houston, Texas. It was owned by the NBC Sports Group unit of NBCUniversal. The channel was launched on September 1, 2009 and had a similar format to Comcast/Charter Sports Southeast, which launched ten years earlier. Both networks shared the same logo and focused primarily on collegiate and high school sports.",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 5,
+          "path": "2hop__354635_174222/5.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/7a9811d42ab566fa99b0e83695943c3c518758a697cbcb833d0ed94a2f3b66ec": {
+      "title": "Nova Sports",
+      "text": "Nova Sports is a premium Sports service in Greece and is owned by Forthnet Group, a subsidiary of Greek Telecommunications company Forthnet. It launched in 1994 as \"Supersport\" and at the time was the first ever premium sports service in Greece. It is available exclusively on Nova, a DTH satellite service. Nova Sports is available terrestrially and via satellite only on Nova.",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 6,
+          "path": "2hop__354635_174222/6.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/46ab25557a3e266c3515d2ac5fe9d32d17b43c8859b5d8f06657bbb616e6c2ea": {
+      "title": "NBCSN",
+      "text": "NBCSN Launched July 1, 1995; 22 years ago (July 1, 1995) Owned by NBC Sports Group Picture format 1080i (HDTV) Downconverted to letterboxed 480i for SDTV feed Slogan Believe Country United States Language English Broadcast area Nationwide Headquarters Stamford, Connecticut Formerly called Outdoor Life Network (1995 -- 2006) Versus (2006 -- 11) NBC Sports Network (2012 -- 13) Sister channel (s) NBC Golf Channel NBC Sports Regional Networks Olympic Channel Website NBC Sports Availability Satellite Dish Network 159 DirecTV 220 1220 (On Demand) Cable Available on most cable systems check local listings IPTV AT&T U-verse 1640 640 (SD) Google Fiber NBCSN Verizon Fios 590 90 (SD) Streaming media DirecTV Now Internet Protocol television fuboTV Internet Protocol television Hulu Live TV Internet Protocol television PlayStation Vue Internet Protocol television Sling TV Internet Protocol television YouTube TV Internet Protocol television",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 7,
+          "path": "2hop__354635_174222/7.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/cbc8bb69e9d769c2187cf8fcc06aa7c8bad7f821a3c4e029dcca913eda9eec18": {
+      "title": "Fox Sports 1",
+      "text": "Fox Sports 1 Launched August 17, 2013 (2013 - 08 - 17) Network Fox Sports Owned by Fox Entertainment Group (21st Century Fox) Picture format 720p (HDTV) (HD feed downgraded to letterboxed 480i for SD feed) Slogan The 1 Country United States Language English Broadcast area United States Puerto Rico Caribbean Headquarters Los Angeles, California Replaced Speed (2005 -- 2013) Sister channel (s) Fox Sports 2 Fox Soccer Plus Fox Deportes Fox Sports Networks Fox College Sports Big Ten Network Fox Sports Website www.foxsports.com/watch/fs1 www.foxsports.com Availability Satellite DirecTV Channel 219 (HD / SD) Dish Network Channel 150 (HD / SD) Cable Available on most U.S. cable systems Consult your local cable provider for channel availability IPTV AT&T U-verse Channel 1652 (HD) Channel 652 (SD) Verizon FiOS Channel 583 (HD) Channel 83 (SD) Google Fiber Channel 208 (HD) Streaming media Fox Sports Go Watch live (U.S. cable internet subscribers only; requires login to stream content) PlayStation Vue Internet Protocol television Sling TV Internet Protocol television DirecTV Now Internet Protocol television FuboTV Internet Protocol television",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 8,
+          "path": "2hop__354635_174222/8.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/7c59757eccd72a379fd342117fad2cee4c40af0a7164734d115b52b59a5655cb": {
+      "title": "History of rock climbing",
+      "text": "Although the practice of rock climbing was an important component of Victorian mountaineering in the Alps, it is generally thought that the sport of rock climbing began in the last quarter of the 19th century in at least three areas: Elbe Sandstone Mountains in Saxony near Dresden, the north of England including the Peak district and Lake District, and the Dolomites in Italy. Rock climbing evolved gradually from an alpine necessity to an athletic sport in its own right, making it imprudent to cite a primogenitor of the latter in each of these three locales. Nevertheless, there is some general agreement on the following:",
+      "occurrences": [
+        {
+          "question_id": "2hop__354635_174222",
+          "paragraph_idx": 9,
+          "path": "2hop__354635_174222/9.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/4ee313491c8ebfab0383527eaea9a97357336528b8a2ed3b100c149efc207134": {
+      "title": "Deebing Heights, Queensland",
+      "text": "Deebing Heights is a semi-rural suburb (SRS) located in Queensland, Australia. The area that is now Deebing Heights has been an important settlement since Queensland's early colonial history, but was only gazetted as a locality in 2000 and then a suburb in 2004, previously being part of Purga. It is home of the heritage listed Deebing Creek Mission Aboriginal Reserve located at the southern end of Grampian Drive which acted as a home to the Ugarapul/yuggera tribe until its closing in 1915. Development was slow to begin in Deebing Heights with Paradise Heights, a premium acreage estate only beginning development in the mid-1990s. However, with development planned over the entire suburb, it has a projected population of 25,000 people by 2020.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 0,
+          "path": "2hop__42027_42004/0.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/e3431fc9a0055c8d19114e7b6806aadf4c9fed01fb7b8fde79ad654bbb550b2e": {
+      "title": "Iran",
+      "text": "Christianity, Judaism, Zoroastrianism, and the Sunni branch of Islam are officially recognized by the government, and have reserved seats in the Iranian Parliament. But the Bahá'í Faith, which is said to be the largest non-Muslim religious minority in Iran, is not officially recognized, and has been persecuted during its existence in Iran since the 19th century. Since the 1979 Revolution, the persecution of Bahais has increased with executions, the denial of civil rights and liberties, and the denial of access to higher education and employment.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 1,
+          "path": "2hop__42027_42004/1.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/b5b627961f97b909d9cc70d0076f5585c27e9eb0d060563629ccf74a7cd8a07e": {
+      "title": "Kadalundi",
+      "text": "Kadalundi is a village in Kozhikode district, Kerala, India. It is a coastal village close to the Arabian Sea. Kadalundi is famous for its bird sanctuary, which is home to various migratory birds during certain seasons and has been recently declared as a bio-reserve. It is the first community reserve in Kerala.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 10,
+          "path": "2hop__42027_42004/10.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/0bfffb35aeea1209f94ca3fac88250207bcddf77a362670d7edbb4d07d54823c": {
+      "title": "Tanzania",
+      "text": "In testimony before the Senate Committee on Commerce, Science, and Transportation on June 3, 2008, former director of the CFTC Division of Trading & Markets (responsible for enforcement) Michael Greenberger specifically named the Atlanta-based IntercontinentalExchange, founded by Goldman Sachs, Morgan Stanley and BP as playing a key role in speculative run-up of oil futures prices traded off the regulated futures exchanges in London and New York. However, the IntercontinentalExchange (ICE) had been regulated by both European and U.S. authorities since its purchase of the International Petroleum Exchange in 2001. Mr Greenberger was later corrected on this matter.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 11,
+          "path": "2hop__42027_42004/11.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/18bfe2ae708979f1543bc9c318ee0ae0dfb7e4c154af0b299e62d58121aa6277": {
+      "title": "Diamond Jubilee of Elizabeth II",
+      "text": "On 5 January 2010, the Lord President of the Council and Business Secretary Lord Mandelson announced that an extra bank holiday would take place on 5 June 2012. Moving the Spring Bank Holiday (the last Monday in May) to 4 June resulted in a four - day holiday in honour of the Diamond Jubilee. As national holidays are a devolved matter, Scotland's first minister confirmed that the bank holiday would be held on 5 June in Scotland. Some economists later theorised that the holiday could reduce the country's gross domestic product by 0.5% in the second quarter of the year, though this would be partially offset by increased sales for the hospitality and merchandise sectors.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 12,
+          "path": "2hop__42027_42004/12.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/ac1465e0ecd490b78b575c8300665dfa9ee0b4cbe2219a385e208bd94ceccb81": {
+      "title": "Tahltan, British Columbia",
+      "text": "Tahltan, or Goon-da-chagga or Goon-tdar-shaga (\"where the spring water stops\" in the Tahltan language,) is an unincorporated locality and Indian Reserve community of the Tahltan people located west of Telegraph Creek in northern British Columbia, Canada, near the confluence of the Stikine and Tahltan Rivers. The local First Nations government is the Tahltan Band Council. The specific name of the Indian Reserve is Tahltan Indian Reserve No. 1. Other reserves in the immediate vicinity, also governed by this band, are Tahltan Forks Indian Reserve No. 5, Upper Tahltan Indian Reserve No. 4 and Hiusta's Meadow Indian Reserve No. 2.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 13,
+          "path": "2hop__42027_42004/13.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/5e4350105d44cfb55355aef034c080df5ee970c92fe577f2e93396cdaf74bcae": {
+      "title": "Stade Amédée-Domenech",
+      "text": "The Stade Amédée-Domenech is a multi-purpose stadium in Brive-la-Gaillarde, France. It is currently used mostly for rugby union matches and is the home stadium of CA Brive. The stadium is able to hold 16,000. Its official name was the Stadium until 2004, but it was called Stade Amedee-Domenech after the French international rugby player Amédée Domenech died in 2003.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 14,
+          "path": "2hop__42027_42004/14.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/aed926709b363e98b5934d3ba7c6d60bff9135d6576fc85f4e79b211c36cf99d": {
+      "title": "Quantitative easing",
+      "text": "The US Federal Reserve belatedly implemented policies similar to the current quantitative easing during the Great Depression of the 1930s. Specifically, banks' excess reserves exceeded 6 percent in 1940, whereas they vanished during the entire postwar period until 2008. Despite this fact, many commentators called the scope of the Federal Reserve quantitative easing program after the 2008 crisis ``unprecedented ''.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 15,
+          "path": "2hop__42027_42004/15.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/006c405f0210058793d6ce419965d33cb84c6d038568b2e608f6de91e708a7c2": {
+      "title": "Tamástslikt Cultural Institute",
+      "text": "The Tamástslikt Cultural Institute is a museum and research institute located on the Umatilla Indian Reservation near Pendleton in eastern Oregon. It is the only Native American museum along the Oregon Trail. The institute is dedicated to the culture of the Cayuse, Umatilla, and Walla Walla tribes of Native Americans. The main permanent exhibition of the museum provides a history of the culture of three tribes, and of the reservation itself. The museum also has a second hall for temporary exhibitions of specific types of Native American art, craftwork, history, and folklore related to the tribes.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 16,
+          "path": "2hop__42027_42004/16.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/abd6ff6e3e6e26790a9250959fba854c96c355e1f57fa2758a0e3a26d536bfda": {
+      "title": "2008 Sichuan earthquake",
+      "text": "Initially, officials were unable to contact the Wolong National Nature Reserve, home to around 280 giant pandas. However, the Foreign Ministry later said that a group of 31 British tourists visiting the Wolong Panda Reserve in the quake-hit area returned safe and uninjured to Chengdu. Nonetheless, the well-being of an even greater number of pandas in the neighbouring panda reserves remained unknown. Five security guards at the reserve were killed by the earthquake. Six pandas escaped after their enclosures were damaged. By May 20, two pandas at the reserve were found to be injured, while the search continued for another two adult pandas that went missing after the quake. By May 28, 2008, one panda was still missing. The missing panda was later found dead under the rubble of an enclosure. Nine-year-old Mao Mao, a mother of five at the breeding center, was discovered on Monday, her body crushed by a wall in her enclosure. Panda keepers and other workers placed her remains in a small wooden crate and buried her outside the breeding centre.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 17,
+          "path": "2hop__42027_42004/17.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/d090af38ed263ac673075e7f84a2e38bfa34d25a122c178726d94880bd4257ec": {
+      "title": "Government Statistical Service",
+      "text": "The Government Statistical Service (GSS) is the community of all civil servants who work in the collection, production and communication of UK official statistics. It includes not only statisticians, but also economists, social researchers, IT professionals, and secretarial and clerical staff. Members of the GSS work in the Office for National Statistics, most UK Government departments, and the devolved administrations. The GSS publishes around 2,000 sets of statistics each year, as well as providing professional advice and",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 18,
+          "path": "2hop__42027_42004/18.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/6a00bfcf7c1ba97b2f364832b79634f8a8ce91f495f473a24d0ef7e7887ccb97": {
+      "title": "Call of Duty: United Offensive",
+      "text": "Call of Duty: United Offensive is an expansion pack for the first-person shooter video game \"Call of Duty\". It was developed by Gray Matter Interactive, with contributions from Pi Studios, and published by Activision. It was released for Microsoft Windows on September 14, 2004.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 19,
+          "path": "2hop__42027_42004/19.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/55974ff794262eaf78463dff04c14b1b01513ba8139b0a5bac9f7be9bad3aa18": {
+      "title": "Borisov Arena",
+      "text": "Borisov Arena is a football-specific stadium in Barysaw, Belarus and is the home stadium of FC BATE Borisov and the Belarus national football team. The stadium's official capacity is 13,126.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 2,
+          "path": "2hop__42027_42004/2.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/b7fdd89bb2edb69bd500e826ddc94da843f94f8effb93ae38881f496d6adc038": {
+      "title": "Scottish Parliament",
+      "text": "Since September 2004, the official home of the Scottish Parliament has been a new Scottish Parliament Building, in the Holyrood area of Edinburgh. The Scottish Parliament building was designed by Spanish architect Enric Miralles in partnership with local Edinburgh Architecture firm RMJM which was led by Design Principal Tony Kettle. Some of the principal features of the complex include leaf-shaped buildings, a grass-roofed branch merging into adjacent parkland and gabion walls formed from the stones of previous buildings. Throughout the building there are many repeated motifs, such as shapes based on Raeburn's Skating Minister. Crow-stepped gables and the upturned boat skylights of the Garden Lobby, complete the unique architecture. Queen Elizabeth II opened the new building on 9 October 2004.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 3,
+          "path": "2hop__42027_42004/3.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/ce9d281178ea34c6dd68cbb0240e075920ce4589333d63411eb9f086df8b8726": {
+      "title": "Scottish Parliament",
+      "text": "Following a referendum in 1997, in which the Scottish electorate voted for devolution, the current Parliament was convened by the Scotland Act 1998, which sets out its powers as a devolved legislature. The Act delineates the legislative competence of the Parliament – the areas in which it can make laws – by explicitly specifying powers that are \"reserved\" to the Parliament of the United Kingdom. The Scottish Parliament has the power to legislate in all areas that are not explicitly reserved to Westminster. The British Parliament retains the ability to amend the terms of reference of the Scottish Parliament, and can extend or reduce the areas in which it can make laws. The first meeting of the new Parliament took place on 12 May 1999.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 4,
+          "path": "2hop__42027_42004/4.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/a374ab3dae4e936122159184f3c8945b22613bab5a3a98cc0364ee0ed2b60564": {
+      "title": "Pelican Rapids, Manitoba",
+      "text": "Pelican Rapids is a community in the Canadian province of Manitoba. The Shoal River 65A Indian Reserve is adjacent to the community and is home to some members of the Sapotaweyak Cree Nation.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 5,
+          "path": "2hop__42027_42004/5.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/7d9636b1b7258d9f0194b89347493f6c36a7a50122f3e55ced46606326fd1949": {
+      "title": "Oakwell",
+      "text": "Oakwell is a multi-purpose sports development in Barnsley, South Yorkshire, England used primarily by Barnsley Football Club for playing their home fixtures, and those of their reserves.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 6,
+          "path": "2hop__42027_42004/6.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/d5874137da9cadaf257dad4c0a730f63b1452e622d2587b0ff7683cd7ae64242": {
+      "title": "Scottish Parliament",
+      "text": "The specific devolved matters are all subjects which are not explicitly stated in Schedule 5 to the Scotland Act as reserved matters. All matters that are not specifically reserved are automatically devolved to the Scottish Parliament. Most importantly, this includes agriculture, fisheries and forestry, economic development, education, environment, food standards, health, home affairs, Scots law – courts, police and fire services, local government, sport and the arts, transport, training, tourism, research and statistics and social work. The Scottish Parliament has the ability to alter income tax in Scotland by up to 3 pence in the pound. The 2012 Act conferred further fiscal devolution including borrowing powers and some other unconnected matters such as setting speed limits and control of air guns.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 7,
+          "path": "2hop__42027_42004/7.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/a94e9cebffa527d782e7c6cda43931fdc2f6d9ef138e70d61c9d809f17457bab": {
+      "title": "Official game (baseball)",
+      "text": "Since most professional baseball games are nine innings long, the fifth inning is used as the threshold for an official game. If the visiting team is leading, or the game is tied, the end of the fifth inning marks this point. If the home team (which bats last) is already ahead in the score, and theoretically would not need its half of the fifth inning, then 41⁄2 innings (i.e., the middle of the fifth) is considered an official game. The game is also considered official if the home team scores to take the lead in the bottom of the fifth inning, since the game would end immediately if the same thing happened in the ninth.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 8,
+          "path": "2hop__42027_42004/8.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/39296558a72dfa60656f7bf8a7720ea5bed8b970473bede9ad594a0fa5d1d7ca": {
+      "title": "Languages of the United States",
+      "text": "Many languages are spoken, or historically have been spoken, in the United States. Today over 500 languages are used by the U.S. population. The most commonly used language is English (specifically, American English), which is the de facto national language of the United States. Since the 1965 Immigration Act, Spanish is the second most common language in the country. The United States does not have an official language, but some state governments recognize specific languages. For instance, the state government of Louisiana offers services and documents in French, as does New Mexico in Spanish. There are many languages indigenous to North America or to U.S. states or holdings in the Pacific region. Hawaiian, although having few native speakers, is an official language along with English of the state of Hawaii. Alaska officializes English and twenty native languages.",
+      "occurrences": [
+        {
+          "question_id": "2hop__42027_42004",
+          "paragraph_idx": 9,
+          "path": "2hop__42027_42004/9.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/f2f696017d7dd02767e11e6e48ed6161a82957039b268240c00e96bac44c381a": {
+      "title": "Edita Mazurevičiūtė",
+      "text": "Edita Mazurevičiūtė (born 10 January 1996) is a track cyclist from Lithuania. She represented her nation at the 2015 UCI Track Cycling World Championships.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 0,
+          "path": "2hop__726717_610238/0.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/e8b197c42f1160edb1d7c52284ecf1256918d69a3338ef07e4af8fc5d263fbba": {
+      "title": "Japan National Route 28",
+      "text": "National Route 28 is a national highway connecting Kobe and Tokushima in Japan. It is the only national highway that traverses through Awaji Island as the route uses ferries to connect the two cities of Naruto, Tokushima and Akashi, Hyōgo.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 1,
+          "path": "2hop__726717_610238/1.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/292d492a4ad6e3c4eebd8cbc9a28dae5b15233368300f2407f50a50157015ecd": {
+      "title": "Maunula",
+      "text": "Maunula (Finnish), Månsas (Swedish) is a northwestern neighborhood of Helsinki, Finland. For the 1952 Summer Olympics, it hosted part of the road cycling events.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 10,
+          "path": "2hop__726717_610238/10.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/26f00d101f69e3b8c32098d55da4e0cc2b177dba01a97785acb95694e39ca6b9": {
+      "title": "N25 road (Ireland)",
+      "text": "The N25 road is a national primary road in Ireland, forming the route from Cork to Rosslare Europort via Waterford City. The road is part of the E30 European route and a short section is also part of the E01 European route. It forms part of the proposed Atlantic Corridor route.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 11,
+          "path": "2hop__726717_610238/11.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/3457004119da838e330d3b2f46b888e4c6ac273beb7eac55479f45e09599b5dd": {
+      "title": "National Cycle Route 57",
+      "text": "National Cycle Route 57 is part of the United Kingdom's National Cycle Network. When complete, it will run west to east from Farmington, Gloucestershire near Northleach to Welwyn Garden City in Hertfordshire.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 12,
+          "path": "2hop__726717_610238/12.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/7956a36365227eac92c03c968667a9e4715e85c39b4da19a5bf7da8afff2cee2": {
+      "title": "National Route A012 (Argentina)",
+      "text": "National Route A012 is a road in the southeast of Santa Fe Province, Argentina. It has a semi-circular length centered on the city of Rosario, running as a long-length beltway. From the National Route 9 junction on km marker 278, in the town of Pueblo Esther, to the junction with National Route 11 on km marker 326 in the city of San Lorenzo it runs for all paved.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 13,
+          "path": "2hop__726717_610238/13.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/cbc2997517c8527ba5a50f6b0c46fd1e9a86186e4c276546afd5f3ed29d8df72": {
+      "title": "National Cycle Network",
+      "text": "The National Cycle Network (NCN) is the national cycling route network of the United Kingdom, which was established to encourage cycling throughout Britain, as well as for the purposes of bicycle touring. It was created by the charity Sustrans who were aided by a £42.5 million National Lottery grant. In 2017, the 16,575 mile network was used for over 786 million trips.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 14,
+          "path": "2hop__726717_610238/14.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/a50cf8e74267c93d3b11bdf71bbdbfba477b3372918594560f1b4f62fb12143a": {
+      "title": "Arkansas Highway 242",
+      "text": "Arkansas Highway 242 (AR 242, Hwy. 242) is an east–west state highway in Phillips County, Arkansas. The route of runs from Highway 44 near Helena-West Helena north through the city and through the St. Francis National Forest to Highway 1 near Lexa. A segment of the route is part of the Mississippi River Trail, essentially a bicycle-friendly version of the Great River Road.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 15,
+          "path": "2hop__726717_610238/15.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/1ba1babd0216a0e096676f56b202dd96450542bd4faa380d52481e8c711e41c8": {
+      "title": "Week",
+      "text": "A week is a time unit equal to seven days. It is the standard time period used for cycles of rest days in most parts of the world, mostly alongside -- although not strictly part of -- the Gregorian calendar.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 16,
+          "path": "2hop__726717_610238/16.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/2890c9e4c50acbd327c8b3d243ecf2cdb847baeb7df988775493931307593290": {
+      "title": "Julien Dubuque Bridge",
+      "text": "The Julien Dubuque Bridge crosses the Mississippi River. It joins the cities of Dubuque, Iowa, and East Dubuque, Illinois. The bridge is part of U.S. Route 20 route. It is one of two automobile bridges over the Mississippi in the area (the Dubuque–Wisconsin Bridge three miles (5 km) north links Dubuque with Wisconsin), and is listed in the National Register of Historic Places.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 17,
+          "path": "2hop__726717_610238/17.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/ac714a77e97dda9171607170f81d5aca7a590a903aa8fbc368e4df22f3d58d3d": {
+      "title": "2008 Tour of Qatar",
+      "text": "The 2008 Tour of Qatar was held from 27 January to 1 February 2008 in Qatar. It is a multiple stage road cycling race that took part over six stages with a total of 712.5 kilometres and is part of the 2007–2008 UCI Asia Tour.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 18,
+          "path": "2hop__726717_610238/18.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/e829c9b6933268d165ff137cf7193f51ec40b9e6c1b3ba7c8051669732728743": {
+      "title": "Wrestling at the 1984 Summer Olympics – Men's Greco-Roman 57 kg",
+      "text": "The Men's Greco-Roman 57 kg at the 1984 Summer Olympics as part of the wrestling program were held at the Anaheim Convention Center, Anaheim, California.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 19,
+          "path": "2hop__726717_610238/19.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/e2c4d57e6289821643e5c1265da95474e93c3855b7e3a3df080a0894735d6a5d": {
+      "title": "Norwegian County Road 13",
+      "text": "County Road 13 () runs between the village of Dragsvik in Balestrand municipality and the village of Moskog in Førde municipality in Sogn og Fjordane county, Norway. Until 2010 the long road was part of National Road 13 but administrative reforms passed this part of the road to the county. County Road 13 and a short section of County Road 55 are designated as one of eighteen National Tourist Routes in Norway. The road crosses the Gaularfjellet mountains.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 2,
+          "path": "2hop__726717_610238/2.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/f9a0b6ae734defbe2c97ddd1b73dd0b1642fcbbf6643cf5f55bca010e3024d2b": {
+      "title": "2006 NCAA Division I Men's Basketball Tournament",
+      "text": "National Semifinals National Championship Game AT4 LSU 45 OA2 UCLA 59 OA2 UCLA 57 MI3 Florida 73 MI3 Florida 73 WA11 George Mason 58",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 3,
+          "path": "2hop__726717_610238/3.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/43c76211845adacb4fc12e865285c24e78a08a8674ffefe4c858e2cbc9c4e88b": {
+      "title": "Utah State Route 264",
+      "text": "State Route 264 is a state highway in central Utah that connects Sanpete County to Carbon County through Flat Canyon, Boulger Canyon, Upper Huntington Canyon, and Eccles Canyon. It is part of The Energy Loop, a National Scenic Byway.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 4,
+          "path": "2hop__726717_610238/4.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/6ddfefd95e0c90f67ee4e1314d687489fc311132e577aeb1869fb2167c182b3c": {
+      "title": "Super Bowl LIII",
+      "text": "CBS will broadcast Super Bowl LIII, as part of an annual cycle between the three main broadcast television partners of the NFL.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 5,
+          "path": "2hop__726717_610238/5.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/ae92e482c73c28278b7a6f6d1040943ccbb2e34ec81dde83b99b20802b333318": {
+      "title": "René Wenzel",
+      "text": "René Wenzel (born 20 April 1960, Copenhagen, Denmark) is a Danish cycle racing coach, working as a consultant. He is a former coach of USA Cycling's national junior team, Koege Cykel Ring in Denmark, and first cycling teacher at a sports college in Denmark, the Gentofte Studenter Kursus.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 6,
+          "path": "2hop__726717_610238/6.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/8c41720c0b060865d989ba1038962fc5ed8aa88eebf1904e824afc5425e70cbf": {
+      "title": "Circus Time",
+      "text": "Circus Time was a variety program presented in the United States by television network ABC as part of its 1956-57 season.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 7,
+          "path": "2hop__726717_610238/7.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/13742564b323b31aff1ca77e8a176c9d80d6ec859682867b1f2b0e85626ee7bc": {
+      "title": "N85 road (Ireland)",
+      "text": "The N85 road is a national secondary road in Ireland connecting Ennis and Ennistymon. The route connects to the M18 Ennis bypass and forms part of the Ennis outer ring road as the \"N85 Western Relief Road\". From Ennis the route continues in a north - west direction and terminates at the junction with the N67 at Ennistymon. It is located entirely in County Clare.",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 8,
+          "path": "2hop__726717_610238/8.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/caa41bdcf338c4783371459e59cde6b68aac05c8ca0c5770198cd2894bce434d": {
+      "title": "The Great King",
+      "text": "The Great King () is a 1942 German drama film directed by Veit Harlan and starring Otto Gebühr. It depicts the life of Frederick the Great, who ruled Prussia from 1740 to 1786. It received the rare \"Film of the Nation\" distinction. It was part of a popular cycle of \"Prussian films\".",
+      "occurrences": [
+        {
+          "question_id": "2hop__726717_610238",
+          "paragraph_idx": 9,
+          "path": "2hop__726717_610238/9.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/e19927f9c9b6d86128479dd22bd607092d4037eed0730687ec53af4bdb3ebb5c": {
+      "title": "CEMM",
+      "text": "In 1986, Compaq was the first vendor to ship a PC compatible computer with a 386 CPU, the Deskpro 386, and it was natural for them to develop solutions leveraging the specific features of their new hardware and in this case allowing existing EMS-compatible DOS programs to access all the memory.",
+      "occurrences": [
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 0,
+          "path": "2hop__817096_15463/0.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/e0a1c534cff0cf986fd4c3a7336153ccf6e7f0e49205bdf826ba052267149e1b": {
+      "title": "Verizon Communications",
+      "text": "As part of a rebranding of the Baby Bells in the mid-1990s, all of Bell Atlantic's operating companies assumed the holding company's name. In 1997, Bell Atlantic expanded into New York and the New England states by merging with fellow Baby Bell NYNEX. Although Bell Atlantic was the surviving company name, the merged company moved its headquarters from Philadelphia to NYNEX's old headquarters in New York City. In 2000, Bell Atlantic acquired GTE, which operated telecommunications companies across most of the rest of the country that was not already in Bell Atlantic's footprint. Bell Atlantic, the surviving entity, changed its name to \"Verizon\", a portmanteau of \"\" (Latin for \"truth\") and \"horizon\".",
+      "occurrences": [
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 1,
+          "path": "2hop__817096_15463/1.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/8c3471290b8fe970f9c4bb30e9e984d71818b182ec53a597ca708daaeae82ad0": {
+      "title": "Battlefield (video game series)",
+      "text": "Battlefield is a series of first - person shooter video games that started out on Microsoft Windows and OS X with Battlefield 1942, which was released in 2002. The series is developed by Swedish company EA DICE and is published by American company Electronic Arts. The series features a particular focus on large maps, teamwork and vehicle warfare. The PC games in the series are mainly focused on online multiplayer. The Battlefield series has been played by more than 50 million players worldwide as of 2012, across 11 games and 12 expansion packs released since its inception in 2002.",
+      "occurrences": [
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 10,
+          "path": "2hop__817096_15463/10.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/00d9b2fc91a1e9fc2d402f94a40be35ae8e0cef8ccd6faa962d0519f7bc7b301": {
+      "title": "FedSat",
+      "text": "FedSat (Australia's 'Federation Satellite') is an Australian scientific research satellite launched from Tanegashima Space Center, Japan by a NASDA H-IIA launch vehicle in December 2002 (NASDA is now merged with JAXA). The satellite was developed by the Cooperative Research Centre for Satellite Systems, a cooperative made up of several universities, commercial organisations and government bodies. The ground station is at the Institute for Telecommunications Research, part of the University of South Australia, near Adelaide. Since 2005 it was operated by the Australian Department of Defence.",
+      "occurrences": [
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 11,
+          "path": "2hop__817096_15463/11.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/4f79d357607bfa561f74b554bb9f77766cce369f7deb66fa7d61d97cb9053c22": {
+      "title": "Spectrum HoloByte",
+      "text": "Hasbro Interactive acquired the merged company in 1998, and what had been Spectrum HoloByte ceased to exist when the development studio in Alameda, California was closed in 1999. Hasbro subsequently sold all the assets of the various Hasbro Interactive studios to Infogrames, including the Atari brand itself.",
+      "occurrences": [
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 13,
+          "path": "2hop__817096_15463/13.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/5dac7f4777d6dc5624db73ecb0ef7f3f6ebb7290d791fb2cbd357d96e4338eae": {
+      "title": "Ville Saint-Pierre",
+      "text": "Ville Saint-Pierre is a small neighbourhood of the city of Montreal, Quebec, Canada, located in the Borough of Lachine. It was a separate town until it merged with Lachine in 1999. In 2002, the amalgamated city of Lachine merged into Montreal.",
+      "occurrences": [
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 14,
+          "path": "2hop__817096_15463/14.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/1d02b6e83510c68cecde1dd47796bd27c3aa21faf990644f71ada842a9b30035": {
+      "title": "Software 2000",
+      "text": "The company produced several titles with small development teams. This proved fatal with the rising standards of full priced games. With falling sales and important figures leaving the company, Software 2000 filed for bankruptcy in 2002.",
+      "occurrences": [
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 15,
+          "path": "2hop__817096_15463/15.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/456aff07b5f10cba59c095b9e53ce99f28641df226be935ed408420e3cbf5d85": {
+      "title": "Gjensidige NOR",
+      "text": "Gjensidige NOR was a Norwegian bank and insurance company that was in existence between 1999 and 2003. The company was created when the two savings banks Sparebanken NOR (bank) and Gjensidige (insurance) were merged in 1999. In 2002 Norwegian savings banks were allowed to become public limited company and was listed on the Oslo Stock Exchange. In 2003 the company was merged with Den norske Bank to form DnB NOR, while the original insurance company Gjensidige was demerged and again became a separate company in 2005.",
+      "occurrences": [
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 16,
+          "path": "2hop__817096_15463/16.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/92ac4235f3bf5a5d0bb9d64517a5b02d8fe5a142e71005d3a1d195bab170134d": {
+      "title": "Street & Racing Technology",
+      "text": "Street & Racing Technology (commonly called SRT) is a high - performance automobile group within Fiat Chrysler Automobiles. SRT began as ``Team Viper ''to develop the Dodge Viper. It later merged with`` Team Prowler'', the developers of the Plymouth Prowler, to become Specialty Vehicle Engineering (SVE). This was renamed Performance Vehicle Operations (PVO) in January of 2002. Since all PVO vehicles used the SRT name, the PVO development group was renamed SRT in 2004. SRT heavily tunes and produces vehicles for the Chrysler, Dodge, and Jeep brands.",
+      "occurrences": [
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 17,
+          "path": "2hop__817096_15463/17.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/506207bde8be835bfa3f811dda6ebbf31a7d70d486f9dc7b15f7e31e9f73d31d": {
+      "title": "Comcast",
+      "text": "In 2001, Comcast announced it would acquire the assets of the largest cable television operator at the time, AT&T Broadband, for US$44.5 billion. The proposed name for the merged company was \"AT&T Comcast\", but the companies ultimately decided to keep only the Comcast name. In 2002, Comcast acquired all assets of AT&T Broadband, thus making Comcast the largest cable television company in the United States with over 22 million subscribers. This also spurred the start of Comcast Advertising Sales (using AT&T's groundwork) which would later be renamed Comcast Spotlight. As part of this acquisition, Comcast also acquired the National Digital Television Center in Centennial, Colorado as a wholly owned subsidiary, which is today known as the Comcast Media Center.",
+      "occurrences": [
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 18,
+          "path": "2hop__817096_15463/18.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/c87ff513342d41dfc550421593c5827943a68c9d7cec4d8a1587d43f6c787571": {
+      "title": "Rockville Township, Stearns County, Minnesota",
+      "text": "Rockville Township was a township in Stearns County, Minnesota, United States. The population was 1,254 at the 2000 census. On 1 June 2002, Rockville Township and the city of Pleasant Lake were merged into the city of Rockville.",
+      "occurrences": [
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 19,
+          "path": "2hop__817096_15463/19.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/ee0589555004e7972f1ebd1f923946b07dc53a59d4ba05c45b9d50052f0dbb83": {
+      "title": "Couchbase Server",
+      "text": "On February 8, 2011, the Membase project founders and Membase, Inc. announced a merger with CouchOne (a company with many of the principal players behind CouchDB) with an associated project merger. The merged company was called Couchbase, Inc. In January 2012, Couchbase released Couchbase Server 1.8.",
+      "occurrences": [
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 2,
+          "path": "2hop__817096_15463/2.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/45ff546cdc25e0411d655221408e74495afaef120dba0ec254f853fc1771b664": {
+      "title": "Drentse Courant",
+      "text": "The Drentse Courant is a former regional newspaper from the Netherlands. It was published from 1991 to 2002. It was a merger of the \"Drentse en Asser Courant\" (1961) en \"Hoogeveens Dagblad\" (1966), themselves also merged newspapers. In 2002, the \"Drentse Courant\" merged with the \"Nieuwsblad van het Noorden\" and the \"Groninger Dagblad\" into the \"Dagblad van het Noorden\".",
+      "occurrences": [
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 3,
+          "path": "2hop__817096_15463/3.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/55e0f5be3ce58e6e132690b6fb2ad34528dd36d8727924c21079484d8ffd7499": {
+      "title": "Nord Aviation",
+      "text": "The company was based in the centre of France, on the site of Bourges airport, in the département of Cher. In 1970, Nord Aviation merged with Sud Aviation to create \"Société nationale d'industrie aérospatiale\" (SNIAS), later renamed Aérospatiale and ultimately merged into European aerospace corporation Airbus in 2000.",
+      "occurrences": [
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 4,
+          "path": "2hop__817096_15463/4.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/dc36b0b8dd405115f74ea8c1bec182797f2a0e0f377e3c5919404d6a61365819": {
+      "title": "Presto Studios",
+      "text": "In August 2002, Presto Studios shut down new development after the release of an Xbox title \"Whacked!\". In a statement, Greg Uhler (executive producer) announced the closing of the company:",
+      "occurrences": [
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 6,
+          "path": "2hop__817096_15463/6.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/324bfb0f9ef834e42dd2e089d7dc5ca5d9f9e26ec22945032b5b87bc69715ee9": {
+      "title": "P&O Portsmouth",
+      "text": "P&O Portsmouth was the name for P&O European Ferries' Portsmouth operations from 1999 to 2002 when it was merged with the Dover Operations to become P&O Ferries.",
+      "occurrences": [
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 7,
+          "path": "2hop__817096_15463/7.txt"
+        }
+      ]
+    },
+    "Bench_MuSiQue/paragraph/de28951dccbabbc799ae907b2e25873f7df6171749e1f8d05f44767e04ff8815": {
+      "title": "Nieuwsblad van het Noorden",
+      "text": "The Nieuwsblad van het Noorden (; \"Newspaper of the North\") is a former regional daily newspaper from the city of Groningen in the Netherlands. It was published from 1888 to 2002, when it was merged with the \"Groninger Dagblad\" and the \"Drentse Courant\" into the \"Dagblad van het Noorden\", which published its first edition on 2 April 2002.",
+      "occurrences": [
+        {
+          "question_id": "2hop__817096_15463",
+          "paragraph_idx": 8,
+          "path": "2hop__817096_15463/8.txt"
+        }
+      ]
+    }
+  }
 }

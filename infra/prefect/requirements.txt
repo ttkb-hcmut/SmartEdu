@@ -1,0 +1,3 @@
+# Worker source of truth remains the root uv.lock; sync with uv sync --locked.
+prefect==3.7.7
+paramiko==3.5.1

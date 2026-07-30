@@ -8,13 +8,13 @@ import asyncio
 # Logic
 from core.schema.graph.graph import KG_Instance
 from core.repo.graph.insert import serialize_kg_to_dict
-from core.ingest.stages.fetch import fetch_raw_pdf
-from core.ingest.stages.parse import parse_slide_pdf, parse_textbook_tree, parse_textbook_chunks
-from core.ingest.stages.publish import publish_slide_chunks
-from core.ingest.stages.segment import group_passages
-from core.ingest.stages.anchor import anchor_concepts
-from core.ingest.stages.persist import persist_slide_kg
+from core.ingest.segment import group_passages
 from core.repo.storage.minio_repo import make_topic_name
+from knowledge.ingest.anchor import anchor_concepts
+from knowledge.ingest.fetch import fetch_raw_pdf
+from knowledge.ingest.parse import parse_slide_pdf, parse_textbook_chunks, parse_textbook_tree
+from knowledge.ingest.persist import persist_slide_kg
+from knowledge.ingest.publish import publish_slide_chunks
 from knowledge.engine.extract import GraphExtractionService
 from knowledge.engine.graph.graph_constructor import KG_Handler
 
@@ -178,7 +178,7 @@ class CourseIngestionService:
                 continue
             nodes, edges, clusters = res
             persist_slide_kg(self.graph_db, self.milvus_db, self.embedder,
-                             self.db_name, nodes, edges, clusters)
+                             self.db_name, req.course_name, nodes, edges, clusters)
             concept_nodes += [n for n in nodes if n.get("typeNode") == "Concept"]
             report["slides"].append({"file": f, "nodes": len(nodes), "edges": len(edges)})
 

@@ -87,7 +87,7 @@ async def course_flow(course_name: str, slide_files: List[str],
         if res is None:
             continue
         nodes, edges, clusters = res
-        await persist_slide_task(nodes, edges, clusters)
+        await persist_slide_task(course_name, nodes, edges, clusters)
         concept_nodes += [n for n in nodes if n.get("typeNode") == "Concept"]
         report["slides"].append({"file": f, "nodes": len(nodes), "edges": len(edges)})
 

@@ -61,11 +61,23 @@ class ChatTrace(BaseModel):
     status: str = Field(default="SUCCESS", description="SUCCESS | FAIL")
     retrieve_flags: Dict[str, bool] = Field(default_factory=dict, description="Ablation component flags")
     preset: str = Field(default="", description="PLAIN | RAG | FULL | CUSTOM")
+    policy_id: str = ""
+    policy_digest: str = ""
+    harness_id: str = ""
+    run_id: str = ""
+    question_id: str = ""
+    warmup: bool = False
+    model_profile: str = ""
+    model: str = ""
+    temperature: float = 0.0
+    code_revision: str = ""
+    dirty: bool = False
+    errors: List[str] = Field(default_factory=list)
 
 
 class TraceSession(BaseModel):
     """full state of a session"""
 
-    schema_version: str = Field(default="1.1", description="Migration marker on schema change")
+    schema_version: str = Field(default="1.2", description="Migration marker on schema change")
     session_id: str = Field(default="default")
     chat: List[ChatTrace] = Field(default_factory=list)

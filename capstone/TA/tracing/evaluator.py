@@ -18,8 +18,8 @@ from TA.tracing.schema import ChatTrace, TraceSession
 logger = logging.getLogger(__name__)
 
 _COMPONENT_PREFIX = "Comp_"
-_FUSION_NODE = "Fusion"
-_ACCEPTED_SCHEMAS = {"1.0", "1.1"}
+_FINAL_RETRIEVAL_NODES = {"Fusion", "Agentic_Retrieve"}
+_ACCEPTED_SCHEMAS = {"1.0", "1.1", "1.2"}
 
 
 # ── deterministic metrics ─────────────────────────────────────────────
@@ -58,15 +58,15 @@ def trajectory_scores(chat: ChatTrace, gold: List[str]) -> Dict[str, Any]:
 
 
 def retrieved_uris(chat: ChatTrace) -> List[str]:
-    for step in chat.agent:
-        if step.node == _FUSION_NODE:
+    for step in reversed(chat.agent):
+        if step.node in _FINAL_RETRIEVAL_NODES:
             return [c.get("uri") for c in step.chunks]
     return []
 
 
 def retrieved_texts(chat: ChatTrace) -> List[str]:
-    for step in chat.agent:
-        if step.node == _FUSION_NODE:
+    for step in reversed(chat.agent):
+        if step.node in _FINAL_RETRIEVAL_NODES:
             return [c.get("text", "") for c in step.chunks]
     return []
 
@@ -80,6 +80,17 @@ def evaluate_chat(chat: ChatTrace, fixture_item: Dict) -> Dict[str, Any]:
         "query": chat.query,
         "answer": chat.final_output,
         "gold_answer": fixture_item.get("gold_answer", ""),
+        "status": chat.status,
+        "errors": chat.errors,
+        "policy_id": chat.policy_id,
+        "policy_digest": chat.policy_digest,
+        "harness_id": chat.harness_id,
+        "run_id": chat.run_id,
+        "question_id": chat.question_id,
+        "model": chat.model,
+        "temperature": chat.temperature,
+        "code_revision": chat.code_revision,
+        "dirty": chat.dirty,
     }
     row.update(context_scores(retrieved_uris(chat), gold))
     row.update(trajectory_scores(chat, gold))
@@ -91,10 +102,13 @@ def evaluate_session(session: TraceSession, fixture: List[Dict]) -> List[Dict[st
     if session.schema_version not in _ACCEPTED_SCHEMAS:
         logger.warning(f"[evaluator] unknown schema {session.schema_version}, skipping session")
         return []
+    by_id = {f["id"]: f for f in fixture}
     by_question = {f["question"]: f for f in fixture}
     rows = []
     for chat in session.chat:
-        item = by_question.get(chat.query)
+        if chat.warmup:
+            continue
+        item = by_id.get(chat.question_id) if chat.question_id else by_question.get(chat.query)
         if item:
             rows.append(evaluate_chat(chat, item))
     return rows

@@ -3,6 +3,8 @@ import TA.agent.ollama_patch
 from langchain.agents import create_agent
 from langchain.tools import BaseTool
 from TA.agent.middleware import NodeMiddle
+from TA.retrieval.middleware import RetrievalPolicyMiddleware
+from core.schema.retrieval import RetrievalRunContext
 from TA.tools.factory import ToolFactory
 from langchain.agents.structured_output import ToolStrategy
 from core.llm.llm_engine import CoreLLMEngine
@@ -27,12 +29,18 @@ class AgentInjector:
                 spec = AGENT_SPECS[agent_name]
                 DEBUG = spec["debug"]
                 agent_tools = spec["tools"](tools_factory)
+                middleware = [NodeMiddle()]
+                context_schema = None
+                if agent_name == "RAG":
+                    middleware.append(RetrievalPolicyMiddleware())
+                    context_schema = RetrievalRunContext
                 agent = create_agent(
                     model=llm_instance,
                     tools=agent_tools,
                     system_prompt=agent_prompt,
                     response_format=ToolStrategy(schema=spec["schema"]),
-                    middleware=[NodeMiddle()],
+                    middleware=middleware,
+                    context_schema=context_schema,
                     debug=DEBUG,
                     name=agent_name,
                 )

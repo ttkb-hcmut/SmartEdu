@@ -4,11 +4,11 @@ from langgraph.graph import StateGraph, END
 from langchain_core.runnables import RunnableConfig
 
 from core.schema.wf_state import AgentState
-from TA.edu.helper.schema import RoadmapExplore, RoadmapCritique, RoadmapFinal
-from TA.edu.helper.prompt import ROADMAP_PROMPT
-from TA.edu.helper.few_shot import get_language_instruction
-from TA.edu.helper.utils import filter_mastery, safe_parse_structured, extract_llm_raw_text, extract_agent_result, extract_kg_context
-from TA.edu.helper.context import extract_ta_context
+from TA.helper.schema import RoadmapExplore, RoadmapCritique, RoadmapFinal
+from TA.helper.prompt import ROADMAP_PROMPT
+from TA.helper.few_shot import get_language_instruction
+from TA.helper.utils import filter_mastery, safe_parse_structured, extract_llm_raw_text, extract_agent_result, extract_kg_context
+from TA.helper.context import extract_ta_context
 
 
 from TA.tracing.tracer import AgentTracer
@@ -103,7 +103,7 @@ async def roadmap_explore_logic(state: AgentState, rag_agent, config):
                     cached = mongo.get_course_tree(course.title())
                     lt = mongo.get_learning_tree(uid, course)
                     if cached.get("tree"):
-                        from TA.edu.helper.tree_render import render_frontier
+                        from TA.helper.tree_render import render_frontier
                         learning = {n["name"]: n for n in lt.get("nodes", [])}
                         tree_block = render_frontier(cached["tree"], learning,
                                                      current_pos.name, char_budget=1800)

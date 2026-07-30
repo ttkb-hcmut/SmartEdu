@@ -41,19 +41,19 @@ def _load_roadmap():
     _install_stub("langgraph.graph", {"END": "__end__", "StateGraph": _StateGraph})
     _install_stub("langchain_core.runnables", {"RunnableConfig": dict})
     _install_stub("core.schema.wf_state", {"AgentState": dict, "AgentOutput": dict, "ConceptNode": dict})
-    _install_stub("TA.edu.helper.schema", {
+    _install_stub("TA.helper.schema", {
         "RoadmapExplore": object, "RoadmapCritique": object, "RoadmapFinal": object,
     })
-    _install_stub("TA.edu.helper.prompt", {"ROADMAP_PROMPT": {}})
-    _install_stub("TA.edu.helper.few_shot", {"get_language_instruction": lambda *a, **k: ""})
-    _install_stub("TA.edu.helper.utils", {n: (lambda *a, **k: None) for n in _util_names})
-    _install_stub("TA.edu.helper.context", {"extract_ta_context": lambda *a, **k: ""})
+    _install_stub("TA.helper.prompt", {"ROADMAP_PROMPT": {}})
+    _install_stub("TA.helper.few_shot", {"get_language_instruction": lambda *a, **k: ""})
+    _install_stub("TA.helper.utils", {n: (lambda *a, **k: None) for n in _util_names})
+    _install_stub("TA.helper.context", {"extract_ta_context": lambda *a, **k: ""})
     _install_stub("TA.tracing.tracer", {
         "AgentTracer": type("AgentTracer", (), {"logging": staticmethod(lambda *a, **k: None)}),
     })
 
-    sys.modules.pop("TA.edu.workflow.roadmap", None)
-    return importlib.import_module("TA.edu.workflow.roadmap")
+    sys.modules.pop("TA.workflow.roadmap", None)
+    return importlib.import_module("TA.workflow.roadmap")
 
 
 def _state(is_feasible, attempts):

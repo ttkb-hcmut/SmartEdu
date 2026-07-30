@@ -18,8 +18,7 @@ from langchain.agents.middleware.types import (
     ModelResponse,
 )
 from langchain.agents.structured_output import ProviderStrategy, ToolStrategy
-
-from TA.edu.helper.schema import (
+from TA.helper.schema import (
     RAGCore,
     RAGDeep,
     RoadmapExplore,

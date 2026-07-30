@@ -2,23 +2,28 @@ import os
 import time
 import logging
 from langgraph.graph import StateGraph, END
+from langgraph.runtime import Runtime
+from langchain_core.messages import ToolMessage
 from typing import Dict, Any, List, Optional
 
-from core.config import retrieve_param as _default_rp, Retrieve_param
+from core.schema.retrieval import (
+    RetrievalHarnessId,
+    RetrievalRunContext,
+    RetrievalToolId,
+    RetrievalValidation,
+    RetrievalValidity,
+)
 from core.schema.wf_state import AgentState, ConceptNode
-import TA.edu.helper.prompt as prompt_lib
-from TA.edu.helper.schema import RAGCore, RAGDeep, DeepDecision
-from TA.edu.helper.few_shot import get_language_instruction
-from TA.edu.helper.utils import parse_student_state, safe_parse_structured, extract_llm_raw_text, extract_agent_result
+import TA.helper.prompt as prompt_lib
+from TA.helper.schema import RAGCore, RAGDeep, DeepDecision
+from TA.helper.few_shot import get_language_instruction
+from TA.helper.utils import parse_student_state, safe_parse_structured, extract_llm_raw_text, extract_agent_result
 
 
 from TA.tracing.tracer import AgentTracer
+from TA.retrieval.policy import get_tool_spec, validate_retrieval_artifacts
 
 logger = logging.getLogger(__name__)
-
-
-def _get_rp(config) -> Retrieve_param:
-    return config.get("configurable", {}).get("retrieve_param") or _default_rp
 
 
 def _tracer_ctx(config):
@@ -48,22 +53,160 @@ def rrf_merge(pools: Dict[str, List[Dict]], rrf_k: int, top_k: int) -> List[Dict
     return [{**c, "score": scores[str(c["uri"])]} for c in merged]
 
 
-def build_retrieve_wf(agents, resources: Optional[Dict] = None):
+def _rag_envelope(
+    *,
+    thought: str,
+    entity_ids: List[str],
+    content: str,
+    validation: RetrievalValidation,
+    agent_status: str = "",
+) -> Dict[str, Any]:
+    return {
+        "thought": thought,
+        "entity_ids": entity_ids,
+        "content": content,
+        "status": "SUCCESS" if validation.validity is RetrievalValidity.VALID else "FAIL",
+        "validity": validation.validity.value,
+        "retrieval_attempts": validation.attempted_calls,
+        "errors": list(validation.errors),
+        "agent_status": agent_status,
+    }
+
+
+def _retrieval_artifacts(messages, context: RetrievalRunContext) -> List[Dict[str, Any]]:
+    names = {get_tool_spec(tool_id).name for tool_id in context.policy.allowed_tools}
+    artifacts = []
+    for message in messages:
+        if not isinstance(message, ToolMessage) or message.name not in names:
+            continue
+        if isinstance(message.artifact, dict):
+            artifacts.append(message.artifact)
+        else:
+            artifacts.append({
+                "tool": message.name,
+                "source": "",
+                "args": {},
+                "chunks": [],
+                "error": "missing retrieval artifact",
+            })
+    return artifacts
+
+
+def _model_contract_error(rag_agent, context: RetrievalRunContext) -> str:
+    model = getattr(rag_agent, "model", None)
+    name = getattr(model, "model", None) or getattr(model, "model_name", None)
+    temperature = getattr(model, "temperature", None)
+    if name != context.policy.model_name:
+        return f"model mismatch: expected {context.policy.model_name}, got {name or 'unknown'}"
+    if temperature is None or float(temperature) != context.policy.temperature:
+        return (
+            f"temperature mismatch: expected {context.policy.temperature}, "
+            f"got {temperature if temperature is not None else 'unknown'}"
+        )
+    return ""
+
+
+def build_agentic_retrieve_wf(agents):
+    builder = StateGraph(AgentState, context_schema=RetrievalRunContext)
+    rag_agent = agents.get("RAG")
+
+    async def run_agentic(state, config, runtime: Runtime[RetrievalRunContext]):
+        context = runtime.context
+        query = state.get("user_query", state["messages"][-1].content)
+        prompt = f"Question: {query}"
+        artifacts: List[Dict[str, Any]] = []
+        execution_error = ""
+        structured = RAGCore(thought="", content="", status="FAIL")
+        result = {}
+        if rag_agent is None:
+            execution_error = "RAG agent unavailable"
+        elif model_error := _model_contract_error(rag_agent, context):
+            execution_error = model_error
+        else:
+            try:
+                result = await rag_agent.ainvoke(
+                    {"messages": [("user", prompt)], "current_node": "RAG_Core"},
+                    config={**config, "recursion_limit": context.harness.recursion_limit},
+                    context=context,
+                )
+                artifacts = _retrieval_artifacts(result.get("messages", []), context)
+                structured = extract_agent_result(result, RAGCore, "rag_core")
+            except Exception as exc:
+                execution_error = f"{type(exc).__name__}: {exc}"
+                logger.warning("[agentic_retrieve] failed: %s", execution_error)
+
+        validation = validate_retrieval_artifacts(context, artifacts)
+        if execution_error:
+            validation = RetrievalValidation(
+                RetrievalValidity.INVALID,
+                validation.attempted_calls,
+                (*validation.errors, execution_error),
+            )
+        rag_result = _rag_envelope(
+            thought=structured.thought,
+            entity_ids=structured.entity_ids,
+            content=structured.content,
+            validation=validation,
+            agent_status=structured.status,
+        )
+
+        tracer, chat_id = _tracer_ctx(config)
+        if tracer and chat_id:
+            chunks = [chunk for artifact in artifacts for chunk in artifact.get("chunks", [])]
+            for artifact in artifacts:
+                tracer.log_step(
+                    chat_id=chat_id,
+                    node=f"Comp_{artifact.get('source', 'Unknown').title()}",
+                    tool_result={
+                        "tool": artifact.get("tool", ""),
+                        "args": artifact.get("args", {}),
+                        "error": artifact.get("error", ""),
+                    },
+                    chunks=artifact.get("chunks", []),
+                    latency_ms=artifact.get("latency_ms", 0.0),
+                )
+            tracer.log_step(
+                chat_id=chat_id,
+                node="Agentic_Retrieve",
+                tool_result={
+                    "status": rag_result["status"],
+                    "validity": rag_result["validity"],
+                    "attempts": rag_result["retrieval_attempts"],
+                    "errors": rag_result["errors"],
+                },
+                chunks=chunks,
+            )
+
+        current = state.get("worker_results", {})
+        return {
+            "worker_results": {**current, "RAG": rag_result},
+            "status_flag": rag_result["status"],
+        }
+
+    builder.add_node("Agentic_Retrieve", run_agentic)
+    builder.set_entry_point("Agentic_Retrieve")
+    builder.add_edge("Agentic_Retrieve", END)
+    return builder.compile()
+
+
+def build_fanout_retrieve_wf(resources: Optional[Dict] = None):
     """Fan-out retrieval: dispatch -> enabled components (parallel) -> fusion."""
-    builder = StateGraph(AgentState)
+    builder = StateGraph(AgentState, context_schema=RetrievalRunContext)
     resources = resources or {}
 
-    async def dispatch(state, config):
-        rp = _get_rp(config)
-        flags = rp.flag_set()
+    async def dispatch(state, config, runtime: Runtime[RetrievalRunContext]):
+        allow = set(runtime.context.policy.allowed_tools)
+        flags = {
+            "semantic": RetrievalToolId.SEMANTIC in allow,
+            "textbook": RetrievalToolId.TEXTBOOK in allow,
+        }
         tracer, chat_id = _tracer_ctx(config)
         if tracer and chat_id:
             tracer.log_step(chat_id=chat_id, node="Retrieve_Dispatch",
-                            tool_result={"flags": flags, "preset": rp.preset})
+                            tool_result={"flags": flags, "preset": runtime.context.preset.value})
         return {"_retrieve_flags": flags}
 
-    async def comp_rag(state, config):
-        rp = _get_rp(config)
+    async def comp_semantic(state, config, runtime: Runtime[RetrievalRunContext]):
         tracer, chat_id = _tracer_ctx(config)
         start = time.time()
         chunks: List[Dict] = []
@@ -72,25 +215,39 @@ def build_retrieve_wf(agents, resources: Optional[Dict] = None):
         milvus, embedder = resources.get("milvus_db"), resources.get("embedder")
         if milvus and embedder:
             try:
-                ## assumes ingest writes course into community field
-                expr = f'community == "{rp.benchmark_course}"' if rp.benchmark_course else None
-                hits = milvus.search(query=query, embedder=embedder, top_k=rp.per_component_k, expr=expr)
-                chunks = [_norm_chunk(h, "rag") for h in hits]
+                scope = runtime.context.scope.course
+                hits = milvus.search(
+                    query=query,
+                    embedder=embedder,
+                    top_k=runtime.context.harness.per_source_k,
+                    course_scope=scope,
+                )
+                chunks = [_norm_chunk(h, "semantic") for h in hits]
             except Exception as e:
-                logger.warning(f"[comp_rag] search failed: {e}")
+                logger.warning(f"[comp_semantic] search failed: {e}")
                 error = str(e)
         else:
-            logger.warning("[comp_rag] milvus/embedder resources missing, component no-op")
+            logger.warning("[comp_semantic] milvus/embedder resources missing, component no-op")
             error = "resources missing"
         if tracer and chat_id:
             ## error in trace -> eval can tell crash from empty
-            tracer.log_step(chat_id=chat_id, node="Comp_RAG",
+            tracer.log_step(chat_id=chat_id, node="Comp_Semantic",
                             tool_result={"error": error} if error else {},
                             chunks=chunks, latency_ms=(time.time() - start) * 1000)
-        return {"retrieval_pool": {"rag": chunks}}
+        artifact = {
+            "tool": get_tool_spec(RetrievalToolId.SEMANTIC).name,
+            "source": "semantic",
+            "args": {"query": query},
+            "chunks": chunks,
+            "latency_ms": (time.time() - start) * 1000,
+            "error": error,
+        }
+        return {
+            "retrieval_pool": {"semantic": chunks},
+            "retrieval_artifacts": {"semantic": artifact},
+        }
 
-    async def comp_graphrag(state, config):
-        rp = _get_rp(config)
+    async def comp_textbook(state, config, runtime: Runtime[RetrievalRunContext]):
         tracer, chat_id = _tracer_ctx(config)
         start = time.time()
         chunks: List[Dict] = []
@@ -100,37 +257,56 @@ def build_retrieve_wf(agents, resources: Optional[Dict] = None):
         if graph_db and embedder:
             try:
                 emb = embedder.get_embedding(query)
-                prefix = f"{rp.benchmark_course}/" if rp.benchmark_course else None
+                scope = runtime.context.scope.course
+                prefix = f"{scope}/" if scope else None
                 hits = graph_db.passage_search(emb, query_text=query,
-                                               top_k=rp.per_component_k, uri_prefix=prefix)
-                chunks = [_norm_chunk(h, "graphrag") for h in hits]
+                                               top_k=runtime.context.harness.per_source_k,
+                                               uri_prefix=prefix)
+                chunks = [_norm_chunk(h, "textbook") for h in hits]
             except Exception as e:
-                logger.warning(f"[comp_graphrag] search failed: {e}")
+                logger.warning(f"[comp_textbook] search failed: {e}")
                 error = str(e)
         else:
-            logger.warning("[comp_graphrag] graph_db/embedder resources missing, component no-op")
+            logger.warning("[comp_textbook] graph_db/embedder resources missing, component no-op")
             error = "resources missing"
         if tracer and chat_id:
-            tracer.log_step(chat_id=chat_id, node="Comp_GraphRAG",
+            tracer.log_step(chat_id=chat_id, node="Comp_Textbook",
                             tool_result={"error": error} if error else {},
                             chunks=chunks, latency_ms=(time.time() - start) * 1000)
-        return {"retrieval_pool": {"graphrag": chunks}}
+        artifact = {
+            "tool": get_tool_spec(RetrievalToolId.TEXTBOOK).name,
+            "source": "textbook",
+            "args": {"query": query},
+            "chunks": chunks,
+            "latency_ms": (time.time() - start) * 1000,
+            "error": error,
+        }
+        return {
+            "retrieval_pool": {"textbook": chunks},
+            "retrieval_artifacts": {"textbook": artifact},
+        }
 
-    async def fusion(state, config):
-        rp = _get_rp(config)
+    async def fusion(state, config, runtime: Runtime[RetrievalRunContext]):
         tracer, chat_id = _tracer_ctx(config)
         start = time.time()
         pools = state.get("retrieval_pool") or {}
-        merged = rrf_merge(pools, rp.rrf_k, rp.top_k)
+        merged = rrf_merge(
+            pools,
+            runtime.context.harness.rrf_k,
+            runtime.context.harness.top_k,
+        )
         content = "\n".join(f"- [{c['source']}] {c['text']}" for c in merged)
 
-        status = "SUCCESS" if merged else ("PLAIN" if not any(rp.flag_set().values()) else "FAIL")
-        rag_result = {
-            "thought": f"fusion over {list(pools.keys())} -> {len(merged)} chunks",
-            "entity_ids": [c["id"] for c in merged if c.get("id")],
-            "content": content,
-            "status": status,
-        }
+        by_source = state.get("retrieval_artifacts") or {}
+        artifacts = [by_source[name] for name in ("semantic", "textbook") if name in by_source]
+        validation = validate_retrieval_artifacts(runtime.context, artifacts)
+        rag_result = _rag_envelope(
+            thought=f"fusion over {list(pools.keys())} -> {len(merged)} chunks",
+            entity_ids=[c["id"] for c in merged if c.get("id")],
+            content=content,
+            validation=validation,
+        )
+        status = rag_result["status"]
 
         session_context = config.get("configurable", {}).get("session_context")
         if session_context and chat_id and content:
@@ -141,7 +317,7 @@ def build_retrieve_wf(agents, resources: Optional[Dict] = None):
 
         if tracer and chat_id:
             tracer.log_step(chat_id=chat_id, node="Fusion",
-                            tool_result={"sources": rp.flag_set(), "status": status},
+                            tool_result={"sources": state.get("_retrieve_flags", {}), "status": status},
                             chunks=merged, latency_ms=(time.time() - start) * 1000)
 
         current = state.get("worker_results", {})
@@ -150,27 +326,55 @@ def build_retrieve_wf(agents, resources: Optional[Dict] = None):
     def route_components(state):
         flags = state.get("_retrieve_flags") or {}
         targets = []
-        if flags.get("rag"):
-            targets.append("Comp_RAG")
-        if flags.get("graphrag"):
-            targets.append("Comp_GraphRAG")
+        if flags.get("semantic"):
+            targets.append("Comp_Semantic")
+        if flags.get("textbook"):
+            targets.append("Comp_Textbook")
         return targets or ["Fusion"]
 
     builder.add_node("Retrieve_Dispatch", dispatch)
-    builder.add_node("Comp_RAG", comp_rag)
-    builder.add_node("Comp_GraphRAG", comp_graphrag)
+    builder.add_node("Comp_Semantic", comp_semantic)
+    builder.add_node("Comp_Textbook", comp_textbook)
     builder.add_node("Fusion", fusion)
 
     builder.set_entry_point("Retrieve_Dispatch")
     builder.add_conditional_edges(
         "Retrieve_Dispatch",
         route_components,
-        {"Comp_RAG": "Comp_RAG", "Comp_GraphRAG": "Comp_GraphRAG", "Fusion": "Fusion"},
+        {"Comp_Semantic": "Comp_Semantic", "Comp_Textbook": "Comp_Textbook", "Fusion": "Fusion"},
     )
-    builder.add_edge("Comp_RAG", "Fusion")
-    builder.add_edge("Comp_GraphRAG", "Fusion")
+    builder.add_edge("Comp_Semantic", "Fusion")
+    builder.add_edge("Comp_Textbook", "Fusion")
     builder.add_edge("Fusion", END)
 
+    return builder.compile()
+
+
+def build_retrieve_wf(agents, resources: Optional[Dict] = None):
+    builder = StateGraph(AgentState, context_schema=RetrievalRunContext)
+    agentic = build_agentic_retrieve_wf(agents)
+    fanout = build_fanout_retrieve_wf(resources)
+
+    async def select_harness(state, runtime: Runtime[RetrievalRunContext]):
+        return {"_retrieve_harness": runtime.context.harness.id.value}
+
+    def route_harness(state):
+        return state["_retrieve_harness"]
+
+    builder.add_node("Retrieve_Harness", select_harness)
+    builder.add_node(RetrievalHarnessId.AGENTIC_V1.value, agentic)
+    builder.add_node(RetrievalHarnessId.FANOUT_V1.value, fanout)
+    builder.set_entry_point("Retrieve_Harness")
+    builder.add_conditional_edges(
+        "Retrieve_Harness",
+        route_harness,
+        {
+            RetrievalHarnessId.AGENTIC_V1.value: RetrievalHarnessId.AGENTIC_V1.value,
+            RetrievalHarnessId.FANOUT_V1.value: RetrievalHarnessId.FANOUT_V1.value,
+        },
+    )
+    builder.add_edge(RetrievalHarnessId.AGENTIC_V1.value, END)
+    builder.add_edge(RetrievalHarnessId.FANOUT_V1.value, END)
     return builder.compile()
 
 
