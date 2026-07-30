@@ -7,7 +7,10 @@ from core.config import Mil_conf
 
 class MilvusDB:
     def reset(self):
-        pass
+        if utility.has_collection(self.collection_name):
+            utility.drop_collection(self.collection_name)
+        self.collection = self._init_collection()
+
     def __init__(self, config: Mil_conf = Mil_conf()):
         uri_clean = config.uri.replace("http://", "").replace("https://", "")
         self.host = uri_clean.split(":")[0]
@@ -67,13 +70,16 @@ class MilvusDB:
         collection.load()
         return collection
 
-    def insert_data(self, nodes: List[Dict], embedder, community: str = ""):
+    def insert_data(self, nodes: List[Dict], embedder, community: str = "",
+                    course: str = ""):
         insert_data = []
         for node in nodes:
             rrole = node.get("rrole")
             content = node.get("content")
+            raw_type = node.get("typeNode", "")
+            node_type = str(getattr(raw_type, "value", raw_type))
             
-            if not rrole or not content:
+            if not content or (node_type != "Concept" and not rrole):
                 continue
 
             name = node.get("name", "")
@@ -91,9 +97,11 @@ class MilvusDB:
                 "id": node_id,
                 "text": f"{name}: {content}",
                 "name": name,
-                "rrole": str(rrole),
+                "rrole": str(rrole or ""),
                 "topic": topic,
                 "community": row_community,
+                "typeNode": node_type,
+                "course": course,
                 "embedding": vector
             })
 
