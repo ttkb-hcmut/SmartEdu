@@ -4,11 +4,13 @@ from typing import Dict, List, Tuple
 from prefect import task
 
 from core.config import Ingest_param, Emb_conf, DB_NAME
+from core.schema.ingest import PublishedSlideItem
+from core.schema.graph.type import Ref
 from core.schema.graph.graph import KG_Instance
 from core.repo.graph.insert import serialize_kg_to_dict
 from core.ingest.segment import group_passages
 from knowledge.ingest.anchor import anchor_concepts
-from knowledge.ingest.fetch import fetch_raw, fetch_raw_pdf, temp_file
+from knowledge.ingest.fetch import fetch_raw_pdf, temp_raw
 from knowledge.ingest.parse import parse_slide_pdf, parse_textbook_tree
 from knowledge.ingest.persist import persist_slide_kg
 from knowledge.ingest.publish import publish_slide_chunks
@@ -16,21 +18,14 @@ from knowledge.ingest.vid import build_video_segments
 from knowledge.engine.extract import GraphExtractionService
 from knowledge.engine.graph.graph_constructor import KG_Handler
 from knowledge.pipeline import deps
-
-import os
-
-## bump per stage to bust caches on logic change
-STAGE_VERSION = "v1"
+from knowledge.pipeline.cache import CACHE_SERIALIZER, RESULT_STORAGE, file_cache_key
 
 ## same-process serialization as old ocr_sem, no server-side tag config needed
 _ocr_sem = asyncio.Semaphore(1)
 
 
-def _file_cache_key(ctx, params) -> str:
-    return f"{STAGE_VERSION}:{ctx.task.name}:{params['course_name']}:{params['file_name']}"
-
-
-@task(name="parse-slide", retries=1, cache_key_fn=_file_cache_key, persist_result=True,
+@task(name="parse-slide", retries=1, cache_key_fn=file_cache_key, persist_result=True,
+      result_storage=RESULT_STORAGE, result_serializer=CACHE_SERIALIZER,
       tags=["ocr"])
 async def parse_slide_task(course_name: str, file_name: str) -> List[Dict]:
     ## cache = never re-OCR a deck because a later stage failed
@@ -40,23 +35,33 @@ async def parse_slide_task(course_name: str, file_name: str) -> List[Dict]:
 
 
 @task(name="publish-slide-chunks", retries=2)
-async def publish_slide_task(course_name: str, file_name: str, chunks: List[Dict]) -> List:
+async def publish_slide_task(course_name: str, file_name: str,
+                             chunks: List[Dict]) -> List[PublishedSlideItem]:
     ## uploads idempotent (same object keys) — safe to retry, no cache needed
     file_bytes = await asyncio.to_thread(fetch_raw_pdf, deps.minio_repo(), course_name, file_name)
     _, _, items = await asyncio.to_thread(
         publish_slide_chunks, deps.minio_repo(), file_bytes, chunks, course_name, file_name
     )
-    return items
+    return [{
+        "index": index,
+        "heading": heading,
+        "content": content,
+        "hard_ref": ref.model_dump(),
+    } for index, heading, content, ref in items]
 
 
-@task(name="extract-slide-kg", cache_key_fn=_file_cache_key, persist_result=True,
+@task(name="extract-slide-kg", cache_key_fn=file_cache_key, persist_result=True,
+      result_storage=RESULT_STORAGE, result_serializer=CACHE_SERIALIZER,
       tags=["llm"])
-async def extract_slide_task(course_name: str, file_name: str, items: List,
+async def extract_slide_task(course_name: str, file_name: str, items: List[PublishedSlideItem],
                              num_workers: int = 3) -> Tuple[List, List, List]:
     ## cache = never re-run llm extraction; knowledge-side stage, core can't import engine
     q = asyncio.Queue()
     for item in items:
-        await q.put(item)
+        await q.put((
+            item["index"], item["heading"], item["content"],
+            Ref.model_validate(item["hard_ref"]),
+        ))
     for _ in range(num_workers):
         await q.put(None)
 
@@ -77,7 +82,8 @@ async def persist_slide_task(course_name: str, nodes: List[Dict],
     )
 
 
-@task(name="parse-textbook", retries=1, cache_key_fn=_file_cache_key, persist_result=True,
+@task(name="parse-textbook", retries=1, cache_key_fn=file_cache_key, persist_result=True,
+      result_storage=RESULT_STORAGE, result_serializer=CACHE_SERIALIZER,
       tags=["ocr"])
 async def parse_textbook_task(course_name: str, file_name: str) -> Dict:
     file_bytes = await asyncio.to_thread(fetch_raw_pdf, deps.minio_repo(), course_name, file_name)
@@ -110,15 +116,13 @@ async def anchor_task(course_name: str, concept_nodes: List[Dict]) -> int:
     )
 
 
-@task(name="transcribe-video", retries=1, cache_key_fn=_file_cache_key, persist_result=True,
+@task(name="transcribe-video", retries=1, cache_key_fn=file_cache_key, persist_result=True,
+      result_storage=RESULT_STORAGE, result_serializer=CACHE_SERIALIZER,
       tags=["gpu"])
 async def transcribe_task(course_name: str, file_name: str) -> Tuple[float, List[Dict]]:
     ## THE cache that justifies the refactor — never re-run whisper on downstream failure
-    file_bytes = await asyncio.to_thread(fetch_raw, deps.minio_repo(), course_name, file_name)
-    suffix = os.path.splitext(file_name)[1] or ".mp4"
-
     def _run():
-        with temp_file(file_bytes, suffix) as path:
+        with temp_raw(deps.minio_repo(), course_name, file_name) as path:
             return deps.transcriber().transcribe(path)
 
     return await asyncio.to_thread(_run)

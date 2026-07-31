@@ -1,13 +1,26 @@
 import asyncio
+import inspect
 import logging
+from datetime import datetime, timezone
 from time import time
 from typing import Dict, List, Optional, Tuple
 
 from prefect import flow
+from prefect.deployments import run_deployment
 from prefect.runtime import flow_run
 
 from core.config import Ingest_param, DB_NAME
-from core.schema.ingest import new_report
+from core.schema.ingest import (
+    KGExtractionResult,
+    ParsedSlideResult,
+    ParsedTextbookResult,
+    PublishedSlideItem,
+    REPORT_COMPLETED,
+    REPORT_FAILED,
+    REPORT_PARTIAL,
+    TranscriptResult,
+    new_report,
+)
 from knowledge.ingest.persist import persist_report
 from knowledge.pipeline import deps
 from knowledge.pipeline.legacy import process_textbook_legacy
@@ -22,30 +35,105 @@ from knowledge.pipeline.tasks import (
     transcribe_task,
     video_persist_task,
 )
+from knowledge.pipeline.cache import (
+    CACHE_SERIALIZER,
+    RESULT_STORAGE,
+    stage_idempotency_key,
+)
+
+
+STAGE_DEPLOYMENTS = {
+    "ocr-slide": "ocr-slide-stage/ocr-slide",
+    "ocr-textbook": "ocr-textbook-stage/ocr-textbook",
+    "llm-slide": "llm-slide-stage/llm-slide",
+    "asr-video": "asr-video-stage/asr-video",
+}
+
+
+def _parent_run_id() -> str:
+    return str(flow_run.root_flow_run_id or flow_run.id or "local")
+
+
+async def dispatch_stage(stage_name: str, course_name: str, file_name: str,
+                         **extra) -> Dict:
+    storage = deps.minio_repo()
+    params = {"course_name": course_name, "file_name": file_name, **extra}
+    run = run_deployment(
+        name=STAGE_DEPLOYMENTS[stage_name],
+        parameters=params,
+        timeout=None,
+        as_subflow=True,
+        idempotency_key=stage_idempotency_key(
+            _parent_run_id(), stage_name, course_name, file_name, storage
+        ),
+    )
+    if inspect.isawaitable(run):
+        run = await run
+    result = run.state.result(raise_on_failure=True)
+    if inspect.isawaitable(result):
+        result = await result
+    return result
+
+
+@flow(name="ocr-slide-stage", persist_result=True, result_storage=RESULT_STORAGE,
+      result_serializer=CACHE_SERIALIZER)
+async def ocr_slide_stage(course_name: str, file_name: str) -> ParsedSlideResult:
+    return {"chunks": await parse_slide_task(course_name, file_name)}
+
+
+@flow(name="ocr-textbook-stage", persist_result=True, result_storage=RESULT_STORAGE,
+      result_serializer=CACHE_SERIALIZER)
+async def ocr_textbook_stage(course_name: str, file_name: str) -> ParsedTextbookResult:
+    tree = await parse_textbook_task(course_name, file_name)
+    return {"sections": tree["sections"], "items": tree["items"]}
+
+
+@flow(name="llm-slide-stage", persist_result=True, result_storage=RESULT_STORAGE,
+      result_serializer=CACHE_SERIALIZER)
+async def llm_slide_stage(course_name: str, file_name: str,
+                          items: List[PublishedSlideItem],
+                          num_workers: int = 3) -> KGExtractionResult:
+    nodes, edges, clusters = await extract_slide_task(
+        course_name, file_name, items, num_workers
+    )
+    return {"nodes": nodes, "edges": edges, "clusters": clusters}
+
+
+@flow(name="asr-video-stage", persist_result=True, result_storage=RESULT_STORAGE,
+      result_serializer=CACHE_SERIALIZER)
+async def asr_video_stage(course_name: str, file_name: str) -> TranscriptResult:
+    duration, segments = await transcribe_task(course_name, file_name)
+    return {"duration": duration, "segments": segments}
 
 
 @flow(name="textbook-flow")
 async def textbook_flow(course_name: str, file_name: str) -> Dict:
-    tree = await parse_textbook_task(course_name, file_name)
+    tree = await dispatch_stage("ocr-textbook", course_name, file_name)
     return await segment_persist_textbook_task(course_name, file_name, tree)
 
 
 @flow(name="slide-flow")
 async def slide_flow(course_name: str, file_name: str,
                      num_workers: int = 3) -> Optional[Tuple[List, List, List]]:
-    chunks = await parse_slide_task(course_name, file_name)
+    parsed = await dispatch_stage("ocr-slide", course_name, file_name)
+    chunks = parsed["chunks"]
     if not chunks:
         return None
     items = await publish_slide_task(course_name, file_name, chunks)
     if not items:
         return None
-    return await extract_slide_task(course_name, file_name, items, num_workers)
+    result = await dispatch_stage(
+        "llm-slide", course_name, file_name, items=items, num_workers=num_workers
+    )
+    return result["nodes"], result["edges"], result["clusters"]
 
 
 @flow(name="video-flow")
 async def video_flow(course_name: str, file_name: str) -> Dict:
-    duration, whisper_segments = await transcribe_task(course_name, file_name)
-    return await video_persist_task(course_name, file_name, duration, whisper_segments)
+    transcript = await dispatch_stage("asr-video", course_name, file_name)
+    return await video_persist_task(
+        course_name, file_name, transcript["duration"], transcript["segments"]
+    )
 
 
 @flow(name="course-flow")
@@ -56,67 +144,83 @@ async def course_flow(course_name: str, slide_files: List[str],
     start = time()
     cfg = Ingest_param()
     video_files = video_files or []
-    report = new_report(course_name)
-    report["videos"] = []
-
-    if reset:
-        deps.graph_db().reset(DB_NAME)
-        deps.milvus_db().reset()
-
-    # textbook first: build the anchor substrate before slides
-    if cfg.textbook_first and textbook_files:
-        tb_results = await asyncio.gather(*[
-            textbook_flow(course_name, f) for f in textbook_files
-        ], return_exceptions=True)
-        for f, res in zip(textbook_files, tb_results):
-            if isinstance(res, BaseException):
-                report["errors"].append({"file": f, "error": str(res)})
-            elif res:
-                report["textbooks"].append(res)
-
-    # slides -> taught concepts
-    results = await asyncio.gather(*[
-        slide_flow(course_name, f) for f in slide_files
-    ], return_exceptions=True)
-
-    concept_nodes = []
-    for f, res in zip(slide_files, results):
-        if isinstance(res, BaseException):
-            report["errors"].append({"file": f, "error": str(res)})
-            continue
-        if res is None:
-            continue
-        nodes, edges, clusters = res
-        await persist_slide_task(course_name, nodes, edges, clusters)
-        concept_nodes += [n for n in nodes if n.get("typeNode") == "Concept"]
-        report["slides"].append({"file": f, "nodes": len(nodes), "edges": len(edges)})
-
-    # anchor concepts into passages, or fall back to legacy link-after
-    if cfg.textbook_first:
-        if textbook_files:
-            report["anchors"] = await anchor_task(course_name, concept_nodes)
-    else:
-        await asyncio.gather(*[
-            process_textbook_legacy(course_name, f) for f in textbook_files
-        ])
-
-    # videos: anchor-only, AFTER concepts exist in milvus (ADR-0006)
-    if video_files:
-        vid_results = await asyncio.gather(*[
-            video_flow(course_name, f) for f in video_files
-        ], return_exceptions=True)
-        for f, res in zip(video_files, vid_results):
-            if isinstance(res, BaseException):
-                report["errors"].append({"file": f, "error": str(res)})
-            elif res:
-                report["videos"].append(res)
-
-    report["duration_s"] = round(time() - start, 1)
-    logging.info(f"[ingest] {report}")
-
     run_id = str(flow_run.id) if flow_run.id else "local"
+    report = new_report(course_name, run_id)
+    storage = deps.minio_repo()
+    persist_report(storage, course_name, run_id, report)
+    fatal = None
+
     try:
-        persist_report(deps.minio_repo(), course_name, run_id, report)
-    except Exception as e:
-        logging.warning(f"[ingest] report persist failed: {e}")
+        if reset:
+            deps.graph_db().reset(DB_NAME)
+            deps.milvus_db().reset()
+
+        # textbook first: build the anchor substrate before slides
+        if cfg.textbook_first and textbook_files:
+            tb_results = await asyncio.gather(*[
+                textbook_flow(course_name, f) for f in textbook_files
+            ], return_exceptions=True)
+            for f, res in zip(textbook_files, tb_results):
+                if isinstance(res, BaseException):
+                    report["errors"].append({"file": f, "error": str(res)})
+                elif res:
+                    report["textbooks"].append(res)
+
+        # slides -> taught concepts
+        results = await asyncio.gather(*[
+            slide_flow(course_name, f) for f in slide_files
+        ], return_exceptions=True)
+
+        concept_nodes = []
+        for f, res in zip(slide_files, results):
+            if isinstance(res, BaseException):
+                report["errors"].append({"file": f, "error": str(res)})
+                continue
+            if res is None:
+                continue
+            nodes, edges, clusters = res
+            await persist_slide_task(course_name, nodes, edges, clusters)
+            concept_nodes += [n for n in nodes if n.get("typeNode") == "Concept"]
+            report["slides"].append({"file": f, "nodes": len(nodes), "edges": len(edges)})
+
+        # anchor concepts into passages, or fall back to legacy link-after
+        if cfg.textbook_first:
+            if textbook_files:
+                report["anchors"] = await anchor_task(course_name, concept_nodes)
+        else:
+            await asyncio.gather(*[
+                process_textbook_legacy(course_name, f) for f in textbook_files
+            ])
+
+        # videos: anchor-only, AFTER concepts exist in milvus (ADR-0006)
+        if video_files:
+            vid_results = await asyncio.gather(*[
+                video_flow(course_name, f) for f in video_files
+            ], return_exceptions=True)
+            for f, res in zip(video_files, vid_results):
+                if isinstance(res, BaseException):
+                    report["errors"].append({"file": f, "error": str(res)})
+                elif res:
+                    report["videos"].append(res)
+    except Exception as exc:
+        fatal = exc
+        report["errors"].append({"stage": "course-flow", "error": str(exc)})
+    finally:
+        has_results = bool(
+            report["textbooks"] or report["slides"] or report["videos"] or report["anchors"]
+        )
+        if report["errors"]:
+            report["status"] = REPORT_PARTIAL if has_results else REPORT_FAILED
+        else:
+            report["status"] = REPORT_COMPLETED
+        report["duration_s"] = round(time() - start, 1)
+        report["finished_at"] = datetime.now(timezone.utc).isoformat()
+        logging.info(f"[ingest] {report}")
+        persist_report(storage, course_name, run_id, report)
+
+    if fatal is not None:
+        raise fatal
+    if report["errors"]:
+        count = len(report["errors"])
+        raise RuntimeError(f"{count} ingestion source(s) failed")
     return report

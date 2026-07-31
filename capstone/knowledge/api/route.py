@@ -5,6 +5,8 @@ from pydantic import BaseModel, field_validator
 from typing import List, Optional
 
 from core.dependencies import get_ingestion_service
+from core.repo.storage.minio_repo import validate_file_names
+from knowledge.pipeline.readiness import capability_status, required_capabilities
 from knowledge.pipeline.submit import course_submit
 from knowledge.service.pdf_loader import topic_pdf_bytes
 from student.auth import require_admin, get_current_student, User
@@ -41,7 +43,7 @@ class UploadUrlRequest(BaseModel):
 
 class PresignedTarget(BaseModel):
     file_name: str
-    url: str                              # browser PUTs raw pdf bytes straight here
+    url: str                              # browser PUTs raw source bytes straight here
 
 
 class UploadUrlResponse(BaseModel):
@@ -56,6 +58,11 @@ async def get_upload_urls(
     service=Depends(get_ingestion_service),
     _: User = Depends(require_admin),
 ):
+    try:
+        validate_file_names(req.file_names)
+    except ValueError as err:
+        raise HTTPException(status_code=400, detail=f"Invalid file name: {err}")
+
     targets = []
     for fn in req.file_names:
         if not fn.lower().endswith((".pdf",) + VIDEO_EXTS):
@@ -67,13 +74,20 @@ async def get_upload_urls(
 
 ######### ingest: process the already-uploaded pdfs (admin only)
 
-@router.post("/ingest-course")
+@router.post("/ingest-course", status_code=202)
 async def ingest_course(
     req: CourseIngestionRequest,
     background_tasks: BackgroundTasks,
     service=Depends(get_ingestion_service),
     _: User = Depends(require_admin),
 ):
+    inline = os.getenv("INGEST_ORCHESTRATOR", "prefect") != "prefect"
+    if inline and req.video_files:
+        raise HTTPException(
+            status_code=409,
+            detail="Video ingestion requires the Prefect orchestrator.",
+        )
+
     # confirm files are in storage, then ingest in background and answer fast
     service.validate_files(
         req.course_name, req.slide_files + req.textbook_files, req.video_files
@@ -81,7 +95,19 @@ async def ingest_course(
 
     flow_run_id = None
     ## inline parity escape, Prefect submit seam per ADR-0007
-    if os.getenv("INGEST_ORCHESTRATOR", "prefect") == "prefect":
+    if not inline:
+        capabilities = await capability_status(required_capabilities(
+            req.slide_files, req.textbook_files, req.video_files, req.reset
+        ))
+        if capabilities.missing:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "code": "ingest_capability_unavailable",
+                    "missing": list(capabilities.missing),
+                    "present": list(capabilities.present),
+                },
+            )
         flow_run_id = await course_submit({
             "course_name": req.course_name,
             "slide_files": req.slide_files,
@@ -99,6 +125,7 @@ async def ingest_course(
         "details": {
             "slides_count": len(req.slide_files),
             "textbooks_count": len(req.textbook_files),
+            "videos_count": len(req.video_files),
         },
     }
 

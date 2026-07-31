@@ -9,7 +9,7 @@ import asyncio
 from core.schema.graph.graph import KG_Instance
 from core.repo.graph.insert import serialize_kg_to_dict
 from core.ingest.segment import group_passages
-from core.repo.storage.minio_repo import make_topic_name
+from core.repo.storage.minio_repo import make_topic_name, validate_file_names
 from knowledge.ingest.anchor import anchor_concepts
 from knowledge.ingest.fetch import fetch_raw_pdf
 from knowledge.ingest.parse import parse_slide_pdf, parse_textbook_chunks, parse_textbook_tree
@@ -201,6 +201,11 @@ class CourseIngestionService:
         video_names = video_names or []
         if not pdf_names and not video_names:
             raise HTTPException(status_code=400, detail="File list is empty.")
+
+        try:
+            validate_file_names(pdf_names + video_names)
+        except ValueError as err:
+            raise HTTPException(status_code=400, detail=f"Invalid file name: {err}")
 
         video_exts = (".mp4", ".mkv", ".webm", ".mp3", ".m4a", ".wav")
         checks = [(n, (".pdf",)) for n in pdf_names] + [(n, video_exts) for n in video_names]

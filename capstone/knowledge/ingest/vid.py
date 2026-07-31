@@ -1,9 +1,12 @@
 import json
 from typing import Dict, List, Tuple
 
-from core.config import Ingest_param
+from core.config import Emb_conf, Ingest_param
 from core.ingest.novelty import cliff_partition
 from core.ingest.segment import group_passages
+
+
+ANCHOR_VERSION = "cliff-v1"
 
 
 def _to_items(video_id: str, whisper_segments: List[Dict]) -> List[Dict]:
@@ -28,7 +31,11 @@ def build_video_segments(embedder, milvus_db, video_id: str, course: str,
 
     seg_nodes, anchor_links, novel_entries = [], [], []
     for order, p in enumerate(merged):
-        hits = milvus_db.search_vec(p["emb"], top_k=cfg.segment_top_k, expr=expr)
+        hits = sorted(
+            milvus_db.search_vec(p["emb"], top_k=cfg.segment_top_k, expr=expr),
+            key=lambda hit: hit["score"],
+            reverse=True,
+        )
         scores = [h["score"] for h in hits]
         kept, novel = cliff_partition(scores, cfg.anchor_gradient_g, cfg.anchor_score_min)
         best_score = scores[0] if scores else 0.0
@@ -41,7 +48,11 @@ def build_video_segments(embedder, milvus_db, video_id: str, course: str,
             "emb": p["emb"],
             "order": order,
             "best_score": best_score,
-            "anchor_scores": sorted(scores, reverse=True),
+            "candidate_ids": [h["id"] for h in hits],
+            "candidate_names": [h["name"] for h in hits],
+            "candidate_scores": scores,
+            "anchor_model": Emb_conf().model_name,
+            "anchor_version": ANCHOR_VERSION,
             "novel_candidate": novel,
         })
 
