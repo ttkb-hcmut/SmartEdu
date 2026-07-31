@@ -29,6 +29,18 @@ def make_topic_name(file_name: str, heading: Optional[str], chunk_id: str) -> st
     return f"{base}_{h}"
 
 
+def validate_file_names(file_names: List[str]) -> None:
+    seen = set()
+    for name in file_names:
+        if not name or not name.strip():
+            raise ValueError("file name is blank")
+        if "/" in name or "\\" in name or any(ord(char) < 32 for char in name):
+            raise ValueError(f"file name is unsafe: {name}")
+        if name in seen:
+            raise ValueError(f"file name is duplicated: {name}")
+        seen.add(name)
+
+
 class MinioDB:
     def __init__(self, config: Minio_conf = Minio_conf()):
         self.client = Minio(
@@ -72,6 +84,16 @@ class MinioDB:
         finally:
             response.close()
             response.release_conn()
+
+    def download_object(self, object_name: str, file_path: str) -> None:
+        self.client.fget_object(self.bucket_name, object_name, file_path)
+
+    def object_revision(self, object_name: str) -> str:
+        stat = self.client.stat_object(self.bucket_name, object_name)
+        revision = getattr(stat, "version_id", None) or getattr(stat, "etag", None)
+        if not revision:
+            raise ValueError(f"object has no cacheable revision: {object_name}")
+        return revision
 
     def object_exists(self, object_name: str) -> bool:
         # true if the object is present
