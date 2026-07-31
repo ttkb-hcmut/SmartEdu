@@ -55,6 +55,21 @@ uv run python test/eval/build_musique.py --canonicalize-existing
 uv run python -c "import json; d=json.load(open('test/eval/fixtures/musique_cs.json')); print(len(d), 'questions')"
 ```
 
-The 30×3 baseline is blocked until the dedicated dual-index corpus loader writes
-these canonical paragraph URIs to both Milvus and Neo4j. The retrieval harness
-does not perform ingestion.
+## Load the corpus
+
+The retrieval harness does not ingest. `load_corpus.py` is the dual-index loader that
+writes canonical paragraph URIs to both stores, which is what `verify_corpus_ready`
+gates every live run on:
+
+```
+uv run python test/eval/load_corpus.py --corpus test/eval/corpus/musique_cs \
+    --course Bench_MuSiQue [--dry-run]
+```
+
+URIs are read from `manifest.json`, never recomputed from the `.txt` files — the files
+hold raw text while the hash is over NFKC-normalized text, so re-hashing yields
+digests that pass the gate and then score zero against the fixture.
+
+`--course` must match the `--course` passed to `run_ablation.py`: it becomes the Milvus
+`community` value and the Neo4j `uri` prefix. The loader is idempotent (Milvus upserts
+on primary key, Cypher `MERGE`s), so re-running is safe.
