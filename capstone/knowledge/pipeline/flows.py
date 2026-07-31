@@ -15,15 +15,13 @@ from core.schema.ingest import (
     ParsedSlideResult,
     ParsedTextbookResult,
     PublishedSlideItem,
-    REPORT_COMPLETED,
-    REPORT_FAILED,
-    REPORT_PARTIAL,
     TranscriptResult,
     new_report,
 )
 from knowledge.ingest.persist import persist_report
 from knowledge.pipeline import deps
 from knowledge.pipeline.legacy import process_textbook_legacy
+from knowledge.pipeline.reporting import ReportOutcome, reduce_report, source_outcomes
 from knowledge.pipeline.tasks import (
     anchor_task,
     extract_slide_task,
@@ -149,6 +147,7 @@ async def course_flow(course_name: str, slide_files: List[str],
     storage = deps.minio_repo()
     persist_report(storage, course_name, run_id, report)
     fatal = None
+    outcomes = []
 
     try:
         if reset:
@@ -160,11 +159,7 @@ async def course_flow(course_name: str, slide_files: List[str],
             tb_results = await asyncio.gather(*[
                 textbook_flow(course_name, f) for f in textbook_files
             ], return_exceptions=True)
-            for f, res in zip(textbook_files, tb_results):
-                if isinstance(res, BaseException):
-                    report["errors"].append({"file": f, "error": str(res)})
-                elif res:
-                    report["textbooks"].append(res)
+            outcomes.extend(source_outcomes("textbooks", textbook_files, tb_results))
 
         # slides -> taught concepts
         results = await asyncio.gather(*[
@@ -172,21 +167,26 @@ async def course_flow(course_name: str, slide_files: List[str],
         ], return_exceptions=True)
 
         concept_nodes = []
-        for f, res in zip(slide_files, results):
-            if isinstance(res, BaseException):
-                report["errors"].append({"file": f, "error": str(res)})
+        for outcome in source_outcomes("slides", slide_files, results):
+            if outcome.error is not None:
+                outcomes.append(outcome)
                 continue
-            if res is None:
+            if outcome.value is None:
                 continue
-            nodes, edges, clusters = res
+            nodes, edges, clusters = outcome.value
             await persist_slide_task(course_name, nodes, edges, clusters)
             concept_nodes += [n for n in nodes if n.get("typeNode") == "Concept"]
-            report["slides"].append({"file": f, "nodes": len(nodes), "edges": len(edges)})
+            outcomes.append(ReportOutcome(
+                "slides",
+                value={"file": outcome.file_name, "nodes": len(nodes), "edges": len(edges)},
+            ))
 
         # anchor concepts into passages, or fall back to legacy link-after
         if cfg.textbook_first:
             if textbook_files:
-                report["anchors"] = await anchor_task(course_name, concept_nodes)
+                outcomes.append(ReportOutcome(
+                    "anchors", value=await anchor_task(course_name, concept_nodes)
+                ))
         else:
             await asyncio.gather(*[
                 process_textbook_legacy(course_name, f) for f in textbook_files
@@ -197,30 +197,20 @@ async def course_flow(course_name: str, slide_files: List[str],
             vid_results = await asyncio.gather(*[
                 video_flow(course_name, f) for f in video_files
             ], return_exceptions=True)
-            for f, res in zip(video_files, vid_results):
-                if isinstance(res, BaseException):
-                    report["errors"].append({"file": f, "error": str(res)})
-                elif res:
-                    report["videos"].append(res)
+            outcomes.extend(source_outcomes("videos", video_files, vid_results))
     except Exception as exc:
         fatal = exc
-        report["errors"].append({"stage": "course-flow", "error": str(exc)})
     finally:
-        has_results = bool(
-            report["textbooks"] or report["slides"] or report["videos"] or report["anchors"]
+        decision = reduce_report(
+            report,
+            outcomes,
+            fatal=fatal,
+            duration_s=round(time() - start, 1),
+            finished_at=datetime.now(timezone.utc).isoformat(),
         )
-        if report["errors"]:
-            report["status"] = REPORT_PARTIAL if has_results else REPORT_FAILED
-        else:
-            report["status"] = REPORT_COMPLETED
-        report["duration_s"] = round(time() - start, 1)
-        report["finished_at"] = datetime.now(timezone.utc).isoformat()
-        logging.info(f"[ingest] {report}")
-        persist_report(storage, course_name, run_id, report)
+        logging.info(f"[ingest] {decision.report}")
+        persist_report(storage, course_name, run_id, decision.report)
 
-    if fatal is not None:
-        raise fatal
-    if report["errors"]:
-        count = len(report["errors"])
-        raise RuntimeError(f"{count} ingestion source(s) failed")
-    return report
+    if decision.error is not None:
+        raise decision.error
+    return decision.report
