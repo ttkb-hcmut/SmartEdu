@@ -10,12 +10,39 @@ import { Spinner } from "@/components/ui/spinner"
 import { useAuth } from "@/contexts/AuthContext"
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
+const VIDEO_EXTS = [".mp4", ".mkv", ".webm", ".mp3", ".m4a", ".wav"]
+
+type UploadTarget = {
+  file_name: string
+  url: string
+}
+
+function parseTargets(body: unknown, fileNames: Set<string>): UploadTarget[] {
+  if (!body || typeof body !== "object" || !("targets" in body)) {
+    throw new Error("Invalid upload URL response")
+  }
+  const targets = (body as { targets: unknown }).targets
+  if (!Array.isArray(targets)) throw new Error("Invalid upload URL response")
+  if (!targets.every((target): target is UploadTarget =>
+    !!target && typeof target === "object" &&
+    typeof (target as UploadTarget).file_name === "string" &&
+    typeof (target as UploadTarget).url === "string"
+  )) throw new Error("Invalid upload URL response")
+
+  const names = new Set(targets.map((target) => target.file_name))
+  if (names.size !== targets.length || names.size !== fileNames.size ||
+      [...fileNames].some((name) => !names.has(name))) {
+    throw new Error("Upload URL response does not match selected files")
+  }
+  return targets
+}
 
 export function IngestForm() {
   const { apiFetch } = useAuth()
   const [courseName, setCourseName] = useState("")
   const [slides, setSlides] = useState<File[]>([])
   const [textbooks, setTextbooks] = useState<File[]>([])
+  const [videos, setVideos] = useState<File[]>([])
   const [progress, setProgress] = useState<FileProgress[]>([])
   const [submitting, setSubmitting] = useState(false)
 
@@ -29,7 +56,7 @@ export function IngestForm() {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
       xhr.open("PUT", url)
-      xhr.setRequestHeader("Content-Type", "application/pdf")
+      xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream")
 
       xhr.upload.addEventListener("progress", (e) => {
         if (e.lengthComputable) {
@@ -60,9 +87,13 @@ export function IngestForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!courseName.trim()) return
-    const allFiles = [...slides, ...textbooks]
+    const allFiles = [...slides, ...textbooks, ...videos]
     if (allFiles.length === 0) {
-      toast.error("Vui lòng thêm ít nhất một file PDF.")
+      toast.error("Vui lòng thêm ít nhất một file.")
+      return
+    }
+    if (new Set(allFiles.map((file) => file.name)).size !== allFiles.length) {
+      toast.error("Tên file phải duy nhất trong một lần nạp dữ liệu.")
       return
     }
 
@@ -82,17 +113,17 @@ export function IngestForm() {
         }),
       })
       if (!urlRes.ok) throw new Error(`Failed to get upload URLs (${urlRes.status})`)
-      const { targets } = await urlRes.json()
+      const fileMap = new Map(allFiles.map((file) => [file.name, file]))
+      const targets = parseTargets(await urlRes.json(), new Set(fileMap.keys()))
 
       // Step 2: Upload each file directly to MinIO
       setProgress((prev) =>
         prev.map((f) => ({ ...f, status: "uploading" as const }))
       )
-      const fileMap = new Map(allFiles.map((f) => [f.name, f]))
       await Promise.all(
-        (targets as { name: string; url: string }[]).map(({ name, url }) => {
-          const file = fileMap.get(name)
-          if (!file) return Promise.resolve()
+        targets.map(({ file_name, url }) => {
+          const file = fileMap.get(file_name)
+          if (!file) throw new Error(`Missing local file for ${file_name}`)
           return uploadFile(file, url)
         })
       )
@@ -105,6 +136,7 @@ export function IngestForm() {
           course_name: courseName.trim(),
           slide_files: slides.map((f) => f.name),
           textbook_files: textbooks.map((f) => f.name),
+          video_files: videos.map((f) => f.name),
           reset: true,
         }),
       })
@@ -117,6 +149,7 @@ export function IngestForm() {
       setCourseName("")
       setSlides([])
       setTextbooks([])
+      setVideos([])
       setProgress([])
     } catch (err) {
       toast.error("Nạp dữ liệu thất bại", {
@@ -157,6 +190,13 @@ export function IngestForm() {
         label="Giáo trình (PDF)"
         files={textbooks}
         onFilesChange={setTextbooks}
+      />
+
+      <FileDropzone
+        label="Video / audio"
+        files={videos}
+        onFilesChange={setVideos}
+        extensions={VIDEO_EXTS}
       />
 
       {progress.length > 0 && (
