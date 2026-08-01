@@ -14,7 +14,7 @@ from knowledge.ingest.fetch import fetch_raw_pdf, temp_raw
 from knowledge.ingest.parse import parse_slide_pdf, parse_textbook_tree
 from knowledge.ingest.persist import persist_slide_kg
 from knowledge.ingest.publish import publish_slide_chunks
-from knowledge.ingest.vid import build_video_segments
+from knowledge.ingest.vid import build_vid_segs
 from knowledge.engine.extract import GraphExtractionService
 from knowledge.engine.graph.graph_constructor import KG_Handler
 from knowledge.pipeline import deps
@@ -129,29 +129,29 @@ async def transcribe_task(course_name: str, file_name: str) -> Tuple[float, List
 
 
 @task(name="segment-anchor-persist-video", retries=1, tags=["gpu"])
-async def video_persist_task(course_name: str, file_name: str, duration: float,
-                             whisper_segments: List[Dict]) -> Dict:
+async def vid_persist_task(course_name: str, file_name: str, duration: float,
+                           whisper_segs: List[Dict]) -> Dict:
     ## fused: segment embs never cross a task boundary
     def _run():
         cfg = Ingest_param()
-        video_id = f"{course_name}/{file_name}"
-        seg_nodes, anchor_links, novel_entries = build_video_segments(
-            deps.embedder(), deps.milvus_db(), video_id, course_name,
-            whisper_segments, cfg
+        vid_id = f"{course_name}/{file_name}"
+        seg_nodes, anchor_links, novel_ents = build_vid_segs(
+            deps.embedder(), deps.milvus_db(), vid_id, course_name,
+            whisper_segs, cfg
         )
         if not seg_nodes:
             return {"file": file_name, "duration": duration, "segments": 0,
                     "anchored_segments": 0, "novel_candidates": []}
 
-        video = {"id": video_id, "title": file_name,
-                 "uri": deps.minio_repo().raw_object_name(course_name, file_name),
-                 "duration": duration}
-        deps.graph_db().write_video(video, seg_nodes, DB_NAME, Emb_conf().dim)
+        vid = {"id": vid_id, "title": file_name,
+               "uri": deps.minio_repo().raw_object_name(course_name, file_name),
+               "duration": duration}
+        deps.graph_db().write_vid(vid, seg_nodes, DB_NAME, Emb_conf().dim)
         if anchor_links:
-            deps.graph_db().write_segment_anchors(anchor_links, DB_NAME)
+            deps.graph_db().write_seg_anchors(anchor_links, DB_NAME)
 
         anchored = len({l["segment_id"] for l in anchor_links})
         return {"file": file_name, "duration": duration, "segments": len(seg_nodes),
-                "anchored_segments": anchored, "novel_candidates": novel_entries}
+                "anchored_segments": anchored, "novel_candidates": novel_ents}
 
     return await asyncio.to_thread(_run)

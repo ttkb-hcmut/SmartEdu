@@ -15,7 +15,11 @@ from knowledge.pipeline.deploy import checkout_path
 
 @flow(name="ingest-process-tracer-child", persist_result=True)
 def tracer_child(token: str) -> dict:
-    return {"token": token, "pid": os.getpid()}
+    return {
+        "token": token,
+        "pid": os.getpid(),
+        "release_revision": release_revision(required=True),
+    }
 
 
 @flow(name="ingest-process-tracer-root")
@@ -48,7 +52,7 @@ async def deploy_tracer(checkout: Path = None):
         build=False,
         push=False,
         job_variables={"working_dir": str(checkout)},
-        version=release_revision(),
+        version=release_revision(required=True),
         ignore_warnings=True,
         print_next_steps=False,
     )
@@ -58,11 +62,14 @@ async def deploy_tracer(checkout: Path = None):
 
 
 async def run() -> dict:
+    revision = release_revision(required=True)
     await deploy_tracer()
     token = uuid4().hex
     result = await tracer_root(token)
     if result["token"] != token or result["pid"] == os.getpid():
         raise RuntimeError("Process worker tracer did not cross a process boundary")
+    if result["release_revision"] != revision:
+        raise RuntimeError("Process worker release revision differs from the root runner")
     return result
 
 

@@ -2,6 +2,8 @@ import asyncio
 from importlib.util import find_spec
 from pathlib import Path
 
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[4]
 
@@ -59,7 +61,7 @@ def test_deploy_stages_uses_checkout_without_building_or_pushing(monkeypatch, tm
             "asr-video": (_Flow(), "ingest-asr", "knowledge/pipeline/flows.py:asr_video_stage"),
         },
     )
-    monkeypatch.setattr(deploy, "release_revision", lambda: "sha-123")
+    monkeypatch.setattr(deploy, "release_revision", lambda required=False: "sha-123")
 
     assert asyncio.run(deploy.deploy_stages(tmp_path)) == [
         "ocr-slide", "ocr-textbook", "llm-slide", "asr-video"
@@ -79,6 +81,19 @@ def test_deploy_stages_uses_checkout_without_building_or_pushing(monkeypatch, tm
         assert item["version"] == "sha-123"
         assert item["job_variables"] == {"working_dir": str(tmp_path)}
         assert item["ignore_warnings"] is True
+
+
+def test_deploy_stages_rejects_an_unidentified_release(monkeypatch, tmp_path):
+    from knowledge.pipeline import deploy
+
+    def unidentified(required=False):
+        assert required is True
+        raise RuntimeError("INGEST_RELEASE_REVISION must identify the deployed Git revision")
+
+    monkeypatch.setattr(deploy, "release_revision", unidentified)
+
+    with pytest.raises(RuntimeError, match="INGEST_RELEASE_REVISION"):
+        asyncio.run(deploy.deploy_stages(tmp_path))
 
 
 def test_create_process_pools_is_repeatable(monkeypatch):

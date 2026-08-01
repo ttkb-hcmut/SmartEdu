@@ -16,7 +16,7 @@ MERGE (e)-[r:ANCHORED_IN]->(p)
 SET r.score=l.score, r.justification=coalesce(l.justification, '')
 """
 
-CYPHER_write_segment_anchors = """
+CYPHER_write_seg_anchors = """
 UNWIND $links AS l
 MATCH (e:Entity {name: l.entity_name})
 MATCH (s:Segment {id: l.segment_id})

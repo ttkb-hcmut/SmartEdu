@@ -26,8 +26,8 @@ class _Service:
         self.minio_repo = _Storage()
         self.validated = []
 
-    def validate_files(self, course_name, pdf_names, video_names):
-        self.validated.append((course_name, pdf_names, video_names))
+    def f_valid(self, course_name, pdfs, vids):
+        self.validated.append((course_name, pdfs, vids))
 
     async def run(self, _req):
         raise AssertionError("inline task must not run in this test")
@@ -49,7 +49,7 @@ def test_ingest_route_declares_202_and_counts_videos(monkeypatch):
         assert params["video_files"] == ["lecture.mp4"]
         return "flow-123"
 
-    monkeypatch.setenv("INGEST_ORCHESTRATOR", "prefect")
+    monkeypatch.setenv("INGEST_ORCH", "prefect")
     monkeypatch.setattr(route, "course_submit", _submit)
 
     async def _available(required):
@@ -72,7 +72,7 @@ def test_ingest_route_declares_202_and_counts_videos(monkeypatch):
 
 def test_inline_video_is_rejected_before_validation(monkeypatch):
     service = _Service()
-    monkeypatch.setenv("INGEST_ORCHESTRATOR", "inline")
+    monkeypatch.setenv("INGEST_ORCH", "inline")
 
     with pytest.raises(HTTPException, match="Prefect") as err:
         asyncio.run(
@@ -124,12 +124,12 @@ def test_upload_urls_return_file_name():
     }
 
 
-def test_validate_files_rejects_duplicate_names_across_file_groups():
+def test_f_valid_rejects_duplicate_names_across_file_groups():
     service = object.__new__(CourseIngestionService)
     service.minio_repo = _Storage()
 
     with pytest.raises(HTTPException, match="file name") as err:
-        service.validate_files("Machine Learning", ["slides.pdf", "slides.pdf"])
+        service.f_valid("Machine Learning", ["slides.pdf", "slides.pdf"])
 
     assert err.value.status_code == 400
 

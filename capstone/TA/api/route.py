@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import time
 import uuid
 from fastapi import APIRouter, Request, HTTPException, Depends
 from fastapi.responses import StreamingResponse
@@ -94,6 +95,13 @@ async def _run_ta_task(app_state, task_id: str, user_input: str, session_id: str
             "error": "Internal TA workflow error — check server logs.",
         }
         await emit({"type": "error", "error": "Internal TA workflow error — check server logs."})
+    finally:
+        ## stamp terminal time so the sweeper can evict, entry stays readable for /chat/status
+        entry = app_state.ta_tasks.get(task_id)
+        if entry is not None:
+            entry["done_at"] = time.monotonic()
+            ## stream_chat binds queue to a local before iterating, popping here cannot starve it
+            entry.pop("queue", None)
 
 
 @router.post("/chat", response_model=ChatAcceptedResponse, status_code=202)

@@ -1,9 +1,9 @@
-CYPHER_write_video = """
-MERGE (v:Video {id: $video.id})
-SET v.title=$video.title, v.uri=$video.uri, v.duration=$video.duration
+CYPHER_write_vid = """
+MERGE (v:Video {id: $vid.id})
+SET v.title=$vid.title, v.uri=$vid.uri, v.duration=$vid.duration
 """
 
-CYPHER_write_segments = """
+CYPHER_write_segs = """
 UNWIND $segments AS s
 MERGE (n:Segment {id: s.id})
 SET n.t_lo=s.p_num[0], n.t_hi=s.p_num[1], n.text=s.text, n.emb=s.emb,
@@ -13,7 +13,7 @@ SET n.t_lo=s.p_num[0], n.t_hi=s.p_num[1], n.text=s.text, n.emb=s.emb,
     n.anchor_version=s.anchor_version, n.novel_candidate=s.novel_candidate
 REMOVE n.anchor_scores
 WITH n
-MATCH (v:Video {id: $video_id})
+MATCH (v:Video {id: $vid_id})
 MERGE (v)-[:HAS_SEGMENT]->(n)
 """
 

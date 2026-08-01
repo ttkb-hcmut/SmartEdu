@@ -16,7 +16,7 @@ def test_required_capabilities_match_ingestion_shape():
         "ingest-ocr", "ingest-llm"
     )
     assert required_capabilities([], ["textbook.pdf"], [], True) == ("ingest-ocr",)
-    assert required_capabilities([], ["textbook.pdf"], [], False) == ()
+    assert required_capabilities([], ["textbook.pdf"], [], False) == ("ingest-ocr",)
     assert required_capabilities([], [], ["lecture.mp4"], False) == ("ingest-asr",)
 
 
@@ -101,8 +101,8 @@ def test_ingest_returns_503_without_scheduling_when_capability_is_missing(monkey
         def __init__(self):
             self.validated = []
 
-        def validate_files(self, course_name, pdf_names, video_names):
-            self.validated.append((course_name, pdf_names, video_names))
+        def f_valid(self, course_name, pdfs, vids):
+            self.validated.append((course_name, pdfs, vids))
 
     async def unavailable(_required):
         from knowledge.pipeline.readiness import CapabilityStatus
@@ -113,7 +113,7 @@ def test_ingest_returns_503_without_scheduling_when_capability_is_missing(monkey
     async def submit(_params):
         raise AssertionError("503 must not schedule a root flow")
 
-    monkeypatch.setenv("INGEST_ORCHESTRATOR", "prefect")
+    monkeypatch.setenv("INGEST_ORCH", "prefect")
     monkeypatch.setattr(route, "capability_status", unavailable, raising=False)
     monkeypatch.setattr(route, "course_submit", submit)
     req = route.CourseIngestionRequest(

@@ -1,5 +1,7 @@
 from types import SimpleNamespace
 
+import pytest
+
 from core.repo.storage.minio_repo import MinioDB
 
 
@@ -63,6 +65,21 @@ def test_cache_key_changes_with_the_release_revision(monkeypatch):
     second = cache.source_cache_key("parse-slide", "Course", "deck.pdf", storage)
 
     assert first != second
+
+
+def test_release_revision_rejects_an_unidentified_gate_run(monkeypatch):
+    from knowledge.pipeline import cache
+
+    monkeypatch.delenv("INGEST_RELEASE_REVISION", raising=False)
+    with pytest.raises(RuntimeError, match="INGEST_RELEASE_REVISION"):
+        cache.release_revision(required=True)
+
+    monkeypatch.setenv("INGEST_RELEASE_REVISION", "dev")
+    with pytest.raises(RuntimeError, match="INGEST_RELEASE_REVISION"):
+        cache.release_revision(required=True)
+
+    monkeypatch.setenv("INGEST_RELEASE_REVISION", "sha-one")
+    assert cache.release_revision(required=True) == "sha-one"
 
 
 def test_compressed_serializer_round_trips_large_task_results():

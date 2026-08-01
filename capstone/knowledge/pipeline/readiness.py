@@ -23,7 +23,7 @@ def required_capabilities(slide_files: Sequence[str], textbook_files: Sequence[s
     required = []
     if slide_files:
         required.extend(("ingest-ocr", "ingest-llm"))
-    if textbook_files and reset:
+    if textbook_files:
         required.append("ingest-ocr")
     if video_files:
         required.append("ingest-asr")

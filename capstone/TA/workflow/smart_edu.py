@@ -1,3 +1,4 @@
+import asyncio
 import re
 import time
 import logging
@@ -237,15 +238,16 @@ class SmartEdu:
                 "output": ta_output.model_dump()
             }, type="info", file_name=log_filename)
 
-        # --- Background: memoize & persist (non-blocking, atomic $push) ---
+        # --- Memoize & persist (atomic $push, offloaded off the event loop) ---
         async def _bg_retrieve(ta_out: TAOutput, cid: str):
             if uid and cid:
-                tracker.mongodb.push_chat_message(
+                await asyncio.to_thread(
+                    tracker.mongodb.push_chat_message,
                     uid, sid, cid,
                     {"role": ta.name, "heading": "Synthesizing Retrieval", "message": ta_out.summary}
                 )
             await self._save_ta_memo(sid, cid, tracker, ta_out)
-            tracker.save_state(sid)
+            await asyncio.to_thread(tracker.save_state, sid)
 
         await _bg_retrieve(ta_output, chat_id)  ## await -> persist before turn returns, no race/lost write
 
@@ -323,15 +325,16 @@ class SmartEdu:
                 "output": ta_output.model_dump()
             }, type="info", file_name=log_filename)
 
-        # --- Background: memoize & persist (non-blocking, atomic $push) ---
+        # --- Memoize & persist (atomic $push, offloaded off the event loop) ---
         async def _bg_roadmap(ta_out: TAOutput, cid: str):
             if uid and cid:
-                tracker.mongodb.push_chat_message(
+                await asyncio.to_thread(
+                    tracker.mongodb.push_chat_message,
                     uid, sid, cid,
                     {"role": ta.name, "heading": "Planning Roadmap", "message": ta_out.summary}
                 )
             await self._save_ta_memo(sid, cid, tracker, ta_out)
-            tracker.save_state(sid)
+            await asyncio.to_thread(tracker.save_state, sid)
 
         await _bg_roadmap(ta_output, chat_id)
 
@@ -392,15 +395,16 @@ class SmartEdu:
                 "output": ta_output.model_dump()
             }, type="info", file_name=log_filename)
 
-        # --- Background: memoize & persist (non-blocking, atomic $push) ---
+        # --- Memoize & persist (atomic $push, offloaded off the event loop) ---
         async def _bg_teach(ta_out: TAOutput, cid: str):
             if uid and cid:
-                tracker.mongodb.push_chat_message(
+                await asyncio.to_thread(
+                    tracker.mongodb.push_chat_message,
                     uid, sid, cid,
                     {"role": ta.name, "heading": "Teaching & Evaluating", "message": ta_out.summary}
                 )
             await self._save_ta_memo(sid, cid, tracker, ta_out)
-            tracker.save_state(sid)
+            await asyncio.to_thread(tracker.save_state, sid)
 
         await _bg_teach(ta_output, chat_id)
 
@@ -473,7 +477,7 @@ class SmartEdu:
             )
 
         await self._save_ta_memo(sid, chat_id, tracker, ta_output)
-        tracker.save_state(sid)
+        await asyncio.to_thread(tracker.save_state, sid)
 
         return {"messages": [AIMessage(content=ta_output.message)], "pending_proposal": None}
 
@@ -520,7 +524,7 @@ class SmartEdu:
                 output=ta_output.message,
             )
 
-        # --- Background: memoize & persist (non-blocking) ---
+        # --- Memoize & persist (offloaded off the event loop) ---
         await self._bg_save(sid, chat_id, tracker, ta_output)
 
         return {"messages": [AIMessage(content=ta_output.message)], "pending_proposal": None}
@@ -552,17 +556,18 @@ class SmartEdu:
     @staticmethod
     async def _save_ta_memo(session_id: str, chat_id: str, tracker, ta_output: TAOutput):
         """Standard memo save for all finish nodes — uses TAOutput."""
-        session = tracker.get_session(session_id)
+        session = await asyncio.to_thread(tracker.get_session, session_id)
         session.student_state["summary"] = ta_output.summary
-        
+
         # Append to DB directly
         msg = {
             "role": "TA",
             "heading": ta_output.summary,
             "message": ta_output.message,
         }
-        tracker.mongodb.push_chat_message(session.student_id, session_id, chat_id, msg)
-        
+        ## sync pymongo, to_thread or it stalls every concurrent SSE stream
+        await asyncio.to_thread(tracker.mongodb.push_chat_message, session.student_id, session_id, chat_id, msg)
+
         # Optional: append to in-memory memo if needed, but not required if get_chat_history uses DB.
         # Since get_chat_history uses self.session.chats in memo, we should append in memory too.
         for chat in session.memo.session.chats:
@@ -575,7 +580,7 @@ class SmartEdu:
     async def _bg_save(self, session_id: str, chat_id: str, tracker, ta_output: TAOutput):
         """Background-safe save: memo + student state persistence."""
         await self._save_ta_memo(session_id, chat_id, tracker, ta_output)
-        tracker.save_state(session_id)
+        await asyncio.to_thread(tracker.save_state, session_id)
 
     async def execute(
         self,

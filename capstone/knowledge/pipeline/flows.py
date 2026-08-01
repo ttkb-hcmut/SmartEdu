@@ -31,7 +31,7 @@ from knowledge.pipeline.tasks import (
     publish_slide_task,
     segment_persist_textbook_task,
     transcribe_task,
-    video_persist_task,
+    vid_persist_task,
 )
 from knowledge.pipeline.cache import (
     CACHE_SERIALIZER,
@@ -127,9 +127,9 @@ async def slide_flow(course_name: str, file_name: str,
 
 
 @flow(name="video-flow")
-async def video_flow(course_name: str, file_name: str) -> Dict:
+async def vid_flow(course_name: str, file_name: str) -> Dict:
     transcript = await dispatch_stage("asr-video", course_name, file_name)
-    return await video_persist_task(
+    return await vid_persist_task(
         course_name, file_name, transcript["duration"], transcript["segments"]
     )
 
@@ -154,14 +154,12 @@ async def course_flow(course_name: str, slide_files: List[str],
             deps.graph_db().reset(DB_NAME)
             deps.milvus_db().reset()
 
-        # textbook first: build the anchor substrate before slides
         if cfg.textbook_first and textbook_files:
             tb_results = await asyncio.gather(*[
                 textbook_flow(course_name, f) for f in textbook_files
             ], return_exceptions=True)
             outcomes.extend(source_outcomes("textbooks", textbook_files, tb_results))
 
-        # slides -> taught concepts
         results = await asyncio.gather(*[
             slide_flow(course_name, f) for f in slide_files
         ], return_exceptions=True)
@@ -181,7 +179,6 @@ async def course_flow(course_name: str, slide_files: List[str],
                 value={"file": outcome.file_name, "nodes": len(nodes), "edges": len(edges)},
             ))
 
-        # anchor concepts into passages, or fall back to legacy link-after
         if cfg.textbook_first:
             if textbook_files:
                 outcomes.append(ReportOutcome(
@@ -192,12 +189,12 @@ async def course_flow(course_name: str, slide_files: List[str],
                 process_textbook_legacy(course_name, f) for f in textbook_files
             ])
 
-        # videos: anchor-only, AFTER concepts exist in milvus (ADR-0006)
+        ## vid after slides; concept ANN needs Milvus
         if video_files:
-            vid_results = await asyncio.gather(*[
-                video_flow(course_name, f) for f in video_files
+            vid_res = await asyncio.gather(*[
+                vid_flow(course_name, f) for f in video_files
             ], return_exceptions=True)
-            outcomes.extend(source_outcomes("videos", video_files, vid_results))
+            outcomes.extend(source_outcomes("videos", video_files, vid_res))
     except Exception as exc:
         fatal = exc
     finally:

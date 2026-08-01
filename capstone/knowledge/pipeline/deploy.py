@@ -49,6 +49,7 @@ def checkout_path() -> Path:
 
 async def deploy_stages(checkout: Path = None) -> list:
     checkout = checkout or checkout_path()
+    revision = release_revision(required=True)
     deployment_ids = []
     for name, (stage, pool, entrypoint) in STAGES.items():
         deployed = stage.from_source(source=checkout, entrypoint=entrypoint)
@@ -60,7 +61,7 @@ async def deploy_stages(checkout: Path = None) -> list:
             build=False,
             push=False,
             job_variables={"working_dir": str(checkout)},
-            version=release_revision(),
+            version=revision,
             ignore_warnings=True,
             print_next_steps=False,
         )

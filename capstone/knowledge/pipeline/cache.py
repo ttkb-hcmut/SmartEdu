@@ -15,8 +15,11 @@ RESULT_STORAGE = "remote-file-system/prefect-sftp-results"
 CACHE_SERIALIZER = CompressedPickleSerializer(compressionlib="zlib")
 
 
-def release_revision() -> str:
-    return os.getenv("INGEST_RELEASE_REVISION", "dev")
+def release_revision(required: bool = False) -> str:
+    revision = os.getenv("INGEST_RELEASE_REVISION") or "dev"
+    if required and revision == "dev":
+        raise RuntimeError("INGEST_RELEASE_REVISION must identify the deployed Git revision")
+    return revision
 
 
 def _digest(value) -> str:

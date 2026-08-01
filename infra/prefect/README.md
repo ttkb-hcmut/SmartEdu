@@ -45,7 +45,7 @@ volume. MinIO remains the SmartEdu domain object store.
    ```
 
 5. Register the three Process pools and four child-stage deployments once for that release, from
-   `capstone/`:
+   `capstone/`. Registration rejects an unset or `dev` release revision:
 
    ```powershell
    uv run python -m knowledge.pipeline.deploy
@@ -77,15 +77,20 @@ boundary without loading Whisper or touching course data:
 uv run python -m knowledge.pipeline.tracer
 ```
 
-It succeeds only when the root flow receives a persisted token from a different process PID.
+It succeeds only when the root flow receives a persisted token from a different process PID and
+the ASR worker reports the same non-`dev` release revision as the root runner. Record the configured
+Git SHA for the root runner and every capability worker before a T9 or T10 gate run.
 
 ## API capability admission
 
 `POST /ingest-course` validates object names, extensions, and MinIO presence before it asks
 Prefect whether a suitable worker is alive. A worker heartbeat older than 90 seconds is stale.
 Slides require `ingest-ocr` and `ingest-llm`; videos require `ingest-asr`; textbooks require
-`ingest-ocr` only when `reset=true`. A textbook-only reuse request may queue without an OCR
-worker. Missing capabilities receive HTTP 503 and schedule no root flow.
+`ingest-ocr` regardless of `reset`. Missing capabilities receive HTTP 503 and schedule no root
+flow.
+
+`ingest-ocr` is a shared capability pool. Any machine polling it may receive slide or textbook
+OCR; the pool provides failover and capacity, not source-to-host affinity.
 
 `course-ingest` is registered with one global slot and `ENQUEUE`; no local worker setting is
 allowed to weaken that reset-safety invariant. Do not expose Process workers, SFTP, or Prefect

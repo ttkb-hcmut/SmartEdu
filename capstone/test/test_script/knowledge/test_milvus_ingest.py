@@ -3,7 +3,7 @@ import json
 from core.config import Ingest_param
 from core.repo.milvus_db import mil
 from core.repo.milvus_db.mil import MilvusDB
-from core.repo.graph.cypher.kg_const.video import CYPHER_write_segments
+from core.repo.graph.cypher.kg_const.video import CYPHER_write_segs
 from core.schema.graph.type import NodeType
 from knowledge.ingest import vid
 
@@ -102,7 +102,7 @@ def test_video_ann_filters_concepts_to_current_course(monkeypatch):
         }],
     )
 
-    vid.build_video_segments(
+    vid.build_vid_segs(
         _Embedder(),
         _Milvus(),
         "video-1",
@@ -138,7 +138,7 @@ def test_video_anchor_profile_keeps_candidate_identity_aligned(monkeypatch):
         }],
     )
 
-    segments, links, _ = vid.build_video_segments(
+    segments, links, _ = vid.build_vid_segs(
         _Embedder(),
         _Milvus(),
         "video-1",
@@ -165,5 +165,5 @@ def test_video_cypher_replaces_score_only_anchor_profile():
         "anchor_model",
         "anchor_version",
     ):
-        assert f"n.{field}=s.{field}" in CYPHER_write_segments
-    assert "REMOVE n.anchor_scores" in CYPHER_write_segments
+        assert f"n.{field}=s.{field}" in CYPHER_write_segs
+    assert "REMOVE n.anchor_scores" in CYPHER_write_segs

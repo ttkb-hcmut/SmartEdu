@@ -58,7 +58,8 @@ class RhetoricalRetriever(NeoTool):
         return f"SOURCE_DATA (ALL) for {node_id}:\n{content_text}"
 
     async def _arun(self, node_id: str, role: Optional[str] = None, limit: int = 10):
-        return self._run(node_id, role, limit)
+        ## _run drives the sync neo4j driver, to_thread or it blocks the loop
+        return await asyncio.to_thread(self._run, node_id, role, limit)
     
 class EdgeExplorer(NeoTool):
     name: str = "edge_explorer"
@@ -96,5 +97,4 @@ class EdgeExplorer(NeoTool):
         return "\n".join(output)
 
     async def _arun(self, node_id: str):
-        print("aaaaa")
-        return self._run(node_id)
+        return await asyncio.to_thread(self._run, node_id)

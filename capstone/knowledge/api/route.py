@@ -21,7 +21,7 @@ def _canon_course(name: str) -> str:
     return " ".join(name.split()).title()
 
 
-VIDEO_EXTS = (".mp4", ".mkv", ".webm", ".mp3", ".m4a", ".wav")
+VID_EXT = (".mp4", ".mkv", ".webm", ".mp3", ".m4a", ".wav")
 
 
 class CourseIngestionRequest(BaseModel):
@@ -65,7 +65,7 @@ async def get_upload_urls(
 
     targets = []
     for fn in req.file_names:
-        if not fn.lower().endswith((".pdf",) + VIDEO_EXTS):
+        if not fn.lower().endswith((".pdf",) + VID_EXT):
             raise HTTPException(status_code=400, detail=f"Unsupported file type: {fn}")
         url = service.minio_repo.presigned_put_url(course_name=req.course_name, file_name=fn)
         targets.append(PresignedTarget(file_name=fn, url=url))
@@ -81,15 +81,15 @@ async def ingest_course(
     service=Depends(get_ingestion_service),
     _: User = Depends(require_admin),
 ):
-    inline = os.getenv("INGEST_ORCHESTRATOR", "prefect") != "prefect"
+    inline = os.getenv("INGEST_ORCH", "prefect") != "prefect"
     if inline and req.video_files:
         raise HTTPException(
             status_code=409,
             detail="Video ingestion requires the Prefect orchestrator.",
         )
 
-    # confirm files are in storage, then ingest in background and answer fast
-    service.validate_files(
+    ## storage exist ---> ingest ---> response
+    service.f_valid(
         req.course_name, req.slide_files + req.textbook_files, req.video_files
     )
 

@@ -9,27 +9,27 @@ from core.ingest.segment import group_passages
 ANCHOR_VERSION = "cliff-v1"
 
 
-def _to_items(video_id: str, whisper_segments: List[Dict]) -> List[Dict]:
+def _to_items(vid_id: str, whisper_segs: List[Dict]) -> List[Dict]:
     ## whisper seg ---> valley item
     return [{
-        "id": f"{video_id}_s{i}",
+        "id": f"{vid_id}_s{i}",
         "text": seg["text"],
         "order": i,
-        "section_id": video_id,
+        "section_id": vid_id,
         "p_num": (seg["t_lo"], seg["t_hi"]),
-    } for i, seg in enumerate(whisper_segments)]
+    } for i, seg in enumerate(whisper_segs)]
 
 
-def build_video_segments(embedder, milvus_db, video_id: str, course: str,
-                         whisper_segments: List[Dict],
-                         cfg: Ingest_param) -> Tuple[List[Dict], List[Dict], List[Dict]]:
-    if not whisper_segments:
+def build_vid_segs(embedder, milvus_db, vid_id: str, course: str,
+                   whisper_segs: List[Dict],
+                   cfg: Ingest_param) -> Tuple[List[Dict], List[Dict], List[Dict]]:
+    if not whisper_segs:
         return [], [], []
 
-    merged = group_passages(_to_items(video_id, whisper_segments), embedder.get_embedding, cfg)
+    merged = group_passages(_to_items(vid_id, whisper_segs), embedder.get_embedding, cfg)
     expr = f'typeNode == "Concept" and course == {json.dumps(course, ensure_ascii=False)}'
 
-    seg_nodes, anchor_links, novel_entries = [], [], []
+    seg_nodes, anchor_links, novel_ents = [], [], []
     for order, p in enumerate(merged):
         hits = sorted(
             milvus_db.search_vec(p["emb"], top_k=cfg.segment_top_k, expr=expr),
@@ -62,7 +62,7 @@ def build_video_segments(embedder, milvus_db, video_id: str, course: str,
                                      "segment_id": seg_id, "score": scores[i]})
 
         if novel:
-            novel_entries.append({"t_lo": p["p_num"][0], "t_hi": p["p_num"][1],
-                                  "best_score": best_score})
+            novel_ents.append({"t_lo": p["p_num"][0], "t_hi": p["p_num"][1],
+                               "best_score": best_score})
 
-    return seg_nodes, anchor_links, novel_entries
+    return seg_nodes, anchor_links, novel_ents
