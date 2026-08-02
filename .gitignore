@@ -46,7 +46,10 @@ capstone/data
 
 !README.md
 !arch.md
+!capstone/test/inspection/
+!capstone/test/inspection/*.md
 
 
+capstone/test/inspection/*.png
 
 .deepeval
