@@ -16,3 +16,4 @@ Ref/
 # test/ runtime output only, test_script/ and eval/ fixtures stay tracked
 test/TA/
 test/eval/results/
+test/inspection/results/
