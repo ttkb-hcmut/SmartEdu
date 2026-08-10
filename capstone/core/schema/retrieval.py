@@ -3,22 +3,26 @@ from enum import Enum
 
 
 class RetrievalPreset(str, Enum):
-    PLAIN = "plain"
     RAG = "rag"
     FULL = "full"
 
 
 class RetrievalPolicyId(str, Enum):
-    BASELINE_V1 = "baseline-v1"
+    BASELINE_V2 = "baseline-v2"
+    BASELINE_V3 = "baseline-v3"
+    BASELINE_V4 = "baseline-v4"
 
 
 class RetrievalHarnessId(str, Enum):
     AGENTIC_V1 = "agentic-v1"
+    AGENTIC_V2 = "agentic-v2"
+    AGENTIC_V3 = "agentic-v3"
     FANOUT_V1 = "fanout-v1"
 
 
 class RetrievalPromptId(str, Enum):
     MULTIHOP_V1 = "multihop-v1"
+    MULTIHOP_V2 = "multihop-v2"
 
 
 class RetrievalToolId(str, Enum):
@@ -54,7 +58,11 @@ class RetrievalPolicyContract:
     model_profile: str
     model_name: str
     temperature: float
+    answer_model_profile: str
+    answer_model_name: str
+    answer_temperature: float
     allowed_tools: tuple[RetrievalToolId, ...]
+    seed_tools: tuple[RetrievalToolId, ...]
     min_tool_calls: int
     empty_hits_valid: bool
 
@@ -68,6 +76,9 @@ class RetrievalHarnessContract:
     top_k: int
     per_source_k: int
     rrf_k: int
+    max_calls_per_round: int = 0
+    max_context_chars: int = 0
+    evidence_excerpt_chars: int = 0
 
 
 @dataclass(frozen=True)

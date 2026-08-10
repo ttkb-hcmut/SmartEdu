@@ -43,6 +43,18 @@ class LLMConfig:
             num_predict=512,
             keep_alive="30m",
         ),
+        "retrieval_aggregator": LLMProfile(
+            model_name="gpt-oss:120b-cloud",
+            temperature=0.0,
+            num_ctx=65536,
+            num_predict=1024,
+        ),
+        "retrieval_answerer": LLMProfile(
+            model_name="gpt-oss:120b-cloud",
+            temperature=0.0,
+            num_ctx=65536,
+            num_predict=256,
+        ),
         "worker": LLMProfile(
             model_name="gemma3:1b", 
             temperature=0.0,

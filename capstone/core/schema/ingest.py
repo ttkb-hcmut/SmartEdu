@@ -89,4 +89,5 @@ def new_report(course_name: str, run_id: str = "local",
         "videos": [],
         "anchors": 0,
         "errors": [],
+        "stage_timings_ms": {},
     }
