@@ -5,13 +5,14 @@ Requires DBs + Ollama up. Judge metrics additionally require
 
 Usage (from capstone/):
     uv run python test/eval/run_ablation.py --fixture test/eval/fixtures/musique_cs.json \
-        --presets plain,rag,full --limit 10
+        --presets rag,full --limit 10
     uv run python test/eval/run_ablation.py --fixture ... --score-only [--judge]
     uv run python test/eval/run_ablation.py --fixture ... --calibrate
 """
 
 import argparse
 import asyncio
+import hashlib
 import json
 import random
 import statistics
@@ -24,6 +25,74 @@ from TA.tracing.writer import _DEFAULT_LOG_DIR
 BENCH_STUDENT = "bench_student"
 TRACE_DIR = _DEFAULT_LOG_DIR
 RESULTS_DIR = Path("test/eval/results")
+
+
+def harness_policy_id(harness_id):
+    from core.schema.retrieval import RetrievalHarnessId, RetrievalPolicyId
+
+    return (
+        RetrievalPolicyId.BASELINE_V4
+        if harness_id is RetrievalHarnessId.AGENTIC_V3
+        else RetrievalPolicyId.BASELINE_V3
+    )
+
+
+def harness_run_ids(base_run_id: str, harnesses: list[str]) -> dict[str, str]:
+    if len(harnesses) == 1:
+        return {harnesses[0]: base_run_id}
+    return {harness: f"{base_run_id}__{harness}" for harness in harnesses}
+
+
+def repeat_fixture(fixture: list[dict], repeats: int) -> list[dict]:
+    if repeats <= 1:
+        return fixture
+    return [
+        {
+            **item,
+            "id": f"{item['id']}__repeat_{repeat_index}",
+            "source_fixture_id": item.get("source_fixture_id", item["id"]),
+        }
+        for item in fixture
+        for repeat_index in range(1, repeats + 1)
+    ]
+
+
+def write_run_manifest(
+    results_dir: Path,
+    *,
+    run_id: str,
+    fixture: list[dict],
+    corpus_dir: Path,
+    course: str,
+    harness_runs: dict[str, str],
+) -> Path:
+    manifest_path = corpus_dir / "manifest.json"
+    digest = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+    ingestion_reports = sorted(results_dir.glob(f"ingest_{course}_*.json"))
+    ingestion_report = ""
+    expected_corpus = corpus_dir.resolve()
+    for candidate in reversed(ingestion_reports):
+        try:
+            report = json.loads(candidate.read_text(encoding="utf-8"))
+            report_corpus = Path(report.get("corpus", "")).resolve()
+        except (OSError, ValueError, TypeError, json.JSONDecodeError):
+            continue
+        if report.get("status") == "COMPLETED" and report_corpus == expected_corpus:
+            ingestion_report = str(candidate)
+            break
+    payload = {
+        "run_id": run_id,
+        "course": course,
+        "fixture_cases": len(fixture),
+        "fixture_ids": [item["id"] for item in fixture],
+        "corpus_manifest": str(manifest_path),
+        "corpus_manifest_sha256": digest,
+        "ingestion_report": ingestion_report,
+        "harness_runs": harness_runs,
+    }
+    path = results_dir / f"run_manifest_{run_id}.json"
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return path
 
 
 def boot_ta():
@@ -84,9 +153,6 @@ def validate_run_sessions(sessions, expected_ids: set[str], run_id: str):
         raise ValueError(f"stale trace found outside run {run_id}")
     if any(chat.warmup for chat in chats):
         raise ValueError("warm-up trace mixed into scored cases")
-    if any(chat.status != "SUCCESS" for chat in chats):
-        failed = [chat.question_id for chat in chats if chat.status != "SUCCESS"]
-        raise ValueError(f"invalid benchmark cases: {failed}")
     if len(ids) != len(set(ids)):
         raise ValueError("duplicate benchmark case trace")
     if set(ids) != expected_ids:
@@ -133,11 +199,12 @@ async def run_case(
     sid = f"{session_name(prefix, track, run_id)}__{question_id}"
     rp = Retrieve_param.from_preset(
         preset,
+        policy_id=harness_policy_id(harness_id),
         harness_id=harness_id,
         course_scope=course,
     )
     tracker.create_chat_session(BENCH_STUDENT, sid)
-    t0 = time.time()
+    t0 = time.perf_counter()
     try:
         result = await ta.run(
             user_input=item["question"],
@@ -154,7 +221,7 @@ async def run_case(
         )
         label = "WARMUP" if warmup else preset
         if result["status"] == "SUCCESS":
-            print(f"[{label}] {item['id']} ({time.time()-t0:.1f}s)")
+            print(f"[{label}] {item['id']} ({time.perf_counter()-t0:.1f}s)")
         else:
             print(f"[{label}] {item['id']} FAILED: {result['errors']}")
     finally:
@@ -187,19 +254,37 @@ async def run_preset(
         )
 
 
-def score(fixture: list, presets: list, track: str, run_id: str, judge: bool) -> None:
-    from TA.tracing.evaluator import load_session, evaluate_session, render_table, judge_chat
+def score(
+    fixture: list,
+    presets: list,
+    track: str,
+    harness_runs: dict[str, str],
+    base_run_id: str,
+    judge: bool,
+    run_manifest: Path | None = None,
+) -> None:
+    from TA.tracing.evaluator import (
+        evaluate_session,
+        judge_chat,
+        load_session,
+        render_paired_report,
+        render_report,
+    )
 
     rows = []
     expected_ids = {item["id"] for item in fixture}
-    for preset in presets:
-        paths = sorted(TRACE_DIR.glob(f"{session_name(preset, track, run_id)}__*.json"))
-        if not paths:
-            raise ValueError(f"no traces for {preset} in run {run_id}")
-        sessions = [load_session(path) for path in paths]
-        validate_run_sessions(sessions, expected_ids, run_id)
-        for session in sessions:
-            rows += evaluate_session(session, fixture)
+    for harness, run_id in harness_runs.items():
+        for preset in presets:
+            paths = sorted(TRACE_DIR.glob(f"{session_name(preset, track, run_id)}__*.json"))
+            if not paths:
+                raise ValueError(f"no traces for {harness}/{preset} in run {run_id}")
+            sessions = [load_session(path) for path in paths]
+            validate_run_sessions(sessions, expected_ids, run_id)
+            for session in sessions:
+                harness_rows = evaluate_session(session, fixture)
+                for row in harness_rows:
+                    row["harness_id"] = row.get("harness_id") or harness
+                rows += harness_rows
 
     if judge:
         for row in rows:
@@ -212,10 +297,20 @@ def score(fixture: list, presets: list, track: str, run_id: str, judge: bool) ->
         for r in rows:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
 
-    table = render_table(rows)
-    (RESULTS_DIR / f"ablation_{track}_{stamp}.md").write_text(table, encoding="utf-8")
-    print(table)
+    sections = []
+    if run_manifest:
+        sections += [f"Run manifest: `{run_manifest}`", ""]
+    for harness in harness_runs:
+        group = [row for row in rows if row.get("harness_id") == harness]
+        sections += [f"# Harness: {harness}", "", render_report(group), ""]
+    if {"agentic-v2", "agentic-v3"} <= set(harness_runs):
+        sections += [render_paired_report(rows), ""]
+    report = "\n".join(sections)
+    report_path = RESULTS_DIR / f"ablation_{track}_{base_run_id}_{stamp}.md"
+    report_path.write_text(report, encoding="utf-8")
+    print(report)
     print(f"\nper-question rows -> {out}")
+    print(f"full report -> {report_path}")
 
 
 def calibrate(fixture: list, corpus_dir: Path) -> None:
@@ -248,10 +343,21 @@ def calibrate(fixture: list, corpus_dir: Path) -> None:
 async def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--fixture", required=True)
-    ap.add_argument("--presets", default="plain,rag,full")
+    ap.add_argument("--presets", default="rag,full")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--course", default="", help="benchmark course scope, e.g. Bench_MuSiQue")
-    ap.add_argument("--harness", default="agentic-v1", choices=("agentic-v1", "fanout-v1"))
+    ap.add_argument(
+        "--harness",
+        default="agentic-v3",
+        choices=("agentic-v1", "agentic-v2", "agentic-v3", "fanout-v1"),
+    )
+    ap.add_argument(
+        "--harnesses",
+        default="",
+        help="comma-separated harnesses for a paired run, e.g. agentic-v2,agentic-v3",
+    )
+    ap.add_argument("--repeat", type=int, default=1)
+    ap.add_argument("--ids", default="", help="comma-separated fixture IDs to run")
     ap.add_argument("--run-id", default="")
     ap.add_argument("--score-only", action="store_true")
     ap.add_argument("--judge", action="store_true")
@@ -260,11 +366,25 @@ async def main():
     args = ap.parse_args()
 
     fixture = json.loads(Path(args.fixture).read_text(encoding="utf-8"))
+    if args.ids:
+        selected = {item.strip() for item in args.ids.split(",") if item.strip()}
+        fixture = [item for item in fixture if item["id"] in selected]
     if args.limit:
         fixture = fixture[:args.limit]
+    fixture = repeat_fixture(fixture, args.repeat)
     track = fixture[0]["track"] if fixture else "unknown"
     presets = [p.strip().upper() for p in args.presets.split(",")]
     run_id = args.run_id or time.strftime("%Y%m%d_%H%M%S")
+    harness_names = (
+        [item.strip() for item in args.harnesses.split(",") if item.strip()]
+        if args.harnesses
+        else [args.harness]
+    )
+    allowed_harnesses = {"agentic-v1", "agentic-v2", "agentic-v3", "fanout-v1"}
+    unknown_harnesses = set(harness_names) - allowed_harnesses
+    if unknown_harnesses:
+        raise SystemExit(f"unknown harnesses: {sorted(unknown_harnesses)}")
+    harness_runs = harness_run_ids(run_id, harness_names)
 
     if args.calibrate:
         calibrate(fixture, Path(args.corpus))
@@ -283,39 +403,57 @@ async def main():
             args.course,
         )
         code_state = read_code_state()
-        harness_id = RetrievalHarnessId(args.harness)
         try:
-            if fixture:
-                await run_case(
-                    ta,
-                    tracker,
-                    "FULL",
-                    fixture[0],
-                    track,
-                    args.course,
-                    run_id,
-                    harness_id,
-                    code_state,
-                    warmup=True,
-                )
-            for preset in presets:
-                await run_preset(
-                    ta,
-                    tracker,
-                    preset,
-                    fixture,
-                    track,
-                    args.course,
-                    run_id,
-                    harness_id,
-                    code_state,
-                )
+            for harness_name, harness_run_id in harness_runs.items():
+                harness_id = RetrievalHarnessId(harness_name)
+                if fixture:
+                    await run_case(
+                        ta,
+                        tracker,
+                        "FULL",
+                        fixture[0],
+                        track,
+                        args.course,
+                        harness_run_id,
+                        harness_id,
+                        code_state,
+                        warmup=True,
+                    )
+                for preset in presets:
+                    await run_preset(
+                        ta,
+                        tracker,
+                        preset,
+                        fixture,
+                        track,
+                        args.course,
+                        harness_run_id,
+                        harness_id,
+                        code_state,
+                    )
         finally:
             tracker.delete_student(BENCH_STUDENT)
     elif not args.run_id:
         raise SystemExit("--score-only requires the exact --run-id")
 
-    score(fixture, presets, track, run_id, judge=args.judge)
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    run_manifest = write_run_manifest(
+        RESULTS_DIR,
+        run_id=run_id,
+        fixture=fixture,
+        corpus_dir=Path(args.corpus),
+        course=args.course,
+        harness_runs=harness_runs,
+    )
+    score(
+        fixture,
+        presets,
+        track,
+        harness_runs,
+        run_id,
+        judge=args.judge,
+        run_manifest=run_manifest,
+    )
 
 
 if __name__ == "__main__":

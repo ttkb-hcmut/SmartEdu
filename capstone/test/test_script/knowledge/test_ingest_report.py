@@ -193,6 +193,7 @@ def test_course_flow_marks_mixed_source_results_partial(monkeypatch):
 
     assert reports[-1]["status"] == "PARTIAL"
     assert reports[-1]["slides"] == [{"file": "good.pdf", "nodes": 1, "edges": 0}]
+    assert reports[-1]["stage_timings_ms"]["slides"] >= 0
 
 
 def test_course_flow_persists_fatal_state_and_keeps_original_error(monkeypatch):

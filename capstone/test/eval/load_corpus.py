@@ -12,10 +12,23 @@ Usage (from capstone/):
 
 import argparse
 import json
+from contextlib import contextmanager
+from datetime import datetime, timezone
 from pathlib import Path
+from time import perf_counter
 
 PASSAGE_ROLE = "Passage"
 EMB_DIM = 768
+RESULTS_DIR = Path("test/eval/results")
+
+
+@contextmanager
+def measure(timings: dict, name: str):
+    started = perf_counter()
+    try:
+        yield
+    finally:
+        timings[name] = round((perf_counter() - started) * 1000, 3)
 
 
 def boot_stores():
@@ -102,6 +115,35 @@ def verify(milvus_db, graph_db, expected: set[str], course: str) -> None:
         )
 
 
+def write_report(
+    course: str,
+    corpus: Path,
+    paragraph_count: int,
+    timings: dict,
+    status: str,
+    error: str = "",
+) -> Path:
+    total_ms = timings.get("total_ms", 0)
+    report = {
+        "recorded_at": datetime.now(timezone.utc).isoformat(),
+        "course": course,
+        "corpus": str(corpus),
+        "paragraphs": paragraph_count,
+        "stores": ["milvus", "neo4j"],
+        "status": status,
+        "error": error,
+        "timings": timings,
+        "paragraphs_per_second": round(
+            paragraph_count / (total_ms / 1000), 3
+        ) if status == "COMPLETED" and total_ms else None,
+    }
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    path = RESULTS_DIR / f"ingest_{course}_{stamp}.json"
+    path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    return path
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--corpus", default="test/eval/corpus/musique_cs")
@@ -110,7 +152,8 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
-    paragraphs = load_manifest(Path(args.corpus))
+    corpus = Path(args.corpus)
+    paragraphs = load_manifest(corpus)
     check_scope(paragraphs, args.course)
     print(f"manifest: {len(paragraphs)} canonical paragraphs, scope '{args.course}'")
 
@@ -120,28 +163,50 @@ def main():
               f"(community='{args.course}') and {len(nodes)} :Passage nodes")
         return
 
-    graph_db, milvus_db, embedder = boot_stores()
+    started = perf_counter()
+    timings = {}
+    try:
+        with measure(timings, "store_boot_ms"):
+            graph_db, milvus_db, embedder = boot_stores()
 
-    ## community, NOT course -- list_ids/course_scope filter on community only
-    milvus_db.insert_data(
-        nodes=build_milvus_nodes(paragraphs),
-        embedder=embedder,
-        community=args.course,
+        ## community, NOT course -- list_ids/course_scope filter on community only
+        with measure(timings, "milvus_write_ms"):
+            milvus_db.insert_data(
+                nodes=build_milvus_nodes(paragraphs),
+                embedder=embedder,
+                community=args.course,
+            )
+        print(f"milvus: inserted {len(paragraphs)} rows")
+
+        with measure(timings, "neo4j_embedding_ms"):
+            sections, passages = build_graph_payload(paragraphs, args.course, embedder)
+        with measure(timings, "neo4j_write_ms"):
+            graph_db.write_textbook_tree(
+                sections=sections,
+                passages=passages,
+                book_uri=args.course,
+                db_name=args.db_name,
+                dim=EMB_DIM,
+            )
+        print(f"neo4j: wrote {len(passages)} :Passage nodes under 1 :Section")
+
+        with measure(timings, "verification_ms"):
+            verify(milvus_db, graph_db, set(paragraphs), args.course)
+        print("corpus gate: PASS")
+    except Exception as exc:
+        timings["total_ms"] = round((perf_counter() - started) * 1000, 3)
+        report_path = write_report(
+            args.course, corpus, len(paragraphs), timings,
+            "FAILED", f"{type(exc).__name__}: {exc}",
+        )
+        print(f"failed ingestion report -> {report_path}")
+        raise
+
+    timings["total_ms"] = round((perf_counter() - started) * 1000, 3)
+    report_path = write_report(
+        args.course, corpus, len(paragraphs), timings, "COMPLETED"
     )
-    print(f"milvus: inserted {len(paragraphs)} rows")
-
-    sections, passages = build_graph_payload(paragraphs, args.course, embedder)
-    graph_db.write_textbook_tree(
-        sections=sections,
-        passages=passages,
-        book_uri=args.course,
-        db_name=args.db_name,
-        dim=EMB_DIM,
-    )
-    print(f"neo4j: wrote {len(passages)} :Passage nodes under 1 :Section")
-
-    verify(milvus_db, graph_db, set(paragraphs), args.course)
-    print("corpus gate: PASS")
+    print(f"ingestion report -> {report_path}")
 
 
 if __name__ == "__main__":

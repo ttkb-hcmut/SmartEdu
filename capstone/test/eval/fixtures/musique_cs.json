@@ -58,5 +58,305 @@
     ],
     "hops": 2,
     "type": "open"
+  },
+  {
+    "id": "2hop__135652_669373",
+    "track": "musique",
+    "question": "Who is the employer of the physicist who Mach number is named after?",
+    "gold_answer": "Charles University",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/926a51b5761cff59e4f703fccf54d65217d4dfa042fd02df45c48d6084dadfbe",
+      "Bench_MuSiQue/paragraph/1f0666d7e907cf9eca0655836032c9a77efc3e5bafcbd7c80bcd7c2b20a32c93"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__439614_349102",
+    "track": "musique",
+    "question": "What type of animal is Xiao Liwu's mother?",
+    "gold_answer": "panda",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/e5fa206d66bbc78a93a44f1d91ce774463e2348e9946a485dc5195271be73ae6",
+      "Bench_MuSiQue/paragraph/9e1659e30949bf6d7bf60125b5f961e1704e0bccb1f0b8fb11ea0824c5737ccd"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__208602_11402",
+    "track": "musique",
+    "question": "According to the developer of Topologically Integrated Geographic Encoding and Referencing, what is the total area of Atlantic City in square miles?",
+    "gold_answer": "17.037 square miles",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/f095883f16e1fe842bd1ac300ed1e68d74a1da635acf068235e5329b7a42307e",
+      "Bench_MuSiQue/paragraph/9fe1f85d238481685498a30e1b32cd32ef2c0bc57efb0024fec69748fcdd05f9"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__159741_40169",
+    "track": "musique",
+    "question": "When did a storm disperse the fleet led by the English king who trusted William de Longchamp?",
+    "gold_answer": "1191",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/7fc4c5e5baaaed2839834181994af14873dc4122a74928e095d9cee0e81d3a19",
+      "Bench_MuSiQue/paragraph/b6b05851c9235434b45481ec6684631d46b190a22ed9d5ee34902cae3311ee66"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__13592_49388",
+    "track": "musique",
+    "question": "How many games in a season of the league in which Barcelona won titles in 1948 and 1949?",
+    "gold_answer": "38",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/3b4e0bb03ca7707764e16b06edc88303ac73523c8d13ad63a27da1ba0f33cdae",
+      "Bench_MuSiQue/paragraph/4df075e75defa5067bb39779ecbac569f7a469ccdfaa5c6959eaef97ca4e8eec"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__34495_49388",
+    "track": "musique",
+    "question": "How many games are in a season for the league that had the most Champions League wins between 1992 and 2013?",
+    "gold_answer": "38",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/b1a7f50e7e83025fb815e751648d73c3213c476c61b750699538b6d56beb358d",
+      "Bench_MuSiQue/paragraph/3b4e0bb03ca7707764e16b06edc88303ac73523c8d13ad63a27da1ba0f33cdae"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__68590_27619",
+    "track": "musique",
+    "question": "Where is the mission for the agency that controls the monetary policy of the EU found?",
+    "gold_answer": "Article 2 of the Statute of the ECB",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/85da7a245ca16c1081e9c0e004a4d0517eb6e2068e6675c864f3496b1ebbc0a4",
+      "Bench_MuSiQue/paragraph/83a56bd3f60b26756320f88549f76fd57497800fb9bc6d578c4f23c434f837c4"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__44522_58556",
+    "track": "musique",
+    "question": "The food safety system of the agency that has the authority to decide if a drug is marketed otc or prescription is known as?",
+    "gold_answer": "Food Safety Modernization Act (FSMA)",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/aad1017b1935f984b93d3da2176af618238f3dfadbe467c00c258ba653c52f18",
+      "Bench_MuSiQue/paragraph/bffe38781c141bd36e569ec64ac977cb9b54e170017d7f7e65e29d2181031f1e"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__16446_58556",
+    "track": "musique",
+    "question": "What is the name of the food safety system of the federal agency that regulates prescription drugs?",
+    "gold_answer": "Food Safety Modernization Act (FSMA)",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/bffe38781c141bd36e569ec64ac977cb9b54e170017d7f7e65e29d2181031f1e",
+      "Bench_MuSiQue/paragraph/85b8336cd1db7c3e7df2901f7cd0d2bf881c1079e02fcf1b76ae900677976959"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__143650_152023",
+    "track": "musique",
+    "question": "What label was responsible for who sang or played Delta Hardware?",
+    "gold_answer": "Kicking Mule Records",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/7d0ea871c8888178d1771ffaad7ea14f21bf0dc5a81f5eb73c3e02143658866b",
+      "Bench_MuSiQue/paragraph/f94ce4b608888ed96044136b9ac9ac47491762a87fef7ed0fa32cd1ecff49f4c"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__554145_88622",
+    "track": "musique",
+    "question": "Who is the head of the main subject of NSA in popular culture?",
+    "gold_answer": "ADM Michael S. Rogers",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/7b827c36cd3de9635838adb21ed2cc3cc92ff03b01ebc973b621cad10043fdda",
+      "Bench_MuSiQue/paragraph/bfc007b24512f491d8e9a3ecedcb388e3d7d70e8c6551c9b21d33c88f8a6665b"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__417937_158105",
+    "track": "musique",
+    "question": "Which two features were played up by the author of Business @ the Speed of Thought?",
+    "gold_answer": "ease of use and enhanced support for Plug and Play",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/b01e7464b63c9444d2cc2c9caece1c9f9a7ac222bee58a17859f214e05be2d67",
+      "Bench_MuSiQue/paragraph/4f8020ce8a47f55c3cb1cabaa55786b8d55573ec0ce0a605eb2c4f5456ca2d66"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__20536_96912",
+    "track": "musique",
+    "question": "Who gives out the award named after the person who argued that colonies were redundant?",
+    "gold_answer": "University of Cambridge",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/445be232de043155ed91d1c7efd5c67e038788ce8d9dd64306933bc02f486a80",
+      "Bench_MuSiQue/paragraph/43d67091a826521a622ff51878a60899771b921e8cf0c7bd63c6b24647bfab53"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__83257_19033",
+    "track": "musique",
+    "question": "Where did the inventor of the Money in the Bank ladder match win in 2008?",
+    "gold_answer": "Great American Bash",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/9fd9a0da7bf2d5683b32e4be17f9d893ae71433371e66b6af0ecd97df0f2395d",
+      "Bench_MuSiQue/paragraph/fae6965e851c7fda647bca4266940edbca34e08aaf3b0ca1e4816bc62b604d85"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__80637_19033",
+    "track": "musique",
+    "question": "Where did the wrestler who created the Money in the Bank Ladder Match win in 2008?",
+    "gold_answer": "Great American Bash",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/9fd9a0da7bf2d5683b32e4be17f9d893ae71433371e66b6af0ecd97df0f2395d",
+      "Bench_MuSiQue/paragraph/fae6965e851c7fda647bca4266940edbca34e08aaf3b0ca1e4816bc62b604d85"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__859431_18803",
+    "track": "musique",
+    "question": "In April 2010, what did the company owned by MV Macoma announce it was in the process of doing?",
+    "gold_answer": "trying to find a potential buyer for all of its operations in Finland",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/0ad2bd7edab9c087ee754de932ba6227c2c3b2f01ab121487ecaa62bd3b216d2",
+      "Bench_MuSiQue/paragraph/2ae3848b3060a8cd0915e6c8ed1b1f069f764c994d315e6458e386563b36bcbe"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__359312_18803",
+    "track": "musique",
+    "question": "MV Miralda's owner announced it was in the process of doing what in April 2010?",
+    "gold_answer": "trying to find a potential buyer for all of its operations in Finland",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/1a499d09c01ff0885d475ec4bdaf82498f8c3a5b632d88916faa2f5f826d3799",
+      "Bench_MuSiQue/paragraph/0ad2bd7edab9c087ee754de932ba6227c2c3b2f01ab121487ecaa62bd3b216d2"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__796221_18803",
+    "track": "musique",
+    "question": "What did MV Rapana's owner announce it was the process of doing in April 2010?",
+    "gold_answer": "trying to find a potential buyer for all of its operations in Finland",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/5e29bd3f4cabc820eaee776fe7270f0aa9abdd5a89a48407b1a6c4dd3700d166",
+      "Bench_MuSiQue/paragraph/0ad2bd7edab9c087ee754de932ba6227c2c3b2f01ab121487ecaa62bd3b216d2"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__695432_18803",
+    "track": "musique",
+    "question": "The operator of Brent field announced it was in the process of doing what in April 2010?",
+    "gold_answer": "trying to find a potential buyer for all of its operations in Finland",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/e724fe997403e257732274b31faee74a5c937e3aed1241db52a7f37e034b0d34",
+      "Bench_MuSiQue/paragraph/0ad2bd7edab9c087ee754de932ba6227c2c3b2f01ab121487ecaa62bd3b216d2"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__676045_7292",
+    "track": "musique",
+    "question": "Besides Kenny G and the artist behind A Smooth Jazz Christmas, who else had crossover hits played on smooth jazz stations?",
+    "gold_answer": "George Benson",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/9eec34e5a4ed66015cfae9fa2264748d4596200d7752906997d66f585a423dea",
+      "Bench_MuSiQue/paragraph/5277e247a35cc2556870e63ca3531d0bb068d89bf4d3cc3fa20eba926a490576"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__132854_417697",
+    "track": "musique",
+    "question": "Mohammed Atta has what kind of model of the company that makes Datsun Type 12?",
+    "gold_answer": "Nissan Altima",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/1eb681b47c1f07a3c6a5c164324d8bcb8a56c49f870065cd125d61cf0246ceff",
+      "Bench_MuSiQue/paragraph/6d4e8f633965cf295612bf3f7119e51cb36d8f988006aacfb259c28eab0e4f4b"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__6265_718451",
+    "track": "musique",
+    "question": "What field of work did the person who first recognized that hydrogen was a discrete substance work in?",
+    "gold_answer": "physic",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/985371ffc4f8e493414bcae169ab4d160b7985db471f900d105ae283f6130d6b",
+      "Bench_MuSiQue/paragraph/66794d201d79be655c8654ff2ca5217eff1255a8163240c5910b2d45781eebf6"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__42464_718451",
+    "track": "musique",
+    "question": "The field of work of the physicist making the first to measure value of the Newton Universal Gravitation Constant is what?",
+    "gold_answer": "physic",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/66794d201d79be655c8654ff2ca5217eff1255a8163240c5910b2d45781eebf6",
+      "Bench_MuSiQue/paragraph/b0f06d50b5b655d3bfba0b032fb5c6b5cb8fa1eab84f1aadf86d707df37fdf39"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__29606_600504",
+    "track": "musique",
+    "question": "What field of work was the person who discovered the mathematical relationship between peaks and curves of light at different temperatures in?",
+    "gold_answer": "physic",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/1992bfabb116f629e0f04a6d1b1edebcc90379c00a456e15f2bddc9ec12028de",
+      "Bench_MuSiQue/paragraph/3b7f944d600d96d7b6f4f0a8dbabd8dd8a923f4b39329ae7a4db947c13f24aec"
+    ],
+    "hops": 2,
+    "type": "open"
+  },
+  {
+    "id": "2hop__135963_486257",
+    "track": "musique",
+    "question": "The scientist that the GHZ experiment is named for is in what field of work?",
+    "gold_answer": "physic",
+    "gold_chunk_ids": [
+      "Bench_MuSiQue/paragraph/f48bc23942f171f16432d256dd3304ba99d7fdc957f326cfebcf40d935d5c09a",
+      "Bench_MuSiQue/paragraph/5f331940dd587b0d4a3c18b5b885347f95405c3356b24e587346ad783a56d8ed"
+    ],
+    "hops": 2,
+    "type": "open"
   }
 ]

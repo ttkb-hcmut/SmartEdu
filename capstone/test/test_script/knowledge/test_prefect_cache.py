@@ -5,6 +5,11 @@ import pytest
 from core.repo.storage.minio_repo import MinioDB
 
 
+@pytest.fixture(autouse=True)
+def deployed_revision(monkeypatch):
+    monkeypatch.setenv("INGEST_RELEASE_REVISION", "test-release")
+
+
 class _Storage:
     def __init__(self, revision: str):
         self.revision = revision

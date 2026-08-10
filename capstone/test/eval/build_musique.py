@@ -11,7 +11,9 @@ Usage (from capstone/):
 import argparse
 import hashlib
 import json
+import random
 import re
+import time
 import unicodedata
 from pathlib import Path
 
@@ -29,22 +31,26 @@ STEM_TERMS = [
     "processor", "operating system", "internet", "data",
 ]
 _STEM_RE = re.compile("|".join(re.escape(t) for t in STEM_TERMS), re.I)
+_FETCH_ATTEMPTS = 6
+_MAX_RETRY_DELAY = 60.0
+_PAGE_DELAY = 2.0
 
 
 def _normalize(value: str) -> str:
     return " ".join(unicodedata.normalize("NFKC", value).split())
 
 
-def canonical_uri(title: str, text: str) -> str:
+def canonical_uri(title: str, text: str, course: str = COURSE) -> str:
     identity = f"{_normalize(title)}\0{_normalize(text)}"
     digest = hashlib.sha256(identity.encode("utf-8")).hexdigest()
-    return f"{COURSE}/paragraph/{digest}"
+    return f"{course}/paragraph/{digest}"
 
 
-def _new_manifest() -> dict:
+def _new_manifest(course: str = COURSE) -> dict:
     return {
         "schema_version": "2.0",
         "identity": "sha256(normalize(title) + NUL + normalize(text))",
+        "scope": course,
         "occurrences": {},
         "paragraphs": {},
     }
@@ -57,8 +63,9 @@ def _record_paragraph(
     paragraph_idx: int | str,
     title: str,
     text: str,
+    course: str = COURSE,
 ) -> str:
-    uri = canonical_uri(title, text)
+    uri = canonical_uri(title, text, course)
     occurrence = {
         "question_id": question_id,
         "paragraph_idx": int(paragraph_idx),
@@ -73,8 +80,10 @@ def _record_paragraph(
     return uri
 
 
-def canonicalize_existing(corpus_dir: Path, fixture_path: Path) -> dict:
-    manifest = _new_manifest()
+def canonicalize_existing(
+    corpus_dir: Path, fixture_path: Path, course: str = COURSE
+) -> dict:
+    manifest = _new_manifest(course)
     old_to_new = {}
     for path in sorted(corpus_dir.rglob("*.txt")):
         lines = path.read_text(encoding="utf-8").splitlines()
@@ -89,7 +98,9 @@ def canonicalize_existing(corpus_dir: Path, fixture_path: Path) -> dict:
             paragraph_idx,
             title,
             text,
+            course,
         )
+        old_to_new[canonical_uri(title, text)] = uri
         old_to_new[f"{COURSE}/{question_id}/{paragraph_idx}"] = uri
 
     fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
@@ -108,13 +119,50 @@ def is_stem(row: dict) -> bool:
     return bool(_STEM_RE.search(text))
 
 
+def reservoir_sample(rows, limit: int, seed: int) -> list:
+    rng = random.Random(seed)
+    sample = []
+    for index, row in enumerate(rows):
+        if index < limit:
+            sample.append(row)
+            continue
+        selected = rng.randint(0, index)
+        if selected < limit:
+            sample[selected] = row
+    return sample
+
+
+def select_stem_population(rows, limit: int, seed: int) -> list:
+    eligible = (
+        row
+        for row in rows
+        if row.get("answerable", True) and is_stem(row)
+    )
+    return reservoir_sample(eligible, limit=limit, seed=seed)
+
+
 def fetch_rows(split: str, offset: int, length: int = 100) -> list:
-    r = requests.get(API, params={
-        "dataset": DATASET, "config": "default",
-        "split": split, "offset": offset, "length": length,
-    }, timeout=60)
-    r.raise_for_status()
-    return [x["row"] for x in r.json()["rows"]]
+    params = {
+        "dataset": DATASET,
+        "config": "default",
+        "split": split,
+        "offset": offset,
+        "length": length,
+    }
+    for attempt in range(_FETCH_ATTEMPTS):
+        response = requests.get(API, params=params, timeout=60)
+        retryable = response.status_code == 429 or 500 <= response.status_code < 600
+        if not retryable:
+            response.raise_for_status()
+            return [x["row"] for x in response.json()["rows"]]
+        if attempt == _FETCH_ATTEMPTS - 1:
+            response.raise_for_status()
+        try:
+            delay = float(response.headers.get("Retry-After", ""))
+        except (TypeError, ValueError):
+            delay = 2.0**attempt
+        time.sleep(min(max(delay, 0.0), _MAX_RETRY_DELAY))
+    raise RuntimeError("unreachable fetch retry state")
 
 
 def hops_of(qid: str) -> int:
@@ -122,54 +170,74 @@ def hops_of(qid: str) -> int:
     return int(m.group(1)) if m else 2
 
 
-def build(limit: int, split: str, out_dir: Path) -> None:
+def iter_dataset_rows(splits: list[str]):
+    for split in splits:
+        offset = 0
+        while True:
+            rows = fetch_rows(split, offset)
+            if not rows:
+                break
+            offset += len(rows)
+            print(f"scanned {split}:{offset}")
+            yield from rows
+            time.sleep(_PAGE_DELAY)
+
+
+def build(
+    limit: int,
+    splits: list[str],
+    out_dir: Path,
+    seed: int = 42,
+    name: str = "musique_cs",
+    course: str = COURSE,
+) -> None:
     fixtures_dir = out_dir / "fixtures"
-    corpus_dir = out_dir / "corpus" / "musique_cs"
+    corpus_dir = out_dir / "corpus" / name
     fixtures_dir.mkdir(parents=True, exist_ok=True)
     corpus_dir.mkdir(parents=True, exist_ok=True)
 
-    fixture, manifest = [], _new_manifest()
-    offset = 0
-    while len(fixture) < limit:
-        rows = fetch_rows(split, offset)
-        if not rows:
-            break
-        offset += len(rows)
-        for row in rows:
-            if len(fixture) >= limit:
-                break
-            if not row.get("answerable", True) or not is_stem(row):
-                continue
-            qid = row["id"]
-            gold_ids = []
-            qdir = corpus_dir / qid
-            qdir.mkdir(exist_ok=True)
-            for p in row["paragraphs"]:
-                idx = p["idx"]
-                path = qdir / f"{idx}.txt"
-                path.write_text(f"# {p['title']}\n{p['paragraph_text']}\n", encoding="utf-8")
-                uri = _record_paragraph(
-                    manifest,
-                    path.relative_to(corpus_dir).as_posix(),
-                    qid,
-                    idx,
-                    p["title"],
-                    p["paragraph_text"],
-                )
-                if p["is_supporting"]:
-                    gold_ids.append(uri)
-            fixture.append({
-                "id": qid,
-                "track": "musique",
-                "question": row["question"],
-                "gold_answer": row["answer"],
-                "gold_chunk_ids": gold_ids,
-                "hops": hops_of(qid),
-                "type": "open",
-            })
-        print(f"scanned {offset} rows -> {len(fixture)} kept")
+    fixture, manifest = [], _new_manifest(course)
+    selected = select_stem_population(iter_dataset_rows(splits), limit=limit, seed=seed)
+    for row in selected:
+        qid = row["id"]
+        gold_ids = []
+        qdir = corpus_dir / qid
+        qdir.mkdir(exist_ok=True)
+        for p in row["paragraphs"]:
+            idx = p["idx"]
+            path = qdir / f"{idx}.txt"
+            path.write_text(f"# {p['title']}\n{p['paragraph_text']}\n", encoding="utf-8")
+            uri = _record_paragraph(
+                manifest,
+                path.relative_to(corpus_dir).as_posix(),
+                qid,
+                idx,
+                p["title"],
+                p["paragraph_text"],
+                course,
+            )
+            if p["is_supporting"]:
+                gold_ids.append(uri)
+        fixture.append({
+            "id": qid,
+            "track": "musique",
+            "question": row["question"],
+            "gold_answer": row["answer"],
+            "gold_chunk_ids": gold_ids,
+            "hops": hops_of(qid),
+            "type": "open",
+        })
 
-    (fixtures_dir / "musique_cs.json").write_text(
+    manifest["sampling"] = {
+        "population": "answerable STEM-filtered MuSiQue",
+        "splits": splits,
+        "seed": seed,
+        "target": limit,
+        "actual": len(fixture),
+        "scope": course,
+    }
+
+    (fixtures_dir / f"{name}.json").write_text(
         json.dumps(fixture, indent=2, ensure_ascii=False), encoding="utf-8")
     (corpus_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2), encoding="utf-8")
@@ -184,15 +252,28 @@ def build(limit: int, split: str, out_dir: Path) -> None:
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=30)
-    ap.add_argument("--split", default="validation")
+    ap.add_argument("--split", default="", help="legacy single-split override")
+    ap.add_argument("--splits", default="train,validation")
+    ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--name", default="musique_cs")
+    ap.add_argument("--course", default=COURSE)
     ap.add_argument("--out", default="test/eval")
     ap.add_argument("--canonicalize-existing", action="store_true")
     args = ap.parse_args()
     if args.canonicalize_existing:
         root = Path(args.out)
         canonicalize_existing(
-            root / "corpus" / "musique_cs",
-            root / "fixtures" / "musique_cs.json",
+            root / "corpus" / args.name,
+            root / "fixtures" / f"{args.name}.json",
+            course=args.course,
         )
     else:
-        build(args.limit, args.split, Path(args.out))
+        splits = [args.split] if args.split else [item.strip() for item in args.splits.split(",") if item.strip()]
+        build(
+            args.limit,
+            splits,
+            Path(args.out),
+            seed=args.seed,
+            name=args.name,
+            course=args.course,
+        )
