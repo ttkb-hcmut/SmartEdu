@@ -23,6 +23,8 @@ docs/*
 !docs/draw/
 !docs/latex/
 !docs/Ref
+!docs/adr/
+!docs/adr/*.md
 
 # LaTeX intermediate files
 *.aux
@@ -46,6 +48,8 @@ capstone/data
 
 !README.md
 !arch.md
+!docs/adr/*.md
+!capstone/test/eval/README.md
 !capstone/test/inspection/
 !capstone/test/inspection/*.md
 
