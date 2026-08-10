@@ -86,7 +86,7 @@ The backend runs as one FastAPI process, with expensive resources built once at 
 Five databases each hold what they are best at: Neo4j for the knowledge graph and per-student mastery, Milvus for SciBERT vector search, MongoDB for session state and chat history, MinIO for PDFs and text chunks, and SQLite for credentials. To stop modules from fighting over shared storage, each collection has exactly one writer and everyone else reads, a rule the system calls the one-write policy. Every agent step is traced to disk and to Langfuse, so a black-box pipeline stays debuggable in production.
 
 ### Where it stands today
-The infrastructure, ingestion, authentication, and all five agent workflows (retrieve, roadmap, teach, confirm, unknown) are wired end-to-end, including the teaching loop's lecture-evaluate-advance cycle. A typed retrieval policy and dual-harness ablation instrument (agentic tool-loop as the default, a deterministic fan-out+RRF harness kept as a frozen control) is built to benchmark retrieval quality across PLAIN/RAG/FULL arms; the harness itself is unit-tested (100+ passing), but a live scored run against real data is still blocked on a corpus loader that has to dual-write canonical paragraphs into both Milvus and Neo4j. Ingestion takes roughly 250 seconds per 50 pages with three workers, and graphs past about 100 nodes get hard to read. DBpedia occasionally accepts an odd or unnormalized name, which is the main quality wrinkle to clean up. Formal benchmark numbers come next.
+The infrastructure, ingestion, authentication, and all five agent workflows (retrieve, roadmap, teach, confirm, unknown) are wired end-to-end, including the teaching loop's lecture-evaluate-advance cycle. A typed retrieval policy and dual-harness ablation instrument (agentic tool-loop as the default, a deterministic fan-out+RRF harness kept as a frozen control) benchmarks RAG against FULL retrieval. Ingestion takes roughly 250 seconds per 50 pages with three workers, and graphs past about 100 nodes get hard to read. DBpedia occasionally accepts an odd or unnormalized name, which is the main quality wrinkle to clean up. Formal benchmark numbers come next.
 
 ## 5. Infrastructure & how to run
 ### Infrastructure
@@ -94,7 +94,7 @@ The infrastructure, ingestion, authentication, and all five agent workflows (ret
 - **Polyglot persistence:** Neo4j (graph), Milvus (vector), MongoDB (document), MinIO (object), SQLite (auth).
 
 ### How to run
-1. Install Docker, Python 3.11+, and the `uv` package manager if you do not have them:
+1. Install Docker, Python 3.12+, and the `uv` package manager if you do not have them:
    - uv: https://docs.astral.sh/uv/#installation
    - Docker: https://www.docker.com/products/docker-desktop/
 2. Install Python dependencies from the repo root (`uv` reads `pyproject.toml` and `uv.lock`):

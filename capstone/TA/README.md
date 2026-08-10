@@ -12,7 +12,7 @@ pre-bound to the student's session.
 | `ta_module.py` | Module entry point, DI wiring, the retrieve path benchmarks run against |
 | `workflow/` | The graphs: `smart_edu.py` (router), `retrieve.py`, `roadmap.py`, `teach.py` |
 | `agent/` | Per-step agent assembly — `injector.py`, `middleware.py`, `base.py` |
-| `retrieval/` | Typed retrieval policy (`policy.py`) and its enforcing middleware |
+| `retrieval/` | Typed policy, enforcing middleware, and V3 evidence-ledger orchestration |
 | `tools/` | Tool adapters: `neo/`, `student/`, `minio/`, `retrieval.py`, `factory.py` |
 | `helper/` | Prompts, schemas, few-shots, tree ordering/rendering |
 | `tracing/` | Trace capture, writer, and the scoring `evaluator.py` |
@@ -46,12 +46,13 @@ they name the policy that produced them.
 
 Two axes:
 
-- **Preset** (`plain` / `rag` / `full`) — the ablation arms, expressed as different toolsets under the *same* policy.
-- **Harness** (`agentic-v1` / `fanout-v1`) — *how* retrieval executes. `agentic-v1` is the default tool loop; `fanout-v1` is a deterministic fan-out + RRF control, kept frozen. There is no silent fallback between them, and every benchmark row names the harness explicitly.
+- **Preset** (`rag` / `full`) — the retrieval arms, expressed as different toolsets under the *same* policy.
+- **Harness** (`agentic-v3` / `agentic-v2` / `fanout-v1`) — *how* retrieval executes. `agentic-v3` builds an append-only evidence ledger and permits four focused deep-tool rounds before a separate no-tool answerer. `agentic-v2` and deterministic fanout remain frozen controls. There is no silent fallback, and every benchmark row names the harness explicitly.
 
 `RetrievalRunContext` is injected by the system, never model-controllable. Validity is
-mechanical, not self-reported: a tool error marks the row invalid, and a minimum-call
-violation marks it policy-invalid.
+mechanical, not self-reported. V4's deterministic seed is the required attempt, so an
+empty result is valid while repository/model failures are invalid. Historical harnesses
+retain their minimum-call policy-invalid state so old traces remain interpretable.
 
 Rationale and rejected alternatives are recorded in `docs/adr/0008`.
 
@@ -77,7 +78,7 @@ $env:PYTHONPATH = $PWD; uv run pytest test/test_script/TA/eval/ -q
 
 | Scope | Result |
 |---|---|
-| `test/test_script/TA/eval/` | **67 passed** |
+| `test/test_script/TA/eval/` | **103 passed** plus a clean one-case V3 live smoke |
 | Full suite, 4 broken modules excluded | **103 passed, 2 failed** |
 
 The full-suite run needs four modules excluded, all broken for reasons unrelated to the
@@ -102,8 +103,8 @@ supported"*. They are not assertion failures and not regressions; installing and
 
 ### Benchmark
 
-The ablation runner is built and unit-tested, but **has never produced a scored run** —
-`test/eval/results/` is empty.
+The ablation runner is built and unit-tested. Historical traces may exist, but V3 results
+are not evidence until a live run records a matching corpus digest and ingestion report.
 
 Load the corpus into both stores first, or the pre-flight gate rejects the run:
 
@@ -115,15 +116,16 @@ uv run python test/eval/load_corpus.py --corpus test/eval/corpus/musique_cs \
 Then:
 
 ```bash
-uv run python test/eval/run_ablation.py \
+uv run python -m test.eval.run_ablation \
   --fixture test/eval/fixtures/musique_cs.json \
   --course Bench_MuSiQue \
-  --harness agentic-v1 \
-  --presets plain,rag,full \
+  --harnesses agentic-v2,agentic-v3 \
+  --presets rag,full \
   --limit 30
 ```
 
-Flags: `--corpus`, `--run-id`, `--score-only`, `--judge`, `--calibrate`.
+Flags include `--corpus`, `--run-id`, `--score-only`, `--ids`, `--repeat`,
+`--harness`, `--harnesses`, `--judge`, and `--calibrate`.
 
 This needs live Milvus, Neo4j, and Ollama. Scoring is set arithmetic between trace
 `chunks[].uri` and the fixture's `gold_chunk_ids`, so identity has to match exactly in
@@ -137,7 +139,7 @@ while looking healthy:
 Corpus contract: `test/eval/README.md`.
 
 Note the committed fixture holds **5 questions** (2 gold chunks each), not 30. The
-documented 30×3 baseline needs `build_musique.py --limit 30` re-run first — that
+documented 30×2 baseline needs `build_musique.py --limit 30` re-run first — that
 regenerates fixture and corpus together, so the loader must then be re-run.
 
 Fixture and corpus builds run offline and work today:

@@ -1,12 +1,8 @@
 ```
 └── Capstone/
     ├── arch.md                             # This file — architecture reference
-    ├── design.md                           # High-level design decisions & system diagrams
-    ├── HANDOFF.md
-    ├── FE.md
     ├── README.md
     ├── pyproject.toml
-    ├── uv.lock
     ├── script.sh
     ├── docs/
     │   ├── Ref/
@@ -117,7 +113,8 @@
         │   │   └── route.py
         │   ├── retrieval/                  # retrieval ablation instrument (see ADR-0008)
         │   │   ├── policy.py               # frozen typed policy registry + digest; resolve_retrieval_context
-        │   │   └── middleware.py           # RetrievalPolicyMiddleware — per-arm tool filter + mechanical call cap
+        │   │   ├── middleware.py           # RetrievalPolicyMiddleware — per-arm tool filter + mechanical call cap
+        │   │   └── ledger.py               # Agentic V3 append-only evidence-ledger orchestration
         │   ├── workflow/
         │   │   ├── smart_edu.py            # Compiles & runs the main LangGraph StateGraph (router + all sub-graphs)
         │   │   ├── retrieve.py             # dual retrieval harness: agentic tool-loop | fanout fan-out+RRF
@@ -308,7 +305,7 @@ See [§7. Textbook-anchor substrate](#7-textbook-anchor-substrate) for the graph
 
 - **`ta_module.py`** — top-level entry; receives user message, builds `AgentState`, runs `SmartEdu`, serialises trace. Injects **windowed** history (`recent_turns`), reuses the route `chat_id` end-to-end, LRU-bounds the per-session tracer cache.
 - **`workflow/smart_edu.py`** — compiles the main `StateGraph`: `TA_Router` → `retrieve` / `roadmap` / `teach` sub-graphs → synthesis finish nodes. The router honours a `forced_route` from the injected retrieval run context (benchmark bypass). Finish nodes **await** persistence (memo + state) before returning; `pending_proposal` is owned by `session.student_state`.
-- **`workflow/retrieve.py`** — retrieval sub-graph with a versioned harness selector: **agentic** (one RAG agent loops over the arm's tools) or **fanout** (fan-out to enabled sources → RRF fusion). Arms and limits come from the frozen policy in `TA/retrieval/`; see ADR-0008. (Legacy `deep_decision`/`rag_deep` remain in-file, unwired.)
+- **`workflow/retrieve.py`** — thin versioned harness selector. V3 orchestration lives in `retrieval/ledger.py`: parallel source seed → append-only ledger → bounded deep retrieval → no-tool answerer. V2 and fanout remain frozen controls. Arms and limits come from the frozen policy in `TA/retrieval/`; see ADR-0008. (Legacy `deep_decision`/`rag_deep` remain in-file, unwired.)
 - **`workflow/roadmap.py`** — generates and evaluates learning-path sequences against student history.
 - **`workflow/teach.py`** — lesson delivery: understand intent → lookup slides → lecture/quiz → evaluate answer → advance topic.
 - **`helper/prompt.py`** — all TA workflow prompt templates; changes here directly affect agent behaviour.
@@ -407,4 +404,4 @@ TEACHING GRAPH  :Entity  -[:RELATED_TO|:PREREQUISITE]-> :Entity   (slide-extract
 
 ### Planned — TA tooling over the substrate (not yet built)
 
-The substrate is currently write-only to the agents (only reader: `get_concept_page`). Planned tools to expose it: `textbook_search` (hybrid passage retrieval), `concept_anchors` (multi-citation), `read_around` (passage context), and a `CourseTree` rebuilt on the authored `:Section` tree with centrality fallback. Plan + LLM-council review captured in `HANDOFF.md` (Session 3) and `~/.claude/plans/ta-tooling-textbook.md`.
+The substrate is currently write-only to the agents (only reader: `get_concept_page`). Planned tools to expose it: `textbook_search` (hybrid passage retrieval), `concept_anchors` (multi-citation), `read_around` (passage context), and a `CourseTree` rebuilt on the authored `:Section` tree with centrality fallback. Plan + LLM-council review captured in `~/.claude/plans/ta-tooling-textbook.md`.
