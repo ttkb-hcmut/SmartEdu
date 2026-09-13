@@ -55,20 +55,6 @@ TASK:
 summary = one-sentence gist; message = the full Markdown answer.
 """
 
-## PLAIN ablation floor: no retrieval context, must not mention it
-_RETRIEVE_PLAIN_PROMPT = """
-{language_instruction}
-
-Answer the student's question directly from your own knowledge, as a pedagogical answer.
-(Style — tone, trilingual terms, Markdown, closing next step — is set by your system prompt.)
-
-TASK:
-1. Present the factual answer clearly and honestly.
-2. If you are not sure, say so plainly. Do NOT fabricate.
-
-summary = one-sentence gist; message = the full Markdown answer.
-"""
-
 _DEEP_CHECK_PROMPT = """
 {language_instruction}
 

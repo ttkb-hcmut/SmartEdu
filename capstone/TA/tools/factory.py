@@ -1,6 +1,6 @@
 from typing import List, Dict
 from TA.tools.neo.retriever import EntityFinder, RhetoricalRetriever, EdgeExplorer
-from TA.tools.retrieval import SemanticSearch, TextbookSearch
+from TA.tools.retrieval import RetrieveMore, SemanticSearch, TextbookSearch
 from TA.tools.neo.explore import RecommendNew, CourseBackbone, CourseRelevance, OptimalPath
 from TA.tools.neo.course_tree import CourseTree
 from TA.tools.minio.pdf_tools import GetConcept, GetPages, FEToPage
@@ -37,6 +37,12 @@ class ToolFactory:
             SemanticSearch(milvus_db=self.milvus_db, embedder=self.embedder),
             TextbookSearch(graph_db=self.graph_db, embedder=self.embedder),
         ]
+
+    def get_retrieve_more_tool(self) -> RetrieveMore:
+        return RetrieveMore(
+            semantic=SemanticSearch(milvus_db=self.milvus_db, embedder=self.embedder),
+            textbook=TextbookSearch(graph_db=self.graph_db, embedder=self.embedder),
+        )
 
     def get_teach_tools(self) -> List:
         """

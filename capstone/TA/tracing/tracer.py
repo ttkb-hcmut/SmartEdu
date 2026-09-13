@@ -17,11 +17,13 @@ from __future__ import annotations
 
 import logging
 import os
+from time import perf_counter
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Literal, TYPE_CHECKING
 
 from TA.tracing.schema import ChatTrace, StepTrace, TraceSession
 from TA.tracing.writer import TraceWriter
+from TA.observability import node_execution_config
 from core.config import langfuse_config
 
 if TYPE_CHECKING:
@@ -87,6 +89,7 @@ class AgentTracer:
         self._session = TraceSession(session_id=session_id)
         self._writer = writer or TraceWriter()
         self._active_chats: Dict[str, ChatTrace] = {}  # chat_id → ChatTrace buffer
+        self._chat_started: Dict[str, float] = {}
 
         # Langfuse — optional, lazy init
         self._langfuse_handler = None
@@ -128,10 +131,16 @@ class AgentTracer:
     # ── Chat lifecycle ────────────────────────────────────────────────────
 
     ## chat_id passed -> reuse caller id (align trace/memo/mongo). else datetime.
-    def begin_chat(self, query: str, chat_id: Optional[str] = None) -> str:
+    def begin_chat(
+        self,
+        query: str,
+        chat_id: Optional[str] = None,
+        node_configs: Optional[Dict[str, Dict[str, Any]]] = None,
+    ) -> str:
         chat_id = chat_id or datetime.now().strftime("%Y%m%d_%H%M%S")
-        chat = ChatTrace(chat_id=chat_id, query=query)
+        chat = ChatTrace(chat_id=chat_id, query=query, node_configs=node_configs or {})
         self._active_chats[chat_id] = chat
+        self._chat_started[chat_id] = perf_counter()
         logger.debug(f"[AgentTracer] begin_chat: session={self.session_id} chat_id={chat_id}")
         return chat_id
 
@@ -146,6 +155,7 @@ class AgentTracer:
         chunks: Optional[List[Dict[str, Any]]] = None,
         latency_ms: float = 0.0,
         tokens: Optional[Dict[str, int]] = None,
+        execution_config: Optional[Dict[str, Any]] = None,
     ):
         """
         Append one reasoning step to the buffer.
@@ -165,8 +175,20 @@ class AgentTracer:
             chunks=[{**c, "text": str(c.get("text", ""))[:1000]} for c in (chunks or [])],
             latency_ms=latency_ms,
             tokens=tokens or {},
+            execution_config=execution_config or node_execution_config(chat.node_configs, node),
         )
         chat.agent.append(step)
+
+    def mark_first_token(self, chat_id: str) -> None:
+        chat = self._active_chats.get(chat_id)
+        started = self._chat_started.get(chat_id)
+        if chat is not None and started is not None and chat.time_to_first_token_ms is None:
+            chat.time_to_first_token_ms = round((perf_counter() - started) * 1000, 3)
+
+    def ensure_node_step(self, chat_id: str, node: str) -> None:
+        chat = self._active_chats.get(chat_id)
+        if chat is not None and not any(step.node == node for step in chat.agent):
+            self.log_step(chat_id=chat_id, node=node)
 
     async def end_chat(
         self,
@@ -178,6 +200,7 @@ class AgentTracer:
         preset: str = "",
         errors: Optional[List[str]] = None,
         retrieval_context: Optional["RetrievalRunContext"] = None,
+        workflow_latency_ms: float = 0.0,
     ):
         """
         Close the chat turn: flush buffer to JSON file.
@@ -194,6 +217,10 @@ class AgentTracer:
         chat.retrieve_flags = retrieve_flags or {}
         chat.preset = preset
         chat.errors = errors or []
+        chat.workflow_latency_ms = round(workflow_latency_ms, 3)
+        started = self._chat_started.pop(chat_id, None)
+        if started is not None:
+            chat.turn_latency_ms = round((perf_counter() - started) * 1000, 3)
         if retrieval_context is not None:
             context = retrieval_context
             chat.retrieve_flags = {

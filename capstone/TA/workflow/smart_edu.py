@@ -1,4 +1,5 @@
 import asyncio
+import json
 import re
 import time
 import logging
@@ -11,11 +12,13 @@ from langchain_core.messages import AIMessage
 
 import TA.helper.prompt as prompt_lib
 from TA.helper.few_shot import format_few_shot, get_language_instruction
-from TA.helper.schema import RouterDecision
+from TA.helper.model_call import bounded_ainvoke
+from TA.retrieval.policy import BENCHMARK_ANSWER_PROMPT
+from TA.helper.schema import BenchmarkAnswer, RouterDecision
 from core.schema.wf_state import AgentState, ConceptNode, TAOutput
 
 from TA.workflow.retrieve import build_retrieve_wf
-from core.schema.retrieval import RetrievalRunContext
+from core.schema.retrieval import RetrievalCaseKind, RetrievalRunContext
 from TA.workflow.roadmap import build_roadmap_wf
 from TA.workflow.teach import build_teach_wf
 
@@ -152,7 +155,8 @@ class SmartEdu:
         ## -- Router stays as lightweight raw LLM call (speed matters here)
         ## -- num_predict must exceed gpt-oss hidden-reasoning budget (~150-320 tok);
         ##    100 truncated the model before the final-channel word → empty content → 'unknown'.
-        llm = ta.model.bind(options={"temperature": 0, "num_predict": 256})
+        ## -- reasoning off here only: classification doesn't need CoT, other profiles keep it
+        llm = ta.model.bind(options={"temperature": 0, "num_predict": 256}, reasoning=False)
         res = await llm.ainvoke(
             [("user", prompt)],
             config=config
@@ -207,17 +211,10 @@ class SmartEdu:
             tracker.apply_proposal(sid, proposal)
 
         results = state.get("worker_results", {})
-        if runtime.context.preset.value == "plain":
-            ## PLAIN floor: prompt must not point at retrieval data
-            refine_prompt = prompt_lib.RETRIEVE_PLAIN_PROMPT.format(
-                language_instruction=language_instruction
-            )
-            prompt = f"{refine_prompt}\nQuestion: {state.get('user_query', '')}"
-        else:
-            refine_prompt = prompt_lib.RETRIEVE_REFINE_PROMPT.format(
-                language_instruction=language_instruction
-            )
-            prompt = f"{refine_prompt}\nData: {results}"
+        refine_prompt = prompt_lib.RETRIEVE_REFINE_PROMPT.format(
+            language_instruction=language_instruction
+        )
+        prompt = f"{refine_prompt}\nData: {results}"
 
         ## -- Inject prior TA messages for coherence
         ta_context = extract_ta_context(state)
@@ -225,7 +222,10 @@ class SmartEdu:
             prompt = f"[Prior TA reasoning]:\n{ta_context}\n\n{prompt}"
 
         start_invoke = time.time()
-        message = await self._stream_answer(ta, prompt, config)
+        if runtime.context.case.kind is RetrievalCaseKind.BENCHMARK:
+            message = await self._benchmark_answer(ta, state, results, config, runtime)
+        else:
+            message = await self._stream_answer(ta, prompt, config)
         ta_output = TAOutput(summary=self._derive_summary(message), message=message)
 
         log_filename = config.get("configurable", {}).get("log_filename") or os.getenv("TEST_LOG_FILENAME")
@@ -261,6 +261,7 @@ class SmartEdu:
                 state=tracker.get_student_state(sid),
                 tool_result=results,
                 output=ta_output.message,
+                latency_ms=(time.time() - start_invoke) * 1000,
             )
 
         return {"messages": [AIMessage(content=ta_output.message)], "pending_proposal": None}
@@ -543,15 +544,87 @@ class SmartEdu:
     async def _stream_answer(self, ta, prompt: str, config: RunnableConfig) -> str:
         """raw model stream, no tool loop (finish prompts self-contained); sys prompt bypassed by agent so prepend"""
         emit = config.get("configurable", {}).get("emit")
+        tracer, chat_id = _tracer_ctx(config)
         msgs = [("system", ta.system_prompt_text), ("user", prompt)]
         parts = []
         async for chunk in ta.model.astream(msgs, config=config):
             text = getattr(chunk, "content", "") or ""
             if text:
+                if tracer and chat_id:
+                    tracer.mark_first_token(chat_id)
                 parts.append(text)
                 if emit:
                     await emit({"type": "token", "text": text})
         return "".join(parts)
+
+    async def _benchmark_answer(
+        self,
+        ta,
+        state: AgentState,
+        results: Dict[str, Any],
+        config: RunnableConfig,
+        runtime: Runtime[RetrievalRunContext],
+    ) -> str:
+        policy = runtime.context.policy
+        answer_model = self._benchmark_answer_model(ta, runtime.context)
+        model_name = getattr(answer_model, "model", None) or getattr(answer_model, "model_name", None)
+        if model_name != policy.answer_model_name:
+            raise RuntimeError(
+                f"benchmark answer model mismatch: expected {policy.answer_model_name}, got {model_name or 'unknown'}"
+            )
+        answerer = answer_model.bind(
+            options={"temperature": policy.answer_temperature}
+        ).with_structured_output(
+            BenchmarkAnswer,
+            method="json_mode",
+            include_raw=True,
+        )
+        prompt = self._benchmark_answer_prompt(
+            state.get("user_query", ""),
+            results,
+            policy.answer_prompt or BENCHMARK_ANSWER_PROMPT,
+        )
+        result, _ = await bounded_ainvoke(
+            answerer,
+            [("user", prompt)],
+            config=config,
+            timeout_s=policy.answer_timeout_s,
+            retries=policy.answer_transport_retries,
+        )
+        return self._benchmark_answer_text(result)
+
+    def _benchmark_answer_model(self, ta, context: RetrievalRunContext):
+        if context.policy.answer_model_profile == "retrieval_answerer":
+            answerer = self.agents.get("RETRIEVAL_ANSWERER")
+            if answerer is None:
+                raise RuntimeError("dedicated retrieval answerer unavailable")
+            return answerer
+        return ta.model
+
+    @staticmethod
+    def _benchmark_answer_prompt(
+        question: str,
+        results: Dict[str, Any],
+        template: str = BENCHMARK_ANSWER_PROMPT,
+    ) -> str:
+        rag = results.get("RAG", {})
+        return template.format(
+            question=question,
+            synthesis=rag.get("thought", ""),
+            evidence=rag.get("content", ""),
+        )
+
+    @staticmethod
+    def _benchmark_answer_text(result: Dict[str, Any]) -> str:
+        parsed = result.get("parsed")
+        if isinstance(parsed, BenchmarkAnswer):
+            return parsed.answer.strip()
+        raw = getattr(result.get("raw"), "content", "") or "unknown"
+        try:
+            value = json.loads(raw).get("answer", raw)
+        except (TypeError, json.JSONDecodeError):
+            value = raw
+        return BenchmarkAnswer(answer=str(value).strip() or "unknown").answer
 
     @staticmethod
     async def _save_ta_memo(session_id: str, chat_id: str, tracker, ta_output: TAOutput):
@@ -626,6 +699,8 @@ class SmartEdu:
                 stream_mode="updates",
             ):
                 for node_name, state_update in chunk.items():
+                    if tracer and chat_id:
+                        tracer.ensure_node_step(chat_id, node_name)
                     _loggable_keys = [k for k in state_update if k not in ("messages", "worker_results")]
                     if _loggable_keys:
                         logger.debug("[astream] Node: %s | keys: %s", node_name, _loggable_keys)
