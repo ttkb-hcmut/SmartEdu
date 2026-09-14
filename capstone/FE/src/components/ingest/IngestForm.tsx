@@ -4,6 +4,7 @@ import { useState } from "react"
 import { toast } from "sonner"
 import { FileDropzone } from "./FileDropzone"
 import { UploadProgress, type FileProgress } from "./UploadProgress"
+import { IngestRunCard, type ActiveRun } from "./IngestRunCard"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
@@ -45,6 +46,7 @@ export function IngestForm() {
   const [videos, setVideos] = useState<File[]>([])
   const [progress, setProgress] = useState<FileProgress[]>([])
   const [submitting, setSubmitting] = useState(false)
+  const [activeRun, setActiveRun] = useState<ActiveRun | null>(null)
 
   function updateProgress(name: string, patch: Partial<FileProgress>) {
     setProgress((prev) =>
@@ -141,10 +143,22 @@ export function IngestForm() {
         }),
       })
       if (!ingestRes.ok) throw new Error(`Ingest failed (${ingestRes.status})`)
+      const ingestBody = await ingestRes.json()
+      const flowRunId: string | undefined = ingestBody?.flow_run_id
+      if (!flowRunId) throw new Error("Server did not return a flow_run_id")
 
-      toast.success("Đang xử lý tài liệu", {
-        description: "Quá trình nạp dữ liệu đang chạy nền. Kiểm tra server log để theo dõi.",
-        duration: 8000,
+      setActiveRun({
+        courseName: courseName.trim(),
+        flowRunId,
+        counts: {
+          slides: slides.length,
+          textbooks: textbooks.length,
+          videos: videos.length,
+        },
+      })
+      toast.success("Đã tiếp nhận", {
+        description: `Flow ${flowRunId.slice(0, 8)}… đang chạy nền.`,
+        duration: 5000,
       })
       setCourseName("")
       setSlides([])
@@ -211,6 +225,10 @@ export function IngestForm() {
         {submitting && <Spinner size="sm" className="mr-1.5" />}
         {submitting ? "Đang tải lên…" : "Nạp tài liệu"}
       </Button>
+
+      {activeRun && (
+        <IngestRunCard key={activeRun.flowRunId} run={activeRun} />
+      )}
     </form>
   )
 }
