@@ -108,6 +108,70 @@ async def segment_persist_textbook_task(course_name: str, file_name: str, tree: 
     return await asyncio.to_thread(_run)
 
 
+def build_textbook_queue_items(sections: List[Dict], course_name: str) -> List[Dict]:
+    ## one extraction unit per section -- a flat corpus under one :Section would
+    ## collapse into a single unusable call, so sections must be real before this runs
+    items = []
+    for index, section in enumerate(sections):
+        passages = [p for p in section.get("passages", []) if (p.get("text") or "").strip()]
+        if not passages:
+            continue
+        title = section.get("title") or section.get("section_id") or ""
+        content = "\n\n".join(p["text"].strip() for p in passages)
+        ## hard_ref points at the section; passage-level provenance comes from
+        ## ANCHORED_IN edges, which anchor_concepts writes into passage uri space
+        ref = Ref(
+            db=course_name,
+            id=section["section_id"],
+            name=title,
+            summary=passages[0]["text"].strip()[:200],
+            p_num=(0, len(passages)),
+        )
+        items.append({
+            "index": index,
+            "heading": title,
+            "content": content,
+            "hard_ref": ref.model_dump(),
+        })
+    return items
+
+
+async def extract_textbook_kg(course_name: str, items: List[Dict],
+                              num_workers: int = 3) -> Tuple[List, List, List]:
+    ## plain fn, no prefect -- load_corpus has no minio source object to cache-key on
+    q = asyncio.Queue()
+    for item in items:
+        await q.put((
+            item["index"], item["heading"], item["content"],
+            Ref.model_validate(item["hard_ref"]),
+        ))
+    for _ in range(num_workers):
+        await q.put(None)
+
+    extractor = GraphExtractionService(llm_engine=deps.llm())
+    extractor.kg_handler = KG_Handler()
+    kg: KG_Instance = await extractor.extract_pipeline(
+        extract_queue=q, course_name=course_name, num_workers=num_workers
+    )
+    return serialize_kg_to_dict(kg)
+
+
+@task(name="extract-textbook-kg", cache_key_fn=file_cache_key, persist_result=True,
+      result_storage=RESULT_STORAGE, result_serializer=CACHE_SERIALIZER,
+      tags=["llm"])
+async def extract_textbook_task(course_name: str, file_name: str, items: List[Dict],
+                                num_workers: int = 3) -> Tuple[List, List, List]:
+    ## same extractor as the slide path; only the queue source differs
+    return await extract_textbook_kg(course_name, items, num_workers)
+
+
+@task(name="read-textbook-sections", retries=1)
+async def read_sections_task(course_name: str) -> List[Dict]:
+    return await asyncio.to_thread(
+        deps.graph_db().list_sections_for_extraction, f"{course_name}/", DB_NAME
+    )
+
+
 @task(name="anchor-concepts", retries=1, tags=["gpu"])
 async def anchor_task(course_name: str, concept_nodes: List[Dict]) -> int:
     return await asyncio.to_thread(

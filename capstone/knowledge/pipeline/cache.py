@@ -37,7 +37,7 @@ def _stage_revision(task_name: str) -> str:
     revision = {
         "stage": STAGE_VERSION,
         "task": task_name,
-        "release": release_revision(),
+        "release": release_revision(required=True),
     }
     if task_name in {"parse-slide", "parse-textbook"}:
         revision["ingest"] = asdict(Ingest_param())
@@ -67,7 +67,7 @@ def stage_idempotency_key(parent_run_id: str, stage_name: str, course_name: str,
         "course": course_name,
         "file": file_name,
         "object_revision": storage.object_revision(source),
-        "release": release_revision(),
+        "release": release_revision(required=True),
     })
 
 

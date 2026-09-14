@@ -1,8 +1,9 @@
 import asyncio
 import inspect
 import logging
+from contextlib import contextmanager
 from datetime import datetime, timezone
-from time import time
+from time import perf_counter
 from typing import Dict, List, Optional, Tuple
 
 from prefect import flow
@@ -24,11 +25,14 @@ from knowledge.pipeline.legacy import process_textbook_legacy
 from knowledge.pipeline.reporting import ReportOutcome, reduce_report, source_outcomes
 from knowledge.pipeline.tasks import (
     anchor_task,
+    build_textbook_queue_items,
     extract_slide_task,
+    extract_textbook_task,
     parse_slide_task,
     parse_textbook_task,
     persist_slide_task,
     publish_slide_task,
+    read_sections_task,
     segment_persist_textbook_task,
     transcribe_task,
     vid_persist_task,
@@ -38,6 +42,15 @@ from knowledge.pipeline.cache import (
     RESULT_STORAGE,
     stage_idempotency_key,
 )
+
+
+@contextmanager
+def _measure_stage(report: Dict, name: str):
+    started = perf_counter()
+    try:
+        yield
+    finally:
+        report["stage_timings_ms"][name] = round((perf_counter() - started) * 1000, 3)
 
 
 STAGE_DEPLOYMENTS = {
@@ -105,9 +118,26 @@ async def asr_video_stage(course_name: str, file_name: str) -> TranscriptResult:
 
 
 @flow(name="textbook-flow")
-async def textbook_flow(course_name: str, file_name: str) -> Dict:
+async def textbook_flow(course_name: str, file_name: str,
+                        extract_concepts: Optional[bool] = None) -> Dict:
     tree = await dispatch_stage("ocr-textbook", course_name, file_name)
-    return await segment_persist_textbook_task(course_name, file_name, tree)
+    result = await segment_persist_textbook_task(course_name, file_name, tree)
+    if extract_concepts is None:
+        extract_concepts = Ingest_param().extract_textbook_entities
+    if not extract_concepts:
+        return result
+
+    ## textbook-only courses had no concept layer at all: slides were the sole source,
+    ## so anchor_concepts always searched an empty passage space and wrote 0 links
+    sections = await read_sections_task(course_name)
+    items = build_textbook_queue_items(sections, course_name)
+    if not items:
+        return {**result, "concepts": 0, "anchors": 0}
+    nodes, edges, clusters = await extract_textbook_task(course_name, file_name, items)
+    await persist_slide_task(course_name, nodes, edges, clusters)
+    concept_nodes = [n for n in nodes if n.get("typeNode") == "Concept"]
+    anchors = await anchor_task(course_name, concept_nodes)
+    return {**result, "concepts": len(concept_nodes), "anchors": anchors}
 
 
 @flow(name="slide-flow")
@@ -139,7 +169,7 @@ async def course_flow(course_name: str, slide_files: List[str],
                       textbook_files: List[str], video_files: List[str] = None,
                       reset: bool = True) -> Dict:
     ## mirrors old CourseIngestionService.run stage-for-stage — parity gate depends on it
-    start = time()
+    start = perf_counter()
     cfg = Ingest_param()
     video_files = video_files or []
     run_id = str(flow_run.id) if flow_run.id else "local"
@@ -151,50 +181,58 @@ async def course_flow(course_name: str, slide_files: List[str],
 
     try:
         if reset:
-            deps.graph_db().reset(DB_NAME)
-            deps.milvus_db().reset()
+            with _measure_stage(report, "reset"):
+                deps.graph_db().reset(DB_NAME)
+                deps.milvus_db().reset()
 
         if cfg.textbook_first and textbook_files:
-            tb_results = await asyncio.gather(*[
-                textbook_flow(course_name, f) for f in textbook_files
-            ], return_exceptions=True)
-            outcomes.extend(source_outcomes("textbooks", textbook_files, tb_results))
-
-        results = await asyncio.gather(*[
-            slide_flow(course_name, f) for f in slide_files
-        ], return_exceptions=True)
+            with _measure_stage(report, "textbooks"):
+                tb_results = await asyncio.gather(*[
+                    textbook_flow(course_name, f) for f in textbook_files
+                ], return_exceptions=True)
+                outcomes.extend(source_outcomes("textbooks", textbook_files, tb_results))
 
         concept_nodes = []
-        for outcome in source_outcomes("slides", slide_files, results):
-            if outcome.error is not None:
-                outcomes.append(outcome)
-                continue
-            if outcome.value is None:
-                continue
-            nodes, edges, clusters = outcome.value
-            await persist_slide_task(course_name, nodes, edges, clusters)
-            concept_nodes += [n for n in nodes if n.get("typeNode") == "Concept"]
-            outcomes.append(ReportOutcome(
-                "slides",
-                value={"file": outcome.file_name, "nodes": len(nodes), "edges": len(edges)},
-            ))
+        if slide_files:
+            with _measure_stage(report, "slides"):
+                results = await asyncio.gather(*[
+                    slide_flow(course_name, f) for f in slide_files
+                ], return_exceptions=True)
+
+                for outcome in source_outcomes("slides", slide_files, results):
+                    if outcome.error is not None:
+                        outcomes.append(outcome)
+                        continue
+                    if outcome.value is None:
+                        continue
+                    nodes, edges, clusters = outcome.value
+                    await persist_slide_task(course_name, nodes, edges, clusters)
+                    concept_nodes += [n for n in nodes if n.get("typeNode") == "Concept"]
+                    outcomes.append(ReportOutcome(
+                        "slides",
+                        value={"file": outcome.file_name, "nodes": len(nodes), "edges": len(edges)},
+                    ))
 
         if cfg.textbook_first:
             if textbook_files:
-                outcomes.append(ReportOutcome(
-                    "anchors", value=await anchor_task(course_name, concept_nodes)
-                ))
+                with _measure_stage(report, "anchors"):
+                    outcomes.append(ReportOutcome(
+                        "anchors", value=await anchor_task(course_name, concept_nodes)
+                    ))
         else:
-            await asyncio.gather(*[
-                process_textbook_legacy(course_name, f) for f in textbook_files
-            ])
+            if textbook_files:
+                with _measure_stage(report, "textbooks_legacy"):
+                    await asyncio.gather(*[
+                        process_textbook_legacy(course_name, f) for f in textbook_files
+                    ])
 
         ## vid after slides; concept ANN needs Milvus
         if video_files:
-            vid_res = await asyncio.gather(*[
-                vid_flow(course_name, f) for f in video_files
-            ], return_exceptions=True)
-            outcomes.extend(source_outcomes("videos", video_files, vid_res))
+            with _measure_stage(report, "videos"):
+                vid_res = await asyncio.gather(*[
+                    vid_flow(course_name, f) for f in video_files
+                ], return_exceptions=True)
+                outcomes.extend(source_outcomes("videos", video_files, vid_res))
     except Exception as exc:
         fatal = exc
     finally:
@@ -202,7 +240,7 @@ async def course_flow(course_name: str, slide_files: List[str],
             report,
             outcomes,
             fatal=fatal,
-            duration_s=round(time() - start, 1),
+            duration_s=round(perf_counter() - start, 3),
             finished_at=datetime.now(timezone.utc).isoformat(),
         )
         logging.info(f"[ingest] {decision.report}")
