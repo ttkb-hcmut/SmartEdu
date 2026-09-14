@@ -1,13 +1,19 @@
 """Fan-out retrieve workflow — routing, fusion, chunk normalization. No DBs."""
 
 import asyncio
+import json
 from types import SimpleNamespace
 
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
 from core.config import Retrieve_param
-from core.schema.retrieval import RetrievalHarnessId, RetrievalPolicyId, RetrievalPreset
+from core.schema.retrieval import (
+    RetrievalHarnessId,
+    RetrievalPolicyId,
+    RetrievalPreset,
+    RetrievalToolId,
+)
 from TA.helper.schema import RAGCore
 from TA.retrieval.policy import resolve_retrieval_context
 from TA.workflow.retrieve import build_retrieve_wf, rrf_merge, _norm_chunk
@@ -143,7 +149,7 @@ class _FakeAggregator:
 
 class _FakeLedgerAggregator:
     name = "RAG_Ledger_Aggregator"
-    model = SimpleNamespace(model="gpt-oss:120b-cloud", temperature=0.0)
+    model = SimpleNamespace(model="gemini-3.7-flash", temperature=0.0)
 
     def __init__(self, artifacts=(), blocked_calls=0):
         self.artifacts = artifacts
@@ -183,6 +189,52 @@ class _SeedEmbedder:
 class _SeedGraph:
     def passage_search(self, *_args, **_kwargs):
         return [{"id": "textbook-1", "uri": "textbook-1", "text": "textbook", "score": 1.0}]
+
+
+class _StructuredPlanner:
+    """baseline-v5's model_output_mode is STRUCTURED: typed_call requests
+    include_raw=True and normalizes+validates the raw completion itself,
+    since with_structured_output's own field names drift from our schema
+    (observed live: "type" not "action", singular "source" not "sources")."""
+
+    model = "gemini-3.7-flash"
+    temperature = 0.0
+
+    def __init__(self, decisions, final_chain):
+        self.decisions = iter(decisions)
+        self.final_chain = final_chain
+        self.calls = []
+
+    def with_structured_output(self, schema, **_kwargs):
+        planner = self
+
+        class _Invocation:
+            async def ainvoke(self, messages, config=None):
+                planner.calls.append((schema, messages, config))
+                value = next(planner.decisions) if schema.__name__ == "HopDecision" else planner.final_chain
+                payload = value if isinstance(value, dict) else value.model_dump(mode="json")
+                return {
+                    "raw": SimpleNamespace(content=json.dumps(payload)),
+                    "parsed": None,
+                    "parsing_error": None,
+                }
+
+        return _Invocation()
+
+
+class _V4Milvus:
+    def __init__(self):
+        self.queries = []
+
+    def search(self, query, **_kwargs):
+        self.queries.append(query)
+        suffix = "seed" if query == "question" else "bridge"
+        return [{
+            "id": f"semantic-{suffix}",
+            "uri": f"semantic-{suffix}",
+            "text": f"{suffix} evidence",
+            "score": 1.0,
+        }]
 
 
 def _invoke_agentic(preset, artifacts):
@@ -437,3 +489,575 @@ def test_agentic_v3_traces_blocked_parallel_tool_calls():
         if step.node == "Agentic_Retrieve"
     )
     assert final.tool_result["blocked_tool_calls"] == 2
+
+
+def test_agentic_v4_runs_typed_grounded_loop_and_preserves_ledger():
+    from TA.retrieval.schema import ClaimSupport, FinalChain, HopAction, HopDecision, StopReason
+
+    planner = _StructuredPlanner(
+        decisions=[
+            HopDecision(
+                action=HopAction.RETRIEVE,
+                sub_question="bridge fact",
+                query="focused bridge",
+                sources=[RetrievalToolId.SEMANTIC],
+                basis_uris=["semantic-seed"],
+            ),
+            HopDecision(
+                action=HopAction.STOP,
+                supported_claims=[
+                    ClaimSupport(claim="seed reaches bridge", evidence_uris=["semantic-seed", "semantic-bridge"])
+                ],
+                stop_reason=StopReason.CHAIN_COMPLETE,
+            ),
+        ],
+        final_chain=FinalChain(
+            claims=[
+                ClaimSupport(claim="seed reaches bridge", evidence_uris=["semantic-seed", "semantic-bridge"])
+            ],
+            answerable=True,
+        ),
+    )
+    milvus = _V4Milvus()
+    wf = build_retrieve_wf(
+        agents={"RETRIEVAL_PLANNER": planner},
+        resources={"milvus_db": milvus, "embedder": _SeedEmbedder()},
+    )
+    context = resolve_retrieval_context(
+        Retrieve_param.from_preset(
+            "RAG",
+            policy_id=RetrievalPolicyId.BASELINE_V5,
+            harness_id=RetrievalHarnessId.AGENTIC_V4,
+        )
+    )
+    tracer = AgentTracer(session_id="agentic-v4")
+    chat_id = tracer.begin_chat("question")
+    state = {
+        "messages": [HumanMessage(content="question")],
+        "user_query": "question",
+        "worker_results": {},
+        "language": "eng",
+    }
+
+    out = asyncio.run(
+        wf.ainvoke(
+            state,
+            config={"configurable": {"tracer": tracer, "chat_id": chat_id}},
+            context=context,
+        )
+    )
+
+    rag = out["worker_results"]["RAG"]
+    assert milvus.queries == ["question", "focused bridge"]
+    assert rag["entity_ids"] == ["semantic-seed", "semantic-bridge"]
+    assert "seed evidence" in rag["content"] and "bridge evidence" in rag["content"]
+    assert "seed reaches bridge" in rag["thought"]
+    assert rag["validity"] == "valid"
+    assert [schema.__name__ for schema, *_ in planner.calls] == [
+        "HopDecision",
+        "HopDecision",
+        "FinalChain",
+    ]
+    assert planner.calls[0][1][0][1] != planner.calls[-1][1][0][1]
+    nodes = [step.node for step in tracer._active_chats[chat_id].agent]
+    assert "Seed_Retrieve" in nodes
+    assert "Plan_Hop" in nodes
+    assert "Retrieve_Hop" in nodes
+    assert "Finalize_Chain" in nodes
+
+
+def test_agentic_v4_repairs_contextually_invalid_source_before_retrieval():
+    from TA.retrieval.schema import FinalChain, HopAction, HopDecision, StopReason
+
+    planner = _StructuredPlanner(
+        decisions=[
+            HopDecision(
+                action=HopAction.RETRIEVE,
+                sub_question="bad source",
+                query="wrong source",
+                sources=[RetrievalToolId.TEXTBOOK],
+                basis_uris=["semantic-seed"],
+            ),
+            HopDecision(action=HopAction.STOP, stop_reason=StopReason.INSUFFICIENT_EVIDENCE),
+        ],
+        final_chain=FinalChain(answerable=False, remaining_uncertainty="missing"),
+    )
+    milvus = _V4Milvus()
+    wf = build_retrieve_wf(
+        agents={"RETRIEVAL_PLANNER": planner},
+        resources={"milvus_db": milvus, "embedder": _SeedEmbedder()},
+    )
+    context = resolve_retrieval_context(
+        Retrieve_param.from_preset(
+            "RAG",
+            policy_id=RetrievalPolicyId.BASELINE_V5,
+            harness_id=RetrievalHarnessId.AGENTIC_V4,
+        )
+    )
+    state = {
+        "messages": [HumanMessage(content="question")],
+        "user_query": "question",
+        "worker_results": {},
+        "language": "eng",
+    }
+
+    out = asyncio.run(wf.ainvoke(state, context=context))
+
+    assert milvus.queries == ["question"]
+    assert out["worker_results"]["RAG"]["validity"] == "valid"
+    assert out["worker_results"]["RAG"]["schema_repairs"] == 1
+
+
+def test_agentic_v4_duplicate_query_consumes_round_without_repository_call():
+    from TA.retrieval.schema import FinalChain, HopAction, HopDecision, StopReason
+
+    planner = _StructuredPlanner(
+        decisions=[
+            HopDecision(
+                action=HopAction.RETRIEVE,
+                sub_question="bridge",
+                query="Focused Bridge",
+                sources=[RetrievalToolId.SEMANTIC],
+                basis_uris=["semantic-seed"],
+            ),
+            HopDecision(
+                action=HopAction.RETRIEVE,
+                sub_question="same bridge",
+                query="  focused   bridge ",
+                sources=[RetrievalToolId.SEMANTIC],
+                basis_uris=["semantic-seed"],
+            ),
+            HopDecision(action=HopAction.STOP, stop_reason=StopReason.INSUFFICIENT_EVIDENCE),
+        ],
+        final_chain=FinalChain(answerable=False, remaining_uncertainty="missing"),
+    )
+    milvus = _V4Milvus()
+    wf = build_retrieve_wf(
+        agents={"RETRIEVAL_PLANNER": planner},
+        resources={"milvus_db": milvus, "embedder": _SeedEmbedder()},
+    )
+    context = resolve_retrieval_context(
+        Retrieve_param.from_preset(
+            "RAG",
+            policy_id=RetrievalPolicyId.BASELINE_V5,
+            harness_id=RetrievalHarnessId.AGENTIC_V4,
+        )
+    )
+    tracer = AgentTracer(session_id="agentic-v4-duplicate")
+    chat_id = tracer.begin_chat("question")
+
+    out = asyncio.run(wf.ainvoke(
+        {
+            "messages": [HumanMessage(content="question")],
+            "user_query": "question",
+            "worker_results": {},
+            "language": "eng",
+        },
+        config={"configurable": {"tracer": tracer, "chat_id": chat_id}},
+        context=context,
+    ))
+
+    assert milvus.queries == ["question", "Focused Bridge"]
+    assert out["worker_results"]["RAG"]["stop_reason"] == "insufficient_evidence"
+    repeated = [
+        step for step in tracer._active_chats[chat_id].agent
+        if step.node == "Retrieve_Hop" and step.tool_result.get("repeated_query")
+    ]
+    assert len(repeated) == 1
+    assert repeated[0].tool_result["round"] == 2
+
+
+def test_agentic_v4_four_followups_finalize_with_budget_reason():
+    from TA.retrieval.schema import FinalChain, HopAction, HopDecision
+
+    decisions = [
+        HopDecision(
+            action=HopAction.RETRIEVE,
+            sub_question=f"link {index}",
+            query=f"followup {index}",
+            sources=[RetrievalToolId.SEMANTIC],
+            basis_uris=["semantic-seed"],
+        )
+        for index in range(4)
+    ]
+    planner = _StructuredPlanner(
+        decisions=decisions,
+        final_chain=FinalChain(answerable=False, remaining_uncertainty="budget ended"),
+    )
+    milvus = _V4Milvus()
+    wf = build_retrieve_wf(
+        agents={"RETRIEVAL_PLANNER": planner},
+        resources={"milvus_db": milvus, "embedder": _SeedEmbedder()},
+    )
+    context = resolve_retrieval_context(
+        Retrieve_param.from_preset(
+            "RAG",
+            policy_id=RetrievalPolicyId.BASELINE_V5,
+            harness_id=RetrievalHarnessId.AGENTIC_V4,
+        )
+    )
+
+    out = asyncio.run(wf.ainvoke(
+        {
+            "messages": [HumanMessage(content="question")],
+            "user_query": "question",
+            "worker_results": {},
+            "language": "eng",
+        },
+        context=context,
+    ))
+
+    rag = out["worker_results"]["RAG"]
+    assert milvus.queries == ["question", "followup 0", "followup 1", "followup 2", "followup 3"]
+    assert rag["stop_reason"] == "budget_exhausted"
+    assert rag["validity"] == "valid"
+
+
+def test_agentic_v4_rejects_second_ungrounded_decision_without_retrieval():
+    from TA.retrieval.schema import FinalChain, HopAction, HopDecision
+
+    bad = HopDecision(
+        action=HopAction.RETRIEVE,
+        sub_question="invented basis",
+        query="follow invented entity",
+        sources=[RetrievalToolId.SEMANTIC],
+        basis_uris=["not-in-ledger"],
+    )
+    planner = _StructuredPlanner(
+        decisions=[bad, bad],
+        final_chain=FinalChain(answerable=False, remaining_uncertainty="invalid decision"),
+    )
+    milvus = _V4Milvus()
+    wf = build_retrieve_wf(
+        agents={"RETRIEVAL_PLANNER": planner},
+        resources={"milvus_db": milvus, "embedder": _SeedEmbedder()},
+    )
+    context = resolve_retrieval_context(
+        Retrieve_param.from_preset(
+            "RAG",
+            policy_id=RetrievalPolicyId.BASELINE_V5,
+            harness_id=RetrievalHarnessId.AGENTIC_V4,
+        )
+    )
+
+    out = asyncio.run(wf.ainvoke(
+        {
+            "messages": [HumanMessage(content="question")],
+            "user_query": "question",
+            "worker_results": {},
+            "language": "eng",
+        },
+        context=context,
+    ))
+
+    rag = out["worker_results"]["RAG"]
+    assert milvus.queries == ["question"]
+    assert rag["validity"] == "invalid"
+    assert rag["schema_repairs"] == 1
+    assert any("basis URIs not in ledger" in error for error in rag["errors"])
+
+
+def test_agentic_v4_never_retries_or_finalizes_after_provider_429():
+    class _QuotaPlanner:
+        model = "gemini-3.7-flash"
+        temperature = 0.0
+
+        def __init__(self):
+            self.calls = 0
+
+        def with_structured_output(self, *_args, **_kwargs):
+            planner = self
+
+            class _Invocation:
+                async def ainvoke(self, *_args, **_kwargs):
+                    planner.calls += 1
+                    error = RuntimeError("Ollama status code: 429 session usage limit reached")
+                    error.status_code = 429
+                    raise error
+
+            return _Invocation()
+
+    planner = _QuotaPlanner()
+    wf = build_retrieve_wf(
+        agents={"RETRIEVAL_PLANNER": planner},
+        resources={"milvus_db": _V4Milvus(), "embedder": _SeedEmbedder()},
+    )
+    context = resolve_retrieval_context(
+        Retrieve_param.from_preset(
+            "RAG",
+            policy_id=RetrievalPolicyId.BASELINE_V5,
+            harness_id=RetrievalHarnessId.AGENTIC_V4,
+        )
+    )
+
+    out = asyncio.run(wf.ainvoke(
+        {
+            "messages": [HumanMessage(content="question")],
+            "user_query": "question",
+            "worker_results": {},
+            "language": "eng",
+        },
+        context=context,
+    ))
+
+    assert planner.calls == 1
+    assert out["worker_results"]["RAG"]["validity"] == "invalid"
+    assert any("429" in error for error in out["worker_results"]["RAG"]["errors"])
+
+
+def test_agentic_v4_three_hop_chain_keeps_scottish_evidence_for_answerer():
+    from TA.retrieval.schema import ClaimSupport, FinalChain, HopAction, HopDecision, StopReason
+    from TA.workflow.smart_edu import SmartEdu
+
+    evidence = {
+        "question": ("scottish", "Matters devolve to the Scottish Parliament."),
+        "holyrood": ("holyrood", "The Scottish Parliament meets at Holyrood."),
+        "architect": ("architect", "Enric Miralles designed the Holyrood building."),
+        "birthplace": ("birthplace", "Enric Miralles was born in Barcelona."),
+    }
+
+    class _ChainMilvus:
+        def __init__(self):
+            self.queries = []
+
+        def search(self, query, **_kwargs):
+            self.queries.append(query)
+            uri, text = evidence[query]
+            return [{"id": uri, "uri": uri, "text": text, "score": 1.0}]
+
+    claims = [ClaimSupport(
+        claim="The chain reaches Barcelona through Holyrood and its architect.",
+        evidence_uris=["scottish", "holyrood", "architect", "birthplace"],
+    )]
+    planner = _StructuredPlanner(
+        decisions=[
+            HopDecision(action=HopAction.RETRIEVE, sub_question="meeting place", query="holyrood", sources=[RetrievalToolId.SEMANTIC], basis_uris=["scottish"]),
+            HopDecision(action=HopAction.RETRIEVE, sub_question="architect", query="architect", sources=[RetrievalToolId.SEMANTIC], basis_uris=["holyrood"]),
+            HopDecision(action=HopAction.RETRIEVE, sub_question="birthplace", query="birthplace", sources=[RetrievalToolId.SEMANTIC], basis_uris=["architect"]),
+            HopDecision(action=HopAction.STOP, supported_claims=claims, stop_reason=StopReason.CHAIN_COMPLETE),
+        ],
+        final_chain=FinalChain(claims=claims, answerable=True),
+    )
+    milvus = _ChainMilvus()
+    wf = build_retrieve_wf(
+        agents={"RETRIEVAL_PLANNER": planner},
+        resources={"milvus_db": milvus, "embedder": _SeedEmbedder()},
+    )
+    context = resolve_retrieval_context(
+        Retrieve_param.from_preset(
+            "RAG",
+            policy_id=RetrievalPolicyId.BASELINE_V5,
+            harness_id=RetrievalHarnessId.AGENTIC_V4,
+        )
+    )
+
+    out = asyncio.run(wf.ainvoke(
+        {
+            "messages": [HumanMessage(content="question")],
+            "user_query": "question",
+            "worker_results": {},
+            "language": "eng",
+        },
+        context=context,
+    ))
+
+    rag = out["worker_results"]["RAG"]
+    answer_prompt = SmartEdu._benchmark_answer_prompt("question", out["worker_results"])
+    assert milvus.queries == ["question", "holyrood", "architect", "birthplace"]
+    assert rag["entity_ids"] == ["scottish", "holyrood", "architect", "birthplace"]
+    assert "Scottish Parliament" in answer_prompt
+    assert "Barcelona" in answer_prompt
+    assert rag["stop_reason"] == "chain_complete"
+
+
+def test_agentic_v4_context_guard_finalizes_before_next_repository_call():
+    from dataclasses import replace
+    from TA.retrieval.schema import FinalChain, HopAction, HopDecision
+
+    planner = _StructuredPlanner(
+        decisions=[HopDecision(
+            action=HopAction.RETRIEVE,
+            sub_question="too much evidence",
+            query="would overflow",
+            sources=[RetrievalToolId.SEMANTIC],
+            basis_uris=["semantic-seed"],
+        )],
+        final_chain=FinalChain(answerable=False, remaining_uncertainty="context limit"),
+    )
+    milvus = _V4Milvus()
+    wf = build_retrieve_wf(
+        agents={"RETRIEVAL_PLANNER": planner},
+        resources={"milvus_db": milvus, "embedder": _SeedEmbedder()},
+    )
+    context = resolve_retrieval_context(
+        Retrieve_param.from_preset(
+            "RAG",
+            policy_id=RetrievalPolicyId.BASELINE_V5,
+            harness_id=RetrievalHarnessId.AGENTIC_V4,
+        )
+    )
+    context = replace(context, harness=replace(context.harness, max_context_chars=1))
+
+    out = asyncio.run(wf.ainvoke(
+        {
+            "messages": [HumanMessage(content="question")],
+            "user_query": "question",
+            "worker_results": {},
+            "language": "eng",
+        },
+        context=context,
+    ))
+
+    assert milvus.queries == ["question"]
+    assert out["worker_results"]["RAG"]["stop_reason"] == "context_limit"
+
+
+def test_agentic_v4_repairs_malformed_schema_once():
+    from TA.retrieval.schema import FinalChain, HopAction, HopDecision, StopReason
+
+    planner = _StructuredPlanner(
+        decisions=[
+            {"action": "retrieve", "query": "missing required fields"},
+            HopDecision(action=HopAction.STOP, stop_reason=StopReason.INSUFFICIENT_EVIDENCE),
+        ],
+        final_chain=FinalChain(answerable=False, remaining_uncertainty="missing"),
+    )
+    wf = build_retrieve_wf(
+        agents={"RETRIEVAL_PLANNER": planner},
+        resources={"milvus_db": _V4Milvus(), "embedder": _SeedEmbedder()},
+    )
+    context = resolve_retrieval_context(
+        Retrieve_param.from_preset(
+            "RAG",
+            policy_id=RetrievalPolicyId.BASELINE_V5,
+            harness_id=RetrievalHarnessId.AGENTIC_V4,
+        )
+    )
+
+    out = asyncio.run(wf.ainvoke(
+        {
+            "messages": [HumanMessage(content="question")],
+            "user_query": "question",
+            "worker_results": {},
+            "language": "eng",
+        },
+        context=context,
+    ))
+
+    rag = out["worker_results"]["RAG"]
+    assert rag["validity"] == "valid"
+    assert rag["schema_repairs"] == 1
+    assert [schema.__name__ for schema, *_ in planner.calls] == [
+        "HopDecision", "HopDecision", "FinalChain"
+    ]
+
+
+def _run_v4(planner, milvus=None):
+    milvus = milvus or _V4Milvus()
+    wf = build_retrieve_wf(
+        agents={"RETRIEVAL_PLANNER": planner},
+        resources={"milvus_db": milvus, "embedder": _SeedEmbedder()},
+    )
+    context = resolve_retrieval_context(
+        Retrieve_param.from_preset(
+            "RAG",
+            policy_id=RetrievalPolicyId.BASELINE_V5,
+            harness_id=RetrievalHarnessId.AGENTIC_V4,
+        )
+    )
+    out = asyncio.run(wf.ainvoke(
+        {
+            "messages": [HumanMessage(content="question")],
+            "user_query": "question",
+            "worker_results": {},
+            "language": "eng",
+        },
+        context=context,
+    ))
+    return out, milvus
+
+
+def test_agentic_v4_missing_sources_triggers_single_repair():
+    from TA.retrieval.schema import FinalChain, HopAction, HopDecision, StopReason
+
+    planner = _StructuredPlanner(
+        decisions=[
+            {"action": "retrieve", "query": "q", "sub_question": "gap", "basis_uris": ["semantic-seed"]},
+            HopDecision(action=HopAction.STOP, stop_reason=StopReason.INSUFFICIENT_EVIDENCE),
+        ],
+        final_chain=FinalChain(answerable=False, remaining_uncertainty="missing"),
+    )
+
+    out, _ = _run_v4(planner)
+
+    rag = out["worker_results"]["RAG"]
+    assert rag["schema_repairs"] == 1
+    assert [schema.__name__ for schema, *_ in planner.calls] == [
+        "HopDecision", "HopDecision", "FinalChain"
+    ]
+
+
+def test_agentic_v4_missing_basis_uris_triggers_single_repair():
+    from TA.retrieval.schema import FinalChain, HopAction, HopDecision, StopReason
+
+    planner = _StructuredPlanner(
+        decisions=[
+            {"action": "retrieve", "query": "q", "sub_question": "gap", "sources": ["semantic"]},
+            HopDecision(action=HopAction.STOP, stop_reason=StopReason.INSUFFICIENT_EVIDENCE),
+        ],
+        final_chain=FinalChain(answerable=False, remaining_uncertainty="missing"),
+    )
+
+    out, _ = _run_v4(planner)
+
+    rag = out["worker_results"]["RAG"]
+    assert rag["schema_repairs"] == 1
+    assert [schema.__name__ for schema, *_ in planner.calls] == [
+        "HopDecision", "HopDecision", "FinalChain"
+    ]
+
+
+def test_agentic_v4_second_malformed_decision_stays_invalid_with_concrete_error():
+    from TA.retrieval.schema import FinalChain
+
+    bad = {"action": "retrieve", "query": "still missing fields", "sub_question": "gap"}
+    planner = _StructuredPlanner(
+        decisions=[bad, bad],
+        final_chain=FinalChain(answerable=False, remaining_uncertainty="unreachable"),
+    )
+
+    out, _ = _run_v4(planner)
+
+    rag = out["worker_results"]["RAG"]
+    assert rag["validity"] == "invalid"
+    assert rag["schema_repairs"] == 1
+    # no third planner call after the single permitted repair fails again
+    assert [schema.__name__ for schema, *_ in planner.calls] == ["HopDecision", "HopDecision"]
+    # the concrete cause reaches _error instead of a generic placeholder
+    assert out["status_flag"] == "FAIL"
+    assert "requires sources and basis URIs" in out["_error"]
+
+
+def test_agentic_v4_never_invents_basis_uris_when_model_omits_them():
+    from TA.retrieval.schema import FinalChain
+
+    missing_basis = {
+        "action": "retrieve",
+        "query": "follow up",
+        "sub_question": "gap",
+        "sources": ["semantic"],
+    }
+    planner = _StructuredPlanner(
+        decisions=[missing_basis, missing_basis],
+        final_chain=FinalChain(answerable=False, remaining_uncertainty="unreachable"),
+    )
+    milvus = _V4Milvus()
+
+    out, milvus = _run_v4(planner, milvus)
+
+    rag = out["worker_results"]["RAG"]
+    # old behavior silently grounded basis_uris in the last ledger entry and
+    # retried the retrieval; the fixed controller must never do that
+    assert milvus.queries == ["question"]
+    assert rag["validity"] == "invalid"
+    assert any("sources and basis URIs" in error for error in rag["errors"])

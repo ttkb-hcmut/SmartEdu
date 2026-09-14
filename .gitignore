@@ -57,3 +57,5 @@ capstone/data
 capstone/test/inspection/*.png
 
 .deepeval
+.agents/
+test/

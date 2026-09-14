@@ -215,10 +215,10 @@ def test_render_table_groups_presets():
     rows = [
         {"preset": "PLAIN", "fixture_id": "q1", "context_precision": None,
          "context_recall": 0.0, "traj_precision": None, "traj_recall": 0.0,
-         "latency_ms": 10.0},
+         "latency_ms": 10.0, "status": "SUCCESS", "retrieval_validity": "valid"},
         {"preset": "FULL", "fixture_id": "q1", "context_precision": 1.0,
          "context_recall": 1.0, "traj_precision": 1.0, "traj_recall": 1.0,
-         "latency_ms": 210.0},
+         "latency_ms": 210.0, "status": "SUCCESS", "retrieval_validity": "valid"},
     ]
     table = render_table(rows)
     assert "PLAIN" in table and "FULL" in table and "1.00" in table
@@ -258,10 +258,10 @@ def test_paired_harness_summary_uses_question_level_deltas_deterministically():
     from TA.tracing.evaluator import paired_harness_summary
 
     rows = [
-        {"fixture_id": "q1", "preset": "FULL", "harness_id": "agentic-v2", "support_f1": 0.0, "answer_f1": 0.0, "complete_chain": 0.0, "latency_ms": 10.0},
-        {"fixture_id": "q1", "preset": "FULL", "harness_id": "agentic-v3", "support_f1": 1.0, "answer_f1": 1.0, "complete_chain": 1.0, "latency_ms": 20.0},
-        {"fixture_id": "q2", "preset": "FULL", "harness_id": "agentic-v2", "support_f1": 0.5, "answer_f1": 0.5, "complete_chain": 0.0, "latency_ms": 30.0},
-        {"fixture_id": "q2", "preset": "FULL", "harness_id": "agentic-v3", "support_f1": 1.0, "answer_f1": 0.5, "complete_chain": 1.0, "latency_ms": 40.0},
+        {"fixture_id": "q1", "preset": "FULL", "harness_id": "agentic-v2", "status": "SUCCESS", "retrieval_validity": "valid", "support_f1": 0.0, "answer_f1": 0.0, "complete_chain": 0.0, "latency_ms": 10.0},
+        {"fixture_id": "q1", "preset": "FULL", "harness_id": "agentic-v3", "status": "SUCCESS", "retrieval_validity": "valid", "support_f1": 1.0, "answer_f1": 1.0, "complete_chain": 1.0, "latency_ms": 20.0},
+        {"fixture_id": "q2", "preset": "FULL", "harness_id": "agentic-v2", "status": "SUCCESS", "retrieval_validity": "valid", "support_f1": 0.5, "answer_f1": 0.5, "complete_chain": 0.0, "latency_ms": 30.0},
+        {"fixture_id": "q2", "preset": "FULL", "harness_id": "agentic-v3", "status": "SUCCESS", "retrieval_validity": "valid", "support_f1": 1.0, "answer_f1": 0.5, "complete_chain": 1.0, "latency_ms": 40.0},
     ]
 
     first = paired_harness_summary(rows, resamples=200, seed=42)
@@ -271,3 +271,77 @@ def test_paired_harness_summary_uses_question_level_deltas_deterministically():
     support = next(item for item in first if item["metric"] == "support_f1")
     assert support["n"] == 2
     assert support["mean_delta"] == pytest.approx(0.75)
+
+
+def test_quality_table_excludes_failed_and_invalid_rows_from_averages():
+    rows = [
+        {"preset": "RAG", "status": "SUCCESS", "retrieval_validity": "valid", "answer_f1": 1.0},
+        {"preset": "RAG", "status": "FAIL", "retrieval_validity": "invalid", "answer_f1": 0.0},
+        {"preset": "RAG", "status": "SUCCESS", "retrieval_validity": "invalid", "answer_f1": 0.0},
+    ]
+
+    table = render_table(rows, expected_counts={"RAG": 4})
+
+    assert "| RAG | 1 | 2 | 0.50 | - | 1.00 |" in table
+
+
+def test_paired_summary_uses_only_matched_successful_valid_rows():
+    from TA.tracing.evaluator import paired_harness_summary
+
+    rows = [
+        {"fixture_id": "q1", "preset": "RAG", "harness_id": "agentic-v3", "status": "SUCCESS", "retrieval_validity": "valid", "answer_f1": 0.0},
+        {"fixture_id": "q1", "preset": "RAG", "harness_id": "agentic-v4", "status": "SUCCESS", "retrieval_validity": "valid", "answer_f1": 1.0},
+        {"fixture_id": "q2", "preset": "RAG", "harness_id": "agentic-v3", "status": "FAIL", "retrieval_validity": "invalid", "answer_f1": 0.0},
+        {"fixture_id": "q2", "preset": "RAG", "harness_id": "agentic-v4", "status": "SUCCESS", "retrieval_validity": "valid", "answer_f1": 1.0},
+    ]
+
+    summary = paired_harness_summary(
+        rows, baseline="agentic-v3", treatment="agentic-v4", resamples=20
+    )
+
+    answer = next(item for item in summary if item["metric"] == "answer_f1")
+    assert answer["n"] == 1
+    assert answer["mean_delta"] == 1.0
+
+
+def test_partial_report_banner_and_conditional_chain_metrics():
+    rows = [
+        {"preset": "RAG", "fixture_id": "q1", "status": "SUCCESS", "retrieval_validity": "valid", "complete_chain": 1.0, "answer_f1": 0.8, "answer_exact_match": 0.0, "node_configs": {}},
+        {"preset": "RAG", "fixture_id": "q2", "status": "SUCCESS", "retrieval_validity": "valid", "complete_chain": 0.0, "answer_f1": 0.2, "answer_exact_match": 0.0, "node_configs": {}},
+    ]
+
+    report = render_report(
+        rows,
+        partial=True,
+        expected_counts={"RAG": 4},
+        provider_errors={"session_usage_limit": 2},
+    )
+
+    assert "PARTIAL EXECUTION" in report
+    assert "Answer quality conditional on retrieval chain" in report
+    assert "session_usage_limit" in report
+
+
+def test_v4_planner_diagnostics_are_extracted_from_trace():
+    chat = ChatTrace(
+        chat_id="c1",
+        query="q",
+        preset="RAG",
+        agent=[StepTrace(
+            node="Agentic_Retrieve",
+            tool_result={
+                "validity": "valid",
+                "stop_reason": "chain_complete",
+                "schema_repairs": 1,
+                "transport_retries": 1,
+                "planner_calls": 3,
+            },
+        )],
+    )
+
+    row = evaluate_chat(chat, {"id": "q", "question": "q", "gold_chunk_ids": GOLD})
+
+    assert row["planner_stop_reason"] == "chain_complete"
+    assert row["planner_schema_repairs"] == 1
+    assert row["planner_transport_retries"] == 1
+    assert row["planner_calls"] == 3

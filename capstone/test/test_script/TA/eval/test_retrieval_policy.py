@@ -39,7 +39,7 @@ def test_policy_resolves_typed_arm_contract():
     assert context.policy.model_name == "qwen3:8b"
     assert context.policy.temperature == 0.0
     assert context.policy.answer_model_profile == "TA"
-    assert context.policy.answer_model_name == "gpt-oss:120b-cloud"
+    assert context.policy.answer_model_name == "gemini-3.7-flash"
     assert context.policy.answer_temperature == 0.0
     assert context.policy.allowed_tools == (
         RetrievalToolId.SEMANTIC,
@@ -128,9 +128,9 @@ def test_agentic_v3_owns_bounded_ledger_rules_and_strong_models():
 
     assert context.policy.prompt_id is RetrievalPromptId.MULTIHOP_V2
     assert context.policy.model_profile == "retrieval_aggregator"
-    assert context.policy.model_name == "gpt-oss:120b-cloud"
+    assert context.policy.model_name == "gemini-3.7-flash"
     assert context.policy.answer_model_profile == "retrieval_answerer"
-    assert context.policy.answer_model_name == "gpt-oss:120b-cloud"
+    assert context.policy.answer_model_name == "gemini-3.7-flash"
     assert context.policy.min_tool_calls == 0
     assert "To stop, do not call retrieve_more" in context.policy.prompt
     assert "non-empty sources" in context.policy.prompt
@@ -159,7 +159,7 @@ def test_v4_policy_digest_is_arm_independent_and_pinned():
     ]
 
     assert contexts[0].policy.digest == contexts[1].policy.digest
-    assert contexts[0].policy.digest == "8a707ff60cd1f207"
+    assert contexts[0].policy.digest == "b632bcd38275e7ee"
 
 
 def test_agentic_v4_resolves_typed_controller_contract():
@@ -177,13 +177,19 @@ def test_agentic_v4_resolves_typed_controller_contract():
 
     assert context.policy.prompt_id is RetrievalPromptId.MULTIHOP_V3
     assert context.policy.model_profile == "retrieval_planner"
-    assert context.policy.model_name == "gpt-oss:120b-cloud"
+    assert context.policy.model_name == "gemini-3.7-flash"
     assert context.policy.model_timeout_s == 120
     assert context.policy.model_transport_retries == 1
     assert context.policy.schema_repair_attempts == 1
     assert context.policy.answer_model_profile == "retrieval_answerer"
     assert context.policy.answer_timeout_s == 120
     assert context.policy.answer_transport_retries == 1
+    # finalizer prompt must name every required FinalChain field: the model emitted
+    # "statement"/"text" and omitted answerable while the prompt only described them in prose
+    for field in ("claims", "claim", "evidence_uris", "answerable", "remaining_uncertainty"):
+        assert field in context.policy.finalizer_prompt
+    assert "concise direct answer" in context.policy.answer_prompt
+    assert context.policy.finalizer_prompt != context.policy.prompt
     assert context.harness.max_tool_calls == 4
     assert context.harness.max_calls_per_round == 1
     assert context.harness.per_source_k == 8
@@ -207,7 +213,10 @@ def test_v5_policy_digest_is_arm_independent_and_versioned():
     ]
 
     assert contexts[0].policy.digest == contexts[1].policy.digest
-    assert contexts[0].policy.digest == "100fcfe5e40adc59"
+    # digest shifted deliberately: TYPED_FINALIZER_PROMPT rewritten with explicit
+    # FinalChain field names + JSON example, and TYPED_HOP_PROMPT now enumerates the
+    # legal stop_reason values
+    assert contexts[0].policy.digest == "43b0e66d6a7c0816"
 
 
 def test_policy_digest_is_pinned():
@@ -216,7 +225,7 @@ def test_policy_digest_is_pinned():
 
     context = resolve_retrieval_context(Retrieve_param.from_preset("FULL"))
 
-    assert context.policy.digest == "305264a7f1fe7c5c"
+    assert context.policy.digest == "d84bfe1156723414"
 
 
 def test_resolved_context_is_immutable():

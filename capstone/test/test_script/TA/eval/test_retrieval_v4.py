@@ -9,7 +9,7 @@ def test_retrieve_decision_requires_grounded_query_and_sources():
     decision = HopDecision(
         action=HopAction.RETRIEVE,
         supported_claims=[ClaimSupport(claim="A founded B", evidence_uris=["p1"])],
-        missing_link="B's location",
+        sub_question="B's location",
         query="Where is B located?",
         sources=[RetrievalToolId.SEMANTIC],
         basis_uris=["p1"],
@@ -25,7 +25,7 @@ def test_retrieve_decision_requires_grounded_query_and_sources():
         {"query": ""},
         {"sources": []},
         {"basis_uris": []},
-        {"missing_link": ""},
+        {"sub_question": ""},
     ],
 )
 def test_retrieve_decision_rejects_missing_grounding(changes):
@@ -34,7 +34,7 @@ def test_retrieve_decision_rejects_missing_grounding(changes):
 
     values = {
         "action": HopAction.RETRIEVE,
-        "missing_link": "missing",
+        "sub_question": "missing",
         "query": "focused query",
         "sources": [RetrievalToolId.SEMANTIC],
         "basis_uris": ["p1"],

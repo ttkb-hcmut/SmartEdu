@@ -25,16 +25,170 @@ from TA.tracing.writer import _DEFAULT_LOG_DIR
 BENCH_STUDENT = "bench_student"
 TRACE_DIR = _DEFAULT_LOG_DIR
 RESULTS_DIR = Path("test/eval/results")
+_RUN_CONTRACT_KEYS = (
+    "run_id",
+    "fixture_digest",
+    "corpus_digest",
+    "policy_digests",
+    "harness_id",
+    "harness_digest",
+    "code_digest",
+    "schedule",
+)
 
 
 def harness_policy_id(harness_id):
     from core.schema.retrieval import RetrievalHarnessId, RetrievalPolicyId
 
-    return (
-        RetrievalPolicyId.BASELINE_V4
-        if harness_id is RetrievalHarnessId.AGENTIC_V3
-        else RetrievalPolicyId.BASELINE_V3
-    )
+    if harness_id is RetrievalHarnessId.AGENTIC_V4:
+        return RetrievalPolicyId.BASELINE_V5
+    if harness_id is RetrievalHarnessId.AGENTIC_V3:
+        return RetrievalPolicyId.BASELINE_V4
+    return RetrievalPolicyId.BASELINE_V3
+
+
+def paired_schedule(fixture: list[dict], presets: list[str]) -> list[dict]:
+    schedule = []
+    for index, item in enumerate(fixture):
+        order = presets if index % 2 == 0 else list(reversed(presets))
+        for preset in order:
+            schedule.append({
+                "fixture_index": index,
+                "question_id": item["id"],
+                "preset": preset,
+                "case_key": f"{item['id']}::{preset}",
+            })
+    return schedule
+
+
+def classify_provider_error(error) -> dict[str, object]:
+    message = " ".join(error) if isinstance(error, (list, tuple)) else str(error or "")
+    lowered = message.casefold()
+    session_limit = "429" in lowered and "session" in lowered and "usage limit" in lowered
+    if session_limit:
+        return {"category": "session_usage_limit", "pause_immediately": True}
+    if "timeout" in lowered or any(code in lowered for code in ("500", "502", "503", "504")):
+        return {"category": "transient", "pause_immediately": False}
+    if any(code in lowered for code in ("400", "401", "403", "404", "409", "422", "429")):
+        return {"category": "permanent_4xx", "pause_immediately": False}
+    return {"category": "execution", "pause_immediately": False}
+
+
+def build_run_state(
+    *,
+    run_id: str,
+    fixture: list[dict],
+    presets: list[str],
+    fixture_digest: str,
+    corpus_digest: str,
+    policy_digests: dict[str, str],
+    harness_id: str,
+    harness_digest: str,
+    code_digest: str,
+) -> dict:
+    now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    return {
+        "version": 1,
+        "run_id": run_id,
+        "fixture_digest": fixture_digest,
+        "corpus_digest": corpus_digest,
+        "policy_digests": policy_digests,
+        "harness_id": harness_id,
+        "harness_digest": harness_digest,
+        "code_digest": code_digest,
+        "schedule": paired_schedule(fixture, presets),
+        "successful_cases": [],
+        "failed_attempts": [],
+        "pause_reason": "",
+        "status": "READY",
+        "created_at": now,
+        "updated_at": now,
+    }
+
+
+def save_run_state(path: Path, state: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    state["updated_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+    temporary.replace(path)
+
+
+def load_run_state(path: Path, expected: dict, *, resume: bool) -> dict:
+    if not path.exists():
+        if resume:
+            raise ValueError(f"resume state not found: {path}")
+        return expected
+    if not resume:
+        raise ValueError(f"run state already exists: {path}; use --resume")
+    current = json.loads(path.read_text(encoding="utf-8"))
+    drift = [key for key in _RUN_CONTRACT_KEYS if current.get(key) != expected.get(key)]
+    if drift:
+        raise ValueError(f"resume contract drift: {', '.join(drift)}")
+    return current
+
+
+def record_run_attempt(
+    state: dict,
+    case: dict,
+    *,
+    status: str,
+    errors: list,
+    provider_error: dict | None = None,
+    latency_s: float | None = None,
+) -> None:
+    case_key = case["case_key"]
+    if status == "SUCCESS":
+        if case_key not in state["successful_cases"]:
+            state["successful_cases"].append(case_key)
+        return
+    state["failed_attempts"].append({
+        "case_key": case_key,
+        "question_id": case["question_id"],
+        "preset": case["preset"],
+        "errors": list(errors),
+        "provider_error": provider_error or classify_provider_error(errors),
+        "latency_s": latency_s,
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    })
+
+
+def pending_schedule(state: dict) -> list[dict]:
+    successful = set(state["successful_cases"])
+    return [case for case in state["schedule"] if case["case_key"] not in successful]
+
+
+def summarize_run_state(state: dict) -> dict:
+    expected_counts = {}
+    for case in state["schedule"]:
+        preset = case["preset"]
+        expected_counts[preset] = expected_counts.get(preset, 0) + 1
+    provider_errors = {}
+    for attempt in state["failed_attempts"]:
+        category = attempt.get("provider_error", {}).get("category", "execution")
+        provider_errors[category] = provider_errors.get(category, 0) + 1
+    failed_latencies = [
+        attempt["latency_s"]
+        for attempt in state["failed_attempts"]
+        if attempt.get("latency_s") is not None
+    ]
+    return {
+        "expected_counts": expected_counts,
+        "provider_errors": provider_errors,
+        "partial": state.get("status") != "COMPLETED",
+        "median_failed_latency_s": statistics.median(failed_latencies) if failed_latencies else None,
+    }
+
+
+def archive_failed_trace(session_id: str, run_id: str) -> Path | None:
+    source = TRACE_DIR / f"{session_id}.json"
+    if not source.exists():
+        return None
+    attempts = TRACE_DIR / "attempts" / run_id
+    attempts.mkdir(parents=True, exist_ok=True)
+    destination = attempts / f"{session_id}__{time.time_ns()}.json"
+    source.replace(destination)
+    return destination
 
 
 def harness_run_ids(base_run_id: str, harnesses: list[str]) -> dict[str, str]:
@@ -55,6 +209,25 @@ def repeat_fixture(fixture: list[dict], repeats: int) -> list[dict]:
         for item in fixture
         for repeat_index in range(1, repeats + 1)
     ]
+
+
+def json_digest(value) -> str:
+    payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def source_code_digest(root: Path) -> str:
+    digest = hashlib.sha256()
+    paths = []
+    for folder in ("TA", "core", "knowledge", "student", "test/eval"):
+        paths.extend((root / folder).rglob("*.py"))
+    for path in sorted(set(paths)):
+        relative = path.relative_to(root).as_posix()
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
 
 
 def write_run_manifest(
@@ -146,7 +319,13 @@ def read_code_state():
     return RetrievalCodeState(revision=revision, dirty=dirty)
 
 
-def validate_run_sessions(sessions, expected_ids: set[str], run_id: str):
+def validate_run_sessions(
+    sessions,
+    expected_ids: set[str],
+    run_id: str,
+    *,
+    allow_partial: bool = False,
+):
     chats = [chat for session in sessions for chat in session.chat]
     ids = [chat.question_id for chat in chats]
     if any(chat.run_id != run_id for chat in chats):
@@ -155,10 +334,11 @@ def validate_run_sessions(sessions, expected_ids: set[str], run_id: str):
         raise ValueError("warm-up trace mixed into scored cases")
     if len(ids) != len(set(ids)):
         raise ValueError("duplicate benchmark case trace")
-    if set(ids) != expected_ids:
+    observed = set(ids)
+    if observed - expected_ids or (not allow_partial and observed != expected_ids):
         raise ValueError(
-            f"incomplete run: missing={sorted(expected_ids - set(ids))}, "
-            f"extra={sorted(set(ids) - expected_ids)}"
+            f"incomplete run: missing={sorted(expected_ids - observed)}, "
+            f"extra={sorted(observed - expected_ids)}"
         )
     return chats
 
@@ -205,6 +385,7 @@ async def run_case(
     )
     tracker.create_chat_session(BENCH_STUDENT, sid)
     t0 = time.perf_counter()
+    outcome = None
     try:
         result = await ta.run(
             user_input=item["question"],
@@ -219,13 +400,95 @@ async def run_case(
             ),
             code_state=code_state,
         )
-        label = "WARMUP" if warmup else preset
-        if result["status"] == "SUCCESS":
-            print(f"[{label}] {item['id']} ({time.perf_counter()-t0:.1f}s)")
-        else:
-            print(f"[{label}] {item['id']} FAILED: {result['errors']}")
+        outcome = {
+            "status": result.get("status", "FAIL"),
+            "errors": list(result.get("errors", [])),
+            "session_id": sid,
+            "latency_s": time.perf_counter() - t0,
+        }
+    except Exception as exc:
+        outcome = {
+            "status": "FAIL",
+            "errors": [f"{type(exc).__name__}: {exc}"],
+            "session_id": sid,
+            "latency_s": time.perf_counter() - t0,
+        }
     finally:
         tracker.drop_session(sid)
+    label = "WARMUP" if warmup else preset
+    if outcome["status"] == "SUCCESS":
+        print(f"[{label}] {item['id']} ({outcome['latency_s']:.1f}s)", flush=True)
+    else:
+        print(f"[{label}] {item['id']} FAILED: {outcome['errors']}", flush=True)
+    return outcome
+
+
+async def run_resumable_schedule(
+    *,
+    ta,
+    tracker,
+    fixture: list[dict],
+    track: str,
+    course: str,
+    run_id: str,
+    harness_id,
+    code_state,
+    state: dict,
+    state_path: Path,
+) -> bool:
+    by_id = {item["id"]: item for item in fixture}
+    state.update(status="RUNNING", pause_reason="")
+    save_run_state(state_path, state)
+    transient_failures = 0
+    pending = pending_schedule(state)
+    for index, case in enumerate(pending, start=1):
+        print(
+            f"[{harness_id}] {index}/{len(pending)} {case['question_id']} {case['preset']}",
+            flush=True,
+        )
+        result = await run_case(
+            ta=ta,
+            tracker=tracker,
+            preset=case["preset"],
+            item=by_id[case["question_id"]],
+            track=track,
+            course=course,
+            run_id=run_id,
+            harness_id=harness_id,
+            code_state=code_state,
+        )
+        provider_error = None
+        if result["status"] != "SUCCESS":
+            provider_error = classify_provider_error(result["errors"])
+            archive_failed_trace(result["session_id"], run_id)
+        record_run_attempt(
+            state,
+            case,
+            status=result["status"],
+            errors=result["errors"],
+            provider_error=provider_error,
+            latency_s=result.get("latency_s"),
+        )
+        save_run_state(state_path, state)
+
+        category = provider_error["category"] if provider_error else ""
+        transient_failures = transient_failures + 1 if category == "transient" else 0
+        if provider_error and provider_error["pause_immediately"]:
+            state.update(status="PAUSED", pause_reason=category)
+            save_run_state(state_path, state)
+            return False
+        if transient_failures >= 3:
+            state.update(status="PAUSED", pause_reason="three_consecutive_transient_failures")
+            save_run_state(state_path, state)
+            return False
+
+    all_succeeded = len(state["successful_cases"]) == len(state["schedule"])
+    state.update(
+        status="COMPLETED" if all_succeeded else "PARTIAL",
+        pause_reason="" if all_succeeded else "incomplete_cases",
+    )
+    save_run_state(state_path, state)
+    return True
 
 
 async def run_preset(
@@ -262,6 +525,8 @@ def score(
     base_run_id: str,
     judge: bool,
     run_manifest: Path | None = None,
+    partial: bool = False,
+    run_states: dict[str, dict] | None = None,
 ) -> None:
     from TA.tracing.evaluator import (
         evaluate_session,
@@ -272,14 +537,30 @@ def score(
     )
 
     rows = []
+    run_states = run_states or {}
+    report_meta = {}
     expected_ids = {item["id"] for item in fixture}
     for harness, run_id in harness_runs.items():
+        state_summary = summarize_run_state(run_states[harness]) if harness in run_states else {
+            "expected_counts": {preset: len(fixture) for preset in presets},
+            "provider_errors": {},
+            "partial": partial,
+            "median_failed_latency_s": None,
+        }
+        report_meta[harness] = state_summary
         for preset in presets:
             paths = sorted(TRACE_DIR.glob(f"{session_name(preset, track, run_id)}__*.json"))
             if not paths:
+                if state_summary["partial"]:
+                    continue
                 raise ValueError(f"no traces for {harness}/{preset} in run {run_id}")
             sessions = [load_session(path) for path in paths]
-            validate_run_sessions(sessions, expected_ids, run_id)
+            validate_run_sessions(
+                sessions,
+                expected_ids,
+                run_id,
+                allow_partial=state_summary["partial"],
+            )
             for session in sessions:
                 harness_rows = evaluate_session(session, fixture)
                 for row in harness_rows:
@@ -288,6 +569,8 @@ def score(
 
     if judge:
         for row in rows:
+            if row.get("status") != "SUCCESS" or row.get("retrieval_validity") != "valid":
+                continue
             row.update(judge_chat(row, row.get("retrieval_context", [])))
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -302,8 +585,25 @@ def score(
         sections += [f"Run manifest: `{run_manifest}`", ""]
     for harness in harness_runs:
         group = [row for row in rows if row.get("harness_id") == harness]
-        sections += [f"# Harness: {harness}", "", render_report(group), ""]
-    if {"agentic-v2", "agentic-v3"} <= set(harness_runs):
+        meta = report_meta[harness]
+        sections += [
+            f"# Harness: {harness}",
+            "",
+            render_report(
+                group,
+                partial=meta["partial"],
+                expected_counts=meta["expected_counts"],
+                provider_errors=meta["provider_errors"],
+                median_failed_latency_s=meta["median_failed_latency_s"],
+            ),
+            "",
+        ]
+    if {"agentic-v3", "agentic-v4"} <= set(harness_runs):
+        sections += [
+            render_paired_report(rows, baseline="agentic-v3", treatment="agentic-v4"),
+            "",
+        ]
+    elif {"agentic-v2", "agentic-v3"} <= set(harness_runs):
         sections += [render_paired_report(rows), ""]
     report = "\n".join(sections)
     report_path = RESULTS_DIR / f"ablation_{track}_{base_run_id}_{stamp}.md"
@@ -348,8 +648,8 @@ async def main():
     ap.add_argument("--course", default="", help="benchmark course scope, e.g. Bench_MuSiQue")
     ap.add_argument(
         "--harness",
-        default="agentic-v3",
-        choices=("agentic-v1", "agentic-v2", "agentic-v3", "fanout-v1"),
+        default="agentic-v4",
+        choices=("agentic-v1", "agentic-v2", "agentic-v3", "agentic-v4", "fanout-v1"),
     )
     ap.add_argument(
         "--harnesses",
@@ -359,6 +659,7 @@ async def main():
     ap.add_argument("--repeat", type=int, default=1)
     ap.add_argument("--ids", default="", help="comma-separated fixture IDs to run")
     ap.add_argument("--run-id", default="")
+    ap.add_argument("--resume", action="store_true")
     ap.add_argument("--score-only", action="store_true")
     ap.add_argument("--judge", action="store_true")
     ap.add_argument("--calibrate", action="store_true")
@@ -380,7 +681,7 @@ async def main():
         if args.harnesses
         else [args.harness]
     )
-    allowed_harnesses = {"agentic-v1", "agentic-v2", "agentic-v3", "fanout-v1"}
+    allowed_harnesses = {"agentic-v1", "agentic-v2", "agentic-v3", "agentic-v4", "fanout-v1"}
     unknown_harnesses = set(harness_names) - allowed_harnesses
     if unknown_harnesses:
         raise SystemExit(f"unknown harnesses: {sorted(unknown_harnesses)}")
@@ -389,9 +690,15 @@ async def main():
     if args.calibrate:
         calibrate(fixture, Path(args.corpus))
         return
+    if args.resume and not args.run_id:
+        raise SystemExit("--resume requires the exact --run-id")
 
+    all_complete = True
+    run_states = {}
     if not args.score_only:
+        from core.config import Retrieve_param
         from core.schema.retrieval import RetrievalHarnessId
+        from TA.retrieval.policy import resolve_retrieval_context
 
         ta, tracker = boot_ta()
         if not args.course:
@@ -403,11 +710,42 @@ async def main():
             args.course,
         )
         code_state = read_code_state()
+        source_digest = source_code_digest(Path(__file__).resolve().parents[2])
+        fixture_digest = json_digest(fixture)
+        corpus_digest = hashlib.sha256(
+            (Path(args.corpus) / "manifest.json").read_bytes()
+        ).hexdigest()
         try:
             for harness_name, harness_run_id in harness_runs.items():
                 harness_id = RetrievalHarnessId(harness_name)
-                if fixture:
-                    await run_case(
+                contexts = {
+                    preset: resolve_retrieval_context(Retrieve_param.from_preset(
+                        preset,
+                        policy_id=harness_policy_id(harness_id),
+                        harness_id=harness_id,
+                        course_scope=args.course,
+                    ))
+                    for preset in presets
+                }
+                harness_digests = {context.harness.digest for context in contexts.values()}
+                if len(harness_digests) != 1:
+                    raise RuntimeError(f"harness digest differs across arms: {harness_name}")
+                expected_state = build_run_state(
+                    run_id=harness_run_id,
+                    fixture=fixture,
+                    presets=presets,
+                    fixture_digest=fixture_digest,
+                    corpus_digest=corpus_digest,
+                    policy_digests={preset: context.policy.digest for preset, context in contexts.items()},
+                    harness_id=harness_name,
+                    harness_digest=next(iter(harness_digests)),
+                    code_digest=source_digest,
+                )
+                state_path = RESULTS_DIR / f"run_state_{harness_run_id}.json"
+                state = load_run_state(state_path, expected_state, resume=args.resume)
+                run_states[harness_name] = state
+                if fixture and not args.resume:
+                    warmup_result = await run_case(
                         ta,
                         tracker,
                         "FULL",
@@ -419,22 +757,54 @@ async def main():
                         code_state,
                         warmup=True,
                     )
-                for preset in presets:
-                    await run_preset(
-                        ta,
-                        tracker,
-                        preset,
-                        fixture,
-                        track,
-                        args.course,
-                        harness_run_id,
-                        harness_id,
-                        code_state,
+                    if warmup_result["status"] != "SUCCESS":
+                        provider_error = classify_provider_error(warmup_result["errors"])
+                        archive_failed_trace(warmup_result["session_id"], harness_run_id)
+                        state["failed_attempts"].append({
+                            "case_key": "__warmup__",
+                            "question_id": fixture[0]["id"],
+                            "preset": "WARMUP",
+                            "errors": warmup_result["errors"],
+                            "provider_error": provider_error,
+                            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                        })
+                        save_run_state(state_path, state)
+                        if provider_error["pause_immediately"]:
+                            state.update(status="PAUSED", pause_reason=provider_error["category"])
+                            save_run_state(state_path, state)
+                            all_complete = False
+                            break
+                complete = await run_resumable_schedule(
+                    ta=ta,
+                    tracker=tracker,
+                    fixture=fixture,
+                    track=track,
+                    course=args.course,
+                    run_id=harness_run_id,
+                    harness_id=harness_id,
+                    code_state=code_state,
+                    state=state,
+                    state_path=state_path,
+                )
+                if not complete:
+                    all_complete = False
+                    print(
+                        f"run paused: {state_path} ({state.get('pause_reason', 'provider failure')})",
+                        flush=True,
                     )
+                    break
+                if state.get("status") != "COMPLETED":
+                    all_complete = False
         finally:
             tracker.delete_student(BENCH_STUDENT)
     elif not args.run_id:
         raise SystemExit("--score-only requires the exact --run-id")
+    else:
+        for harness_name, harness_run_id in harness_runs.items():
+            state_path = RESULTS_DIR / f"run_state_{harness_run_id}.json"
+            if state_path.exists():
+                run_states[harness_name] = json.loads(state_path.read_text(encoding="utf-8"))
+                all_complete = all_complete and run_states[harness_name].get("status") == "COMPLETED"
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     run_manifest = write_run_manifest(
@@ -453,6 +823,8 @@ async def main():
         run_id,
         judge=args.judge,
         run_manifest=run_manifest,
+        partial=not all_complete,
+        run_states=run_states,
     )
 
 
