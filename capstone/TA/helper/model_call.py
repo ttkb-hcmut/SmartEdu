@@ -1,8 +1,47 @@
 import asyncio
 import json
 import re
+from contextlib import contextmanager
+from contextvars import ContextVar
+from typing import Callable
 
 from core.schema.retrieval import RetrievalOutputMode
+
+
+_provider_request_counter: ContextVar[dict[str, int] | None] = ContextVar(
+    "provider_request_counter", default=None
+)
+_provider_request_gate: ContextVar[Callable[[str], None] | None] = ContextVar(
+    "provider_request_gate", default=None
+)
+
+
+@contextmanager
+def count_provider_requests():
+    counter = {"count": 0}
+    token = _provider_request_counter.set(counter)
+    try:
+        yield counter
+    finally:
+        _provider_request_counter.reset(token)
+
+
+@contextmanager
+def provider_request_gate(gate: Callable[[str], None]):
+    token = _provider_request_gate.set(gate)
+    try:
+        yield
+    finally:
+        _provider_request_gate.reset(token)
+
+
+def _record_provider_request(request_key: str) -> None:
+    gate = _provider_request_gate.get()
+    if gate is not None:
+        gate(request_key)
+    counter = _provider_request_counter.get()
+    if counter is not None:
+        counter["count"] += 1
 
 
 def status_code(exc: Exception) -> int | None:
@@ -19,17 +58,33 @@ def is_transport_error(exc: Exception) -> bool:
     return isinstance(exc, (TimeoutError, asyncio.TimeoutError)) or status_code(exc) is not None
 
 
+def is_provider_budget_error(exc: Exception) -> bool:
+    return bool(getattr(exc, "provider_budget_exhausted", False))
+
+
 def is_transient(exc: Exception) -> bool:
     status = status_code(exc)
+    err_str = str(exc).lower()
+    if "provider_overloaded" in err_str or "rate limit" in err_str or "overloaded" in err_str:
+        return True
     return isinstance(exc, (TimeoutError, asyncio.TimeoutError)) or (
         status is not None and status >= 500
     )
 
 
-async def bounded_ainvoke(runner, payload, *, config, timeout_s: int, retries: int):
+async def bounded_ainvoke(
+    runner,
+    payload,
+    *,
+    config,
+    timeout_s: int,
+    retries: int,
+    request_key: str = "",
+):
     used = 0
     while True:
         try:
+            _record_provider_request(request_key)
             invocation = runner.ainvoke(payload, config=config)
             result = await asyncio.wait_for(invocation, timeout=timeout_s) if timeout_s else await invocation
             return result, used
@@ -42,6 +97,12 @@ async def bounded_ainvoke(runner, payload, *, config, timeout_s: int, retries: i
                 raise
             await asyncio.sleep(2**used)
             used += 1
+
+
+async def ta_ainvoke(runner, payload, config):
+    ## live TA only; benchmark paths keep their own retry policy
+    result, _ = await bounded_ainvoke(runner, payload, config=config, timeout_s=0, retries=2)
+    return result
 
 
 _ACTION_ALIASES = {
@@ -130,10 +191,41 @@ def normalize_provider_payload(payload: dict) -> tuple[dict, tuple[str, ...]]:
     return payload, notes
 
 
-async def typed_call(model, schema, messages, *, config, output_mode, timeout_s: int, retries: int):
+def _text_content(content) -> str | None:
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for block in content:
+            if isinstance(block, dict):
+                text = block.get("text")
+            else:
+                text = getattr(block, "text", None)
+            if isinstance(text, str):
+                parts.append(text)
+        return "".join(parts) or None
+    return None
+
+
+def text_content(content) -> str:
+    return _text_content(content) or ""
+
+
+async def typed_call(
+    model,
+    schema,
+    messages,
+    *,
+    config,
+    output_mode,
+    timeout_s: int,
+    retries: int,
+    request_key: str = "",
+):
     if output_mode == RetrievalOutputMode.RAW_JSON:
         value, used = await bounded_ainvoke(
-            model, messages, config=config, timeout_s=timeout_s, retries=retries
+            model, messages, config=config, timeout_s=timeout_s, retries=retries,
+            request_key=request_key,
         )
         content = getattr(value, "content", value)
     else:
@@ -142,12 +234,14 @@ async def typed_call(model, schema, messages, *, config, output_mode, timeout_s:
         ## and validate the raw completion ourselves instead of trusting it
         runner = model.with_structured_output(schema, method="json_schema", include_raw=True)
         value, used = await bounded_ainvoke(
-            runner, messages, config=config, timeout_s=timeout_s, retries=retries
+            runner, messages, config=config, timeout_s=timeout_s, retries=retries,
+            request_key=request_key,
         )
         raw = value.get("raw") if isinstance(value, dict) else None
         content = getattr(raw, "content", raw)
 
-    if not isinstance(content, str):
+    content = _text_content(content)
+    if content is None:
         raise ValueError("planner returned non-text content")
     start = content.find("{")
     if start < 0:

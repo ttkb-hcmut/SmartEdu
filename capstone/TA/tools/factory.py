@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List
 from TA.tools.neo.retriever import EntityFinder, RhetoricalRetriever, EdgeExplorer
 from TA.tools.retrieval import RetrieveMore, SemanticSearch, TextbookSearch
 from TA.tools.neo.explore import RecommendNew, CourseBackbone, CourseRelevance, OptimalPath
@@ -61,13 +61,6 @@ class ToolFactory:
             RecallThoughts(),
             InspectChatHistory(),
         ]
-
-    def get_teach_lookup_tools(self) -> Dict:
-        """Raw tool instances for deterministic Teach_Lookup node (no LLM)."""
-        return {
-            "get_concept": GetConcept(engine=self.graph_db),
-            "get_pages": GetPages(minio=self.minio),
-        }
 
     def get_tools(self, agent_name: str):
         if agent_name not in self.agent_tools:

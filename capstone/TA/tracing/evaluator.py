@@ -154,6 +154,14 @@ def retrieved_texts(chat: ChatTrace) -> List[str]:
     return []
 
 
+def answer_context_uris(chat: ChatTrace) -> Optional[List[str]]:
+    for step in reversed(chat.agent):
+        if step.node in _FINAL_RETRIEVAL_NODES:
+            uris = step.tool_result.get("answer_context_uris")
+            return [str(uri) for uri in uris] if uris is not None else None
+    return None
+
+
 def retrieval_outcome(chat: ChatTrace) -> Dict[str, Any]:
     for step in reversed(chat.agent):
         if step.node in _FINAL_RETRIEVAL_NODES:
@@ -196,6 +204,7 @@ def retrieval_outcome(chat: ChatTrace) -> Dict[str, Any]:
 def evaluate_chat(chat: ChatTrace, fixture_item: Dict) -> Dict[str, Any]:
     gold = fixture_item.get("gold_chunk_ids", [])
     final_uris = retrieved_uris(chat)
+    compiled_uris = answer_context_uris(chat)
     component_uris = {
         chunk.get("uri")
         for step in chat.agent
@@ -251,6 +260,12 @@ def evaluate_chat(chat: ChatTrace, fixture_item: Dict) -> Dict[str, Any]:
     )
     row["gold_lost_in_selection"] = len(candidate_gold - final_gold)
     row["retrieval_context"] = retrieved_texts(chat)
+    row["answer_context_uris"] = compiled_uris
+    row["answer_context_recall"] = (
+        len(set(compiled_uris) & set(gold)) / len(set(gold))
+        if compiled_uris is not None and gold
+        else None
+    )
     return row
 
 
@@ -277,6 +292,7 @@ _TABLE_METRICS = [
     "answer_f1",
     "context_precision",
     "context_recall",
+    "answer_context_recall",
     "support_f1",
     "support_exact_match",
     "complete_chain",
@@ -341,6 +357,121 @@ def _percentile(values: List[float], quantile: float) -> Optional[float]:
     upper = min(lower + 1, len(ordered) - 1)
     weight = position - lower
     return ordered[lower] * (1 - weight) + ordered[upper] * weight
+
+
+_PAIR_METRICS = (
+    "answer_exact_match",
+    "answer_f1",
+    "context_recall",
+    "complete_chain",
+    "workflow_latency_ms",
+    "answer_latency_ms",
+)
+
+
+def paired_arm_summary(
+    rows: List[Dict[str, Any]],
+    *,
+    baseline: str = "RAG",
+    treatment: str = "FULL",
+    resamples: int = 2_000,
+    seed: int = 42,
+) -> Dict[str, Any]:
+    grouped: Dict[tuple[str, str, str], Dict[str, List[Dict[str, Any]]]] = {}
+    for row in rows:
+        key = (
+            str(row.get("harness_id", "")),
+            str(row.get("run_id", "")),
+            str(row.get("fixture_id", "")),
+        )
+        grouped.setdefault(key, {}).setdefault(row.get("preset", ""), []).append(row)
+
+    pairs = []
+    for key, arms in grouped.items():
+        left = arms.get(baseline, [])
+        right = arms.get(treatment, [])
+        if len(left) == len(right) == 1 and _quality_eligible(left[0]) and _quality_eligible(right[0]):
+            pairs.append((key[2], left[0], right[0]))
+    pairs.sort(key=lambda item: item[0])
+
+    arm_values = {baseline: {}, treatment: {}}
+    for arm, index in ((baseline, 1), (treatment, 2)):
+        for metric in _PAIR_METRICS:
+            values = [pair[index].get(metric) for pair in pairs]
+            arm_values[arm][metric] = _agg(values)
+        workflow = [pair[index].get("workflow_latency_ms") for pair in pairs]
+        arm_values[arm]["workflow_p50_ms"] = _percentile([value for value in workflow if value is not None], 0.5)
+        arm_values[arm]["workflow_p95_ms"] = _percentile([value for value in workflow if value is not None], 0.95)
+
+    rng = random.Random(seed)
+    deltas = {}
+    for metric in _PAIR_METRICS:
+        values = [
+            right.get(metric) - left.get(metric)
+            for _, left, right in pairs
+            if left.get(metric) is not None and right.get(metric) is not None
+        ]
+        if not values:
+            continue
+        bootstrap = [
+            statistics.mean(rng.choice(values) for _ in values)
+            for _ in range(resamples)
+        ]
+        deltas[metric] = {
+            "n": len(values),
+            "mean_delta": statistics.mean(values),
+            "ci95_low": _percentile(bootstrap, 0.025),
+            "ci95_high": _percentile(bootstrap, 0.975),
+        }
+    return {
+        "baseline": baseline,
+        "treatment": treatment,
+        "question_ids": [question_id for question_id, _, _ in pairs],
+        "arms": arm_values,
+        "deltas": deltas,
+    }
+
+
+def render_paired_arm_report(
+    rows: List[Dict[str, Any]],
+    *,
+    expected_counts: Optional[Dict[str, int]] = None,
+) -> str:
+    expected_counts = expected_counts or {}
+    summary = paired_arm_summary(rows)
+    pair_count = len(summary["question_ids"])
+    planned = min(expected_counts.get("RAG", 0), expected_counts.get("FULL", 0))
+    lines = [
+        "## Paired RAG → FULL headline",
+        "",
+        f"paired questions: {pair_count}" + (f" / {planned} planned" if planned else ""),
+        "",
+        "| arm | paired n | answer EM | answer F1 | context recall | complete chain | mean workflow ms | workflow p50 ms | workflow p95 ms | mean answer ms |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+    for arm in ("RAG", "FULL"):
+        values = summary["arms"][arm]
+        cells = []
+        for metric in (
+            "answer_exact_match", "answer_f1", "context_recall", "complete_chain",
+            "workflow_latency_ms", "workflow_p50_ms", "workflow_p95_ms", "answer_latency_ms",
+        ):
+            value = values.get(metric)
+            cells.append("-" if value is None else (f"{value:.0f}" if metric.endswith("_ms") else f"{value:.2f}"))
+        lines.append(f"| {arm} | {pair_count} | " + " | ".join(cells) + " |")
+    lines += [
+        "",
+        "| metric | n | FULL − RAG | bootstrap 95% interval |",
+        "|---|---:|---:|---:|",
+    ]
+    for metric, delta in summary["deltas"].items():
+        lines.append(
+            f"| {metric} | {delta['n']} | {delta['mean_delta']:.3f} | "
+            f"[{delta['ci95_low']:.3f}, {delta['ci95_high']:.3f}] |"
+        )
+    if not summary["deltas"]:
+        lines.append("| no paired valid rows | 0 | - | - |")
+    return "\n".join(lines)
 
 
 def paired_harness_summary(
@@ -446,6 +577,8 @@ def render_report(
     lines = ["# Retrieval benchmark report", ""]
     if partial:
         lines += ["> **PARTIAL EXECUTION:** quality statistics include successful, mechanically valid cases only.", ""]
+    if {"RAG", "FULL"} <= set(presets):
+        lines += [render_paired_arm_report(rows, expected_counts=expected_counts), ""]
     lines += ["## Quality", "", render_table(rows, expected_counts), ""]
 
     lines += [

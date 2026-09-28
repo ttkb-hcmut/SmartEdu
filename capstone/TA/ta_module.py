@@ -30,7 +30,6 @@ class TAModule:
         )
         self.engine: SmartEdu = SmartEdu(
             agents=self.agents,
-            teach_tools=self.tools_factory.get_teach_lookup_tools(),
             retrieve_res={"graph_db": graph_db, "milvus_db": milvus_db, "embedder": embedder},
         )
 

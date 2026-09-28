@@ -12,7 +12,7 @@ from core.schema.retrieval import (
 )
 from TA.retrieval.policy import validate_retrieval_artifacts
 from TA.retrieval.schema import FinalChain, HopAction, HopDecision, StopReason
-from TA.helper.model_call import is_transport_error, typed_call
+from TA.helper.model_call import is_provider_budget_error, is_transport_error, typed_call
 from TA.tools.retrieval import RetrieveMore, SemanticSearch, TextbookSearch, append_ledger
 
 
@@ -74,10 +74,39 @@ def _render_chain(chain: FinalChain) -> str:
 
 
 def _envelope(ledger, chain, validation, context, diagnostics):
+    from TA.helper.context import EvidenceContextPolicy, compile_evidence_context
+
+    # ponytail: prune uncited distractors for the answerer to prevent lost-in-the-middle context degradation
+    # keeps cited evidence + at most 2 uncited safety fallback items (dropping remaining 10-15 distractors)
+    answer_context = compile_evidence_context(
+        ledger,
+        chain,
+        EvidenceContextPolicy(
+            excerpt_chars=context.harness.evidence_excerpt_chars,
+            max_chars=context.policy.answer_context_chars,
+            max_uncited=2 if (chain and getattr(chain, "answerable", False)) else 5,
+        ),
+    )
+    by_uri = {str(item["uri"]): item for item in ledger}
+    cited_ids = list(dict.fromkeys(
+        uri for claim in chain.claims for uri in claim.evidence_uris
+    )) if chain.answerable and validation.validity is RetrievalValidity.VALID else []
     return {
         "thought": _render_chain(chain),
         "entity_ids": [str(item.get("id") or item["uri"]) for item in ledger],
-        "content": _ledger_text(ledger, context.harness.evidence_excerpt_chars),
+        "content": answer_context.text,
+        "answerable": chain.answerable,
+        "cited_evidence": [
+            {key: by_uri[uri][key] for key in ("uri", "source", "document_uri", "p_lo")
+             if key in by_uri[uri]}
+            for uri in cited_ids if uri in by_uri
+        ],
+        "answer_context": {
+            "uris": list(answer_context.uris),
+            "source_chars": answer_context.source_chars,
+            "emitted_chars": answer_context.emitted_chars,
+            "truncated": answer_context.truncated,
+        },
         "status": "SUCCESS" if validation.validity is RetrievalValidity.VALID else "FAIL",
         "validity": validation.validity.value,
         "retrieval_attempts": validation.attempted_calls,
@@ -198,12 +227,15 @@ def build_agentic_v4_retrieve_wf(agents, resources: Optional[Dict] = None):
                         output_mode=context.policy.model_output_mode,
                         timeout_s=context.policy.model_timeout_s,
                         retries=context.policy.model_transport_retries,
+                        request_key=context.policy.model_profile,
                     )
                     retries += used_retries
                     calls += 1
                     hop_notes.extend(notes)
                     decision_error = _decision_error(decision, context, state["_v4_ledger"])
                 except Exception as exc:
+                    if is_provider_budget_error(exc):
+                        raise
                     retries += int(getattr(exc, "transport_retries_used", 0))
                     if is_transport_error(exc):
                         fatal_error = f"{type(exc).__name__}: {exc}"
@@ -296,10 +328,14 @@ def build_agentic_v4_retrieve_wf(agents, resources: Optional[Dict] = None):
                 "context_limit": False,
             }
         else:
+            seed_uris = list(decision.basis_uris)
+            if not seed_uris and state.get("_v4_ledger"):
+                seed_uris = [str(item["uri"]) for item in state["_v4_ledger"][:2] if item.get("uri")]
             _, artifact = await retrieve_more._arun(
                 decision.query,
                 [source.value for source in decision.sources],
                 runtime=runtime,
+                seed_uris=seed_uris,
             )
             artifact.update(repeated_query=False, context_limit=False)
         ledger, new_count, duplicate_count = append_ledger(
@@ -383,6 +419,7 @@ def build_agentic_v4_retrieve_wf(agents, resources: Optional[Dict] = None):
                         output_mode=context.policy.model_output_mode,
                         timeout_s=context.policy.model_timeout_s,
                         retries=context.policy.model_transport_retries,
+                        request_key=context.policy.model_profile,
                     )
                     retries += used_retries
                     calls += 1
@@ -398,6 +435,8 @@ def build_agentic_v4_retrieve_wf(agents, resources: Optional[Dict] = None):
                         raise ValueError(f"final chain cites unknown URIs: {', '.join(stray)}")
                     break
                 except Exception as exc:
+                    if is_provider_budget_error(exc):
+                        raise
                     retries += int(getattr(exc, "transport_retries_used", 0))
                     chain = None
                     final_error = f"{type(exc).__name__}: {exc}"
@@ -467,6 +506,9 @@ def build_agentic_v4_retrieve_wf(agents, resources: Optional[Dict] = None):
                     "context_limit_stops": int(stop_reason is StopReason.CONTEXT_LIMIT),
                     **diagnostics,
                     "errors": rag_result["errors"],
+                    "answer_context_uris": rag_result["answer_context"]["uris"],
+                    "answer_context_chars": rag_result["answer_context"]["emitted_chars"],
+                    "answer_context_truncated": rag_result["answer_context"]["truncated"],
                 },
                 chunks=state["_v4_ledger"],
             )

@@ -30,7 +30,7 @@ that classifies a turn into five intents, each with its own finish node:
 
 - **retrieve** — factual answers; quick graph lookup first, deeper structural pass only on a real gap.
 - **roadmap** — ranks concepts by out-degree centrality, finds the shortest prerequisite path, runs a critic-actor review, then waits for student confirmation before committing.
-- **teach** — the lesson loop, a 6-node subgraph: `Teach_Understand → Teach_Lookup → [Teach_Lecture | Teach_RAG → Teach_Lecture] → Teach_Evaluate → Next_Topic`. PDF lookup first, RAG only as fallback. Evaluate either advances position or holds the concept for review.
+- **teach** — classifies review, continue, or evaluate. Review and continue run the shared retrieval workflow with V4/V5 before generating a lecture; evaluate advances position or holds the concept for review. If retrieval lacks evidence, the lecture uses general knowledge without citations.
 - **confirm** — applies a pending proposal the student agreed to.
 - **unknown** — anything that fits nothing else.
 

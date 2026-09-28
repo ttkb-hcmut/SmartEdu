@@ -12,7 +12,7 @@ from langchain_core.messages import AIMessage
 
 import TA.helper.prompt as prompt_lib
 from TA.helper.few_shot import format_few_shot, get_language_instruction
-from TA.helper.model_call import bounded_ainvoke
+from TA.helper.model_call import bounded_ainvoke, is_transient, ta_ainvoke, text_content
 from TA.retrieval.policy import BENCHMARK_ANSWER_PROMPT
 from TA.helper.schema import BenchmarkAnswer, RouterDecision
 from core.schema.wf_state import AgentState, ConceptNode, TAOutput
@@ -23,7 +23,7 @@ from TA.workflow.roadmap import build_roadmap_wf
 from TA.workflow.teach import build_teach_wf
 
 from TA.helper.utils import parse_student_state
-from TA.helper.context import extract_ta_context
+from TA.helper.context import build_ui_citations, extract_ta_context
 import os
 from TA.tracing.tracer import AgentTracer
 
@@ -67,9 +67,8 @@ def _tracer_ctx(config: RunnableConfig):
 
 
 class SmartEdu:
-    def __init__(self, agents, teach_tools: Dict = None, retrieve_res: Dict = None):
+    def __init__(self, agents, retrieve_res: Dict = None):
         self.agents = agents
-        self.teach_tools = teach_tools or {}
         self.retrieve_res = retrieve_res or {}
         self.app = self._build_graph()
 
@@ -78,9 +77,13 @@ class SmartEdu:
 
         builder.add_node("TA_Router", self.ta_router_node)
 
-        builder.add_node("WF_Retrieve", build_retrieve_wf(agents=self.agents, resources=self.retrieve_res))
+        retrieve_wf = build_retrieve_wf(agents=self.agents, resources=self.retrieve_res)
+        builder.add_node("WF_Retrieve", retrieve_wf)
         builder.add_node("WF_Roadmap", build_roadmap_wf(agents=self.agents))
-        builder.add_node("WF_Teach", build_teach_wf(agents=self.agents))
+        builder.add_node("WF_Teach", build_teach_wf(
+            agents=self.agents, retrieve_wf=retrieve_wf,
+            graph_db=self.retrieve_res.get("graph_db"),
+        ))
 
         builder.add_node("TA_Retrieve_Finish", self.ta_retrieve_finish)
         builder.add_node("TA_Roadmap_Finish", self.ta_roadmap_finish)
@@ -114,6 +117,17 @@ class SmartEdu:
 
         return builder.compile()
 
+    @staticmethod
+    def _bind_generation(model, temperature: float, max_tokens: int):
+        if model.__class__.__module__.startswith("langchain_ollama"):
+            return model.bind(
+                options={"temperature": temperature, "num_predict": max_tokens},
+                reasoning=False,
+            )
+        if model.__class__.__module__.startswith("langchain_openrouter"):
+            return model.bind(temperature=temperature, max_tokens=max_tokens)
+        return model.bind(temperature=temperature, max_output_tokens=max_tokens)
+
     async def ta_router_node(
         self,
         state: AgentState,
@@ -137,7 +151,13 @@ class SmartEdu:
         tracer, chat_id = _tracer_ctx(config)
         ta = self.agents["TA"]
         S_state = parse_student_state(tracker.get_student_state(sid))
-        history = tracker.get_chat_history(sid, mode="skim")
+        history = tracker.get_chat_history(
+            sid,
+            mode="skim",
+            recent_turns=4,
+            exclude_chat_id=chat_id,
+            max_chars=4_000,
+        )
         language = state.get("language", "vn")
 
         few_shot = format_few_shot(language)
@@ -152,25 +172,25 @@ class SmartEdu:
         )
 
         start_invoke = time.time()
-        ## -- Router stays as lightweight raw LLM call (speed matters here)
-        ## -- num_predict must exceed gpt-oss hidden-reasoning budget (~150-320 tok);
-        ##    100 truncated the model before the final-channel word → empty content → 'unknown'.
-        ## -- reasoning off here only: classification doesn't need CoT, other profiles keep it
-        llm = ta.model.bind(options={"temperature": 0, "num_predict": 256}, reasoning=False)
-        res = await llm.ainvoke(
-            [("user", prompt)],
-            config=config
-        )
+        llm = self._bind_generation(ta.model, 0, 1024)
+        res = await ta_ainvoke(llm, [("user", prompt)], config)
         ## -- Take the LAST allowed token: prompt reasons first, then emits the word.
-        raw = (res.content or "").lower()
+        raw = text_content(getattr(res, "content", res)).lower()
         matches = re.findall(r"\b(retrieve|roadmap|teaching|confirm|unknown)\b", raw)
-        intent = matches[-1] if matches else "unknown"
+        intent = matches[-1] if matches else ""
+        if not intent:
+            query = str(state.get("user_query", "")).casefold()
+            lesson_markers = (
+                "bài giảng", "bài học tương tác", "câu hỏi ôn tập",
+                "interactive lesson", "full lesson", "step-by-step lesson",
+            )
+            intent = "teaching" if any(marker in query for marker in lesson_markers) else "unknown"
         logger.info(f"[SMART_EDU_LOG] Node: TA_Router | Time: {time.time() - start_invoke:.4f}s |")
         logger.info(f"[SMART_EDU_LOG] Intent: {intent} | Response: {res}")
         if not matches:
             logger.warning(
-                f"[ta_router_node] No intent token in LLM response; defaulting to 'unknown'. "
-                f"query={state.get('user_query', '')!r} raw={res.content!r}"
+                f"[ta_router_node] No intent token in LLM response; using {intent!r} fallback. "
+                f"query={state.get('user_query', '')!r} raw={getattr(res, 'content', res)!r}"
             )
 
         log_filename = config.get("configurable", {}).get("log_filename") or os.getenv("TEST_LOG_FILENAME")
@@ -200,7 +220,7 @@ class SmartEdu:
         runtime: Runtime[RetrievalRunContext],
     ):
         """ TA synthesis node — tool-calling agent reads context then synthesizes"""
-        sid, uid, tracker, session_context = _resource_ctx(config)
+        sid, _uid, tracker, session_context = _resource_ctx(config)
         tracer, chat_id = _tracer_ctx(config)
         ta = self.agents["TA"]
         language = state.get("language", "vn")
@@ -238,18 +258,7 @@ class SmartEdu:
                 "output": ta_output.model_dump()
             }, type="info", file_name=log_filename)
 
-        # --- Memoize & persist (atomic $push, offloaded off the event loop) ---
-        async def _bg_retrieve(ta_out: TAOutput, cid: str):
-            if uid and cid:
-                await asyncio.to_thread(
-                    tracker.mongodb.push_chat_message,
-                    uid, sid, cid,
-                    {"role": ta.name, "heading": "Synthesizing Retrieval", "message": ta_out.summary}
-                )
-            await self._save_ta_memo(sid, cid, tracker, ta_out)
-            await asyncio.to_thread(tracker.save_state, sid)
-
-        await _bg_retrieve(ta_output, chat_id)  ## await -> persist before turn returns, no race/lost write
+        await self._bg_save(sid, chat_id, tracker, ta_output)
 
         logger.info(f"[SMART_EDU_LOG] Node: TA_Retrieve_Finish | Time: {time.time() - start_invoke:.4f}s")
 
@@ -264,11 +273,16 @@ class SmartEdu:
                 latency_ms=(time.time() - start_invoke) * 1000,
             )
 
-        return {"messages": [AIMessage(content=ta_output.message)], "pending_proposal": None}
+        citations = await build_ui_citations(results.get("RAG", {}), self.retrieve_res.get("graph_db"))
+        return {
+            "messages": [AIMessage(content=ta_output.message)],
+            "pending_proposal": None,
+            "ui_action": {"citations": citations} if citations else None,
+        }
 
     async def ta_roadmap_finish(self, state: AgentState, config: RunnableConfig):
         """ TA synthesis node — tool-calling agent"""
-        sid, uid, tracker, session_context = _resource_ctx(config)
+        sid, _uid, tracker, session_context = _resource_ctx(config)
         tracer, chat_id = _tracer_ctx(config)
         ta = self.agents["TA"]
         language = state.get("language", "vn")
@@ -326,18 +340,7 @@ class SmartEdu:
                 "output": ta_output.model_dump()
             }, type="info", file_name=log_filename)
 
-        # --- Memoize & persist (atomic $push, offloaded off the event loop) ---
-        async def _bg_roadmap(ta_out: TAOutput, cid: str):
-            if uid and cid:
-                await asyncio.to_thread(
-                    tracker.mongodb.push_chat_message,
-                    uid, sid, cid,
-                    {"role": ta.name, "heading": "Planning Roadmap", "message": ta_out.summary}
-                )
-            await self._save_ta_memo(sid, cid, tracker, ta_out)
-            await asyncio.to_thread(tracker.save_state, sid)
-
-        await _bg_roadmap(ta_output, chat_id)
+        await self._bg_save(sid, chat_id, tracker, ta_output)
 
         logger.info(f"[SMART_EDU_LOG] Node: TA_Roadmap_Finish | Time: {time.time() - start_invoke:.4f}s")
 
@@ -355,7 +358,7 @@ class SmartEdu:
 
     async def ta_teach_finish(self, state: AgentState, config: RunnableConfig):
         """ TA synthesis node — tool-calling agent"""
-        sid, uid, tracker, session_context = _resource_ctx(config)
+        sid, _uid, tracker, session_context = _resource_ctx(config)
         tracer, chat_id = _tracer_ctx(config)
         ta = self.agents["TA"]
         language = state.get("language", "vn")
@@ -372,18 +375,10 @@ class SmartEdu:
             or {}
         )
 
-        prompt = prompt_lib.TEACH_PRESENT_PROMPT.format(
-            language_instruction=language_instruction,
-            teach_res=teach_res
-        )
-
-        ## -- Inject prior TA messages for coherence
-        ta_context = extract_ta_context(state)
-        if ta_context:
-            prompt = f"[Prior TA reasoning]:\n{ta_context}\n\n{prompt}"
-
         start_invoke = time.time()
-        message = await self._stream_answer(ta, prompt, config)
+        if not teach_res:  ## str({}) is truthy "{}", checked pre-stringify so an empty fallback still raises
+            raise RuntimeError("Teach finished without a lecture")
+        message = str(teach_res).strip()
         ta_output = TAOutput(summary=self._derive_summary(message), message=message)
 
         log_filename = config.get("configurable", {}).get("log_filename") or os.getenv("TEST_LOG_FILENAME")
@@ -392,36 +387,21 @@ class SmartEdu:
                 "agent_name": ta.name,
                 "node": "TA_Teach_Finish",
                 "thought": ta_output.summary,
-                "prompt": prompt[:300],
+                "prompt": state.get("user_query", "")[:300],
                 "output": ta_output.model_dump()
             }, type="info", file_name=log_filename)
 
-        # --- Memoize & persist (atomic $push, offloaded off the event loop) ---
-        async def _bg_teach(ta_out: TAOutput, cid: str):
-            if uid and cid:
-                await asyncio.to_thread(
-                    tracker.mongodb.push_chat_message,
-                    uid, sid, cid,
-                    {"role": ta.name, "heading": "Teaching & Evaluating", "message": ta_out.summary}
-                )
-            await self._save_ta_memo(sid, cid, tracker, ta_out)
-            await asyncio.to_thread(tracker.save_state, sid)
-
-        await _bg_teach(ta_output, chat_id)
+        await self._bg_save(sid, chat_id, tracker, ta_output)
 
         logger.info(f"[SMART_EDU_LOG] Node: TA_Teach_Finish | Time: {time.time() - start_invoke:.4f}s")
 
-        ## -- Auto FE navigation: prefer state ui_action (from teach_lookup), else ta_output.ui_action
         ui_action = state.get("ui_action") or ta_output.ui_action
-        teach_ctx = state.get("_teach_context", {})
-        if not ui_action and teach_ctx.get("page"):
-            ui_action = {"navigate_page": teach_ctx["page"], "document": teach_ctx.get("storage_uri")}
 
         if tracer and chat_id:
             tracer.log_step(
                 chat_id=chat_id,
                 node="TA_Teach_Finish",
-                prompt=prompt,
+                prompt=state.get("user_query", ""),
                 state=tracker.get_student_state(sid),
                 tool_result=worker_results,
                 output=ta_output.message,
@@ -480,7 +460,11 @@ class SmartEdu:
         await self._save_ta_memo(sid, chat_id, tracker, ta_output)
         await asyncio.to_thread(tracker.save_state, sid)
 
-        return {"messages": [AIMessage(content=ta_output.message)], "pending_proposal": None}
+        return {
+            "messages": [AIMessage(content=ta_output.message)],
+            "pending_proposal": None,
+            "status_flag": "SUCCESS",
+        }
 
     async def ta_unknown_finish(self, state: AgentState, config: RunnableConfig):
         """ Fallback node for unclassifiable queries — guides student on how to interact. """
@@ -491,7 +475,13 @@ class SmartEdu:
         language_instruction = get_language_instruction(language)
 
         S_state = parse_student_state(tracker.get_student_state(sid))
-        history = tracker.get_chat_history(sid, mode="skim")
+        history = tracker.get_chat_history(
+            sid,
+            mode="skim",
+            recent_turns=4,
+            exclude_chat_id=chat_id,
+            max_chars=4_000,
+        )
 
         prompt = prompt_lib.UNKNOWN_PROMPT.format(
             language_instruction=language_instruction,
@@ -528,7 +518,11 @@ class SmartEdu:
         # --- Memoize & persist (offloaded off the event loop) ---
         await self._bg_save(sid, chat_id, tracker, ta_output)
 
-        return {"messages": [AIMessage(content=ta_output.message)], "pending_proposal": None}
+        return {
+            "messages": [AIMessage(content=ta_output.message)],
+            "pending_proposal": None,
+            "status_flag": "SUCCESS",
+        }
 
 
 
@@ -546,16 +540,25 @@ class SmartEdu:
         emit = config.get("configurable", {}).get("emit")
         tracer, chat_id = _tracer_ctx(config)
         msgs = [("system", ta.system_prompt_text), ("user", prompt)]
-        parts = []
-        async for chunk in ta.model.astream(msgs, config=config):
-            text = getattr(chunk, "content", "") or ""
-            if text:
-                if tracer and chat_id:
-                    tracer.mark_first_token(chat_id)
-                parts.append(text)
-                if emit:
-                    await emit({"type": "token", "text": text})
-        return "".join(parts)
+        attempt = 0
+        while True:
+            parts = []
+            try:
+                async for chunk in ta.model.astream(msgs, config=config):
+                    text = text_content(getattr(chunk, "content", chunk))
+                    if text:
+                        if tracer and chat_id:
+                            tracer.mark_first_token(chat_id)
+                        parts.append(text)
+                        if emit:
+                            await emit({"type": "token", "text": text})
+                return "".join(parts)
+            except Exception as e:
+                ## retry only before any token reached the client, else the stream would repeat
+                if parts or attempt == 2 or not is_transient(e):
+                    raise
+                await asyncio.sleep(2**attempt)
+                attempt += 1
 
     async def _benchmark_answer(
         self,
@@ -572,8 +575,8 @@ class SmartEdu:
             raise RuntimeError(
                 f"benchmark answer model mismatch: expected {policy.answer_model_name}, got {model_name or 'unknown'}"
             )
-        answerer = answer_model.bind(
-            options={"temperature": policy.answer_temperature}
+        answerer = self._bind_generation(
+            answer_model, policy.answer_temperature, 256
         ).with_structured_output(
             BenchmarkAnswer,
             method="json_mode",
@@ -590,6 +593,7 @@ class SmartEdu:
             config=config,
             timeout_s=policy.answer_timeout_s,
             retries=policy.answer_transport_retries,
+            request_key=policy.answer_model_profile,
         )
         return self._benchmark_answer_text(result)
 
@@ -619,7 +623,7 @@ class SmartEdu:
         parsed = result.get("parsed")
         if isinstance(parsed, BenchmarkAnswer):
             return parsed.answer.strip()
-        raw = getattr(result.get("raw"), "content", "") or "unknown"
+        raw = text_content(getattr(result.get("raw"), "content", "unknown")) or "unknown"
         try:
             value = json.loads(raw).get("answer", raw)
         except (TypeError, json.JSONDecodeError):
@@ -683,7 +687,6 @@ class SmartEdu:
                 "session_context": session_context,
                 "tracer": tracer,
                 "chat_id": chat_id,
-                "teach_tools": self.teach_tools,
                 "log_filename": log_f,
                 "emit": emit,  ## finish nodes pull this to stream tokens
             },

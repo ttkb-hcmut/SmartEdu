@@ -52,7 +52,7 @@ TASK:
 2. If RAG found nothing (status=FAIL or content is empty):
    - Tell the student the topic was not found and invite them to rephrase. Do NOT fabricate.
 
-summary = one-sentence gist; message = the full Markdown answer.
+Reply with the Markdown answer only, no JSON wrapper.
 """
 
 _DEEP_CHECK_PROMPT = """
@@ -255,6 +255,7 @@ _TEACH_REVIEW_PROMPT = """
 STUDENT STATE:
 - Previous nodes (recently completed): {previous_nodes}
 - Current node: {current_node}
+- Student's request: {query}
 
 SOURCE MATERIAL ({source}):
 {content}
@@ -265,12 +266,11 @@ CHAT HISTORY:
 CONTEXT: You may receive prior TA reasoning below. Use it to avoid repeating content.
 
 YOUR TASK:
-1. If source is a PDF page reference, call `get_pdf_pages` first to read the actual content.
-2. Review what the student has learned across the previous nodes and current node.
-3. Use the SOURCE MATERIAL as your primary reference — do NOT fabricate content.
-4. Ask SIMPLE recall questions to test retention — one question per key concept.
-5. Pay close attention to chat history to avoid repeating questions already asked.
-6. Use VN-EN-VN trilingual terminology for technical terms.
+1. Address the student's request while reviewing what they learned across previous nodes and the current node.
+2. If source is a PDF page reference, call `get_pdf_pages` first to read the actual content.
+3. Use the SOURCE MATERIAL as the primary reference — do NOT fabricate or claim it supports facts it does not contain.
+4. Ask simple recall questions to test retention, one per key concept.
+5. Use chat history to avoid repeating questions already asked; use VN-EN-VN trilingual terminology for technical terms.
 
 STYLE: Encouraging but rigorous. Prioritize understanding over memorization."""
 
@@ -280,6 +280,7 @@ _TEACH_CONTINUE_PROMPT = """
 STUDENT STATE:
 - Previous nodes: {previous_nodes}
 - Current node: {current_node}
+- Student's request: {query}
 
 SOURCE MATERIAL ({source}):
 {content}
@@ -293,11 +294,11 @@ YOUR TASK:
 1. ALWAYS read source material first:
    - If content starts with "Call get_pdf_pages(...)", execute that tool call to get the actual text.
    - If content starts with "Source content (RAG):", use the provided text directly.
-2. Teach the CURRENT NODE concept in depth using the actual source content you read.
-3. Break the lecture into sections. After EACH section, pose a challenge question.
-4. Connect to previous nodes when relevant (build on prior knowledge).
-5. Use VN-EN-VN trilingual terminology for all key concepts.
-6. If you need additional context from previous steps, call `recall_tool_results`.
+2. Teach the student's request directly; use the current node as context, not as a replacement for the request.
+3. For a full lesson, use 4–6 titled sections with substantive explanations. Cover each part requested, and include concrete examples, a comparison, a common misconception, and a brief recap when relevant. Do not compress it into a benchmark-style short answer. Respect an explicit request for brevity.
+4. Keep source-backed facts faithful to the supplied material. If no retrieval source is available, teach from general knowledge without claiming PDF support.
+5. Connect to previous nodes when relevant and use VN-EN-VN trilingual terminology for key concepts.
+6. End with one question that checks understanding; call `recall_tool_results` only if prior-step context is needed.
 
 STYLE: Clear, structured, pedagogical. Match Bloom's level:
 - Level 1-2: Focus on definitions and recall
@@ -361,14 +362,15 @@ Present this to the student:
 2. List the proposed path as bullet points.
 3. End by asking them to confirm: "Bạn đồng ý không?" / "Do you agree?"
 
-summary = one-sentence gist; message = the full Markdown message.
+Reply with the Markdown message only, no JSON wrapper.
 """
 
 _TEACH_PRESENT_PROMPT = """
 {language_instruction}
 
 Below is the lecture material from the teaching module. Present it to the student,
-polishing for readability. Keep it engaging and interactive.
+polishing for readability. Preserve its full explanations, examples, sections, and
+practice questions; this is an editing pass, not a summary. Keep it engaging and interactive.
 
 Lecture Data:
 {teach_res}

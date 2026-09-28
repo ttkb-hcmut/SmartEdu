@@ -4,7 +4,7 @@ from typing import Type, Optional
 from pydantic import BaseModel
 from TA.tools.neo.base import *
 from TA.tools.neo.schema import *
-from knowledge.engine.graph.helper.normalize import wiki_resolver
+from core.util.normalize import wiki_resolver
 from core.repo.graph.cypher.tools.search import (
     CYPHER_entity_finder, CYPHER_rhetorical_retriever,
     CYPHER_rhetorical_retriever_role, CYPHER_edge_explorer,

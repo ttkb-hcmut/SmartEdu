@@ -141,7 +141,7 @@ def _policy_payload() -> dict:
         "model_name": "qwen3:8b",
         "temperature": 0.0,
         "answer_model_profile": "TA",
-        "answer_model_name": "gpt-oss:120b-cloud",
+        "answer_model_name": "nvidia/nemotron-3-super-120b-a12b:free",
         "answer_temperature": 0.0,
         "toolsets": {
             preset.value: [tool.value for tool in tools]
@@ -256,13 +256,12 @@ def resolve_retrieval_context(
             "prompt_id": RetrievalPromptId.MULTIHOP_V3,
             "prompt": TYPED_HOP_PROMPT,
             "model_profile": "retrieval_planner",
-            "model_name": "gpt-oss:120b-cloud",
+            "model_name": "nvidia/nemotron-3-super-120b-a12b:free",
             "temperature": 0.0,
             "answer_model_profile": "retrieval_answerer",
-            "answer_model_name": "gpt-oss:120b-cloud",
+            "answer_model_name": "nvidia/nemotron-3-super-120b-a12b:free",
             "answer_temperature": 0.0,
-            ## RETRIEVAL_PLANNER is a bare ChatOllama with no bound tools, so
-            ## format+tools conflict does not apply here
+            ## planner is a bare model with no bound tools, so structured output stays isolated
             "model_output_mode": RetrievalOutputMode.STRUCTURED,
             "finalizer_prompt": TYPED_FINALIZER_PROMPT,
             "answer_prompt": BENCHMARK_ANSWER_PROMPT,
@@ -272,6 +271,7 @@ def resolve_retrieval_context(
             "schema_repair_attempts": 1,
             "answer_timeout_s": 120,
             "answer_transport_retries": 1,
+            "answer_context_chars": 48_000,
         }
         policy_digest = _digest({
             "id": policy_id.value,
@@ -289,10 +289,10 @@ def resolve_retrieval_context(
             "prompt_id": RetrievalPromptId.MULTIHOP_V2,
             "prompt": EVIDENCE_LEDGER_PROMPT,
             "model_profile": "retrieval_aggregator",
-            "model_name": "gpt-oss:120b-cloud",
+            "model_name": "nvidia/nemotron-3-super-120b-a12b:free",
             "temperature": 0.0,
             "answer_model_profile": "retrieval_answerer",
-            "answer_model_name": "gpt-oss:120b-cloud",
+            "answer_model_name": "nvidia/nemotron-3-super-120b-a12b:free",
             "answer_temperature": 0.0,
             "min_tool_calls": 0,
         }
@@ -320,7 +320,7 @@ def resolve_retrieval_context(
             "model_name": "qwen3:8b",
             "temperature": 0.0,
             "answer_model_profile": "TA",
-            "answer_model_name": "gpt-oss:120b-cloud",
+            "answer_model_name": "nvidia/nemotron-3-super-120b-a12b:free",
             "answer_temperature": 0.0,
             "min_tool_calls": _MINIMUM_CALLS[preset],
         }

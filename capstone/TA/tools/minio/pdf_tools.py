@@ -10,7 +10,7 @@ except ImportError:
     fitz = None
 
 from core.repo.graph.graphdb import GraphDB
-from core.repo.storage.minio_repo import MinioDB
+from core.repo.storage.minio_repo import MinioDB, resolve_pdf_document
 
 class ConceptInput(BaseModel):
     concept: str = Field(description="Concept name to locate in the document.")
@@ -50,11 +50,9 @@ class GetPages(BaseTool):
             if obj_name.startswith("minio://"):
                 obj_name = obj_name.split("/", 3)[-1]
 
-            if "/chunks/" in obj_name and obj_name.endswith(".txt"):
-                parts = obj_name.split("/")
-                if len(parts) >= 3:
-                    pdf_filename = parts[-3] # The {name} part
-                    obj_name = "/".join(parts[:-2]) + f"/{pdf_filename}.pdf"
+            resolved, _ = resolve_pdf_document(obj_name)
+            if resolved:
+                obj_name = resolved
             
             response = self.minio.client.get_object(self.minio.bucket_name, obj_name)
             pdf_data = response.read()
@@ -84,11 +82,11 @@ class FEToPage(BaseTool):
     args_schema: Type[BaseModel] = FEToolInput
     
     def _run(self, page: int, destination: str) -> str:
-        if "/chunks/" in destination and destination.endswith(".txt"):
-            parts = destination.split("/")
-            if len(parts) >= 3:
-                pdf_filename = parts[-3]
-                destination = "/".join(parts[:-2]) + f"/{pdf_filename}.pdf"
+        resolved, _ = resolve_pdf_document(destination)
+        if resolved and "/chunks/" in destination:
+            prefix = destination.split("/", 3)[:3] if destination.startswith("minio://") else []
+            destination = "/".join(prefix) + "/" + resolved if prefix else resolved
+            page = 1
 
         res = {
             "action": "NAVIGATE_PDF",

@@ -47,7 +47,6 @@ _RETRIEVAL_NODES = {
 _DETERMINISTIC_NODES = {
     "WF_Roadmap",
     "WF_Teach",
-    "Teach_Lookup",
     "Apply_Proposal",
     "__error__",
 }
@@ -113,6 +112,7 @@ def build_node_config_manifest(
         "max_calls_per_round": context.harness.max_calls_per_round,
         "max_context_chars": context.harness.max_context_chars,
         "evidence_excerpt_chars": context.harness.evidence_excerpt_chars,
+        "answer_context_chars": context.policy.answer_context_chars,
         "tools": [tool.value for tool in context.policy.allowed_tools],
         "course_scope": context.scope.course,
     }
