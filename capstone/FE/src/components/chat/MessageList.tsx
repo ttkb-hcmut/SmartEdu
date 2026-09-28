@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react"
 import { MessageBubble, type Message } from "./MessageBubble"
 import { ThoughtIndicator } from "./ThoughtIndicator"
 import { type PollState, type AgentThought } from "@/hooks/useChatPoll"
-import { type UiAction } from "@/lib/normalise"
+import { type Citation, type UiAction } from "@/lib/normalise"
 import { cn } from "@/lib/utils"
 
 interface MessageListProps {
@@ -15,6 +15,7 @@ interface MessageListProps {
   error: string | null
   pdfOpen: boolean
   onNavigate: (course: string, topic: string, page: number) => void
+  onOpenCitation: (citation: Citation) => void
   className?: string
 }
 
@@ -26,6 +27,7 @@ export function MessageList({
   error,
   pdfOpen,
   onNavigate,
+  onOpenCitation,
   className,
 }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -56,6 +58,7 @@ export function MessageList({
           message={msg}
           pdfOpen={pdfOpen}
           onNavigate={onNavigate}
+          onOpenCitation={onOpenCitation}
         />
       ))}
 
@@ -65,6 +68,7 @@ export function MessageList({
             message={{ id: "__streaming__", role: "ta", content: partial }}
             pdfOpen={pdfOpen}
             onNavigate={onNavigate}
+            onOpenCitation={onOpenCitation}
           />
         ) : (
           <ThoughtIndicator thought={thought} />

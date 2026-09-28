@@ -5,11 +5,10 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react"
-import { useRouter, usePathname } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { createApiClient } from "@/lib/api"
 
 type Language = "vn" | "eng"
@@ -19,6 +18,7 @@ interface AuthState {
   isAdmin: boolean
   language: Language
   sessionId: string | null
+  sessionReady: boolean
 }
 
 interface AuthContextValue extends AuthState {
@@ -26,6 +26,7 @@ interface AuthContextValue extends AuthState {
   logout: () => Promise<void>
   setLanguage: (lang: Language) => void
   setSessionId: (id: string | null) => void
+  setSessionReady: (ready: boolean) => void
   apiFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
 }
 
@@ -33,21 +34,21 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
-  const pathname = usePathname()
   const [state, setState] = useState<AuthState>({
     accessToken: null,
     isAdmin: false,
     language: "vn",
     sessionId: null,
+    sessionReady: false,
   })
 
   // tokenRef keeps apiFetch closures from going stale when accessToken changes
   const tokenRef = useRef<string | null>(null)
-  tokenRef.current = state.accessToken
 
   const handleAuthFailure = useCallback(() => {
-    setState({ accessToken: null, isAdmin: false, language: "vn", sessionId: null })
+    setState({ accessToken: null, isAdmin: false, language: "vn", sessionId: null, sessionReady: false })
     tokenRef.current = null
+    window.localStorage.removeItem("smartedu_session")
     router.push("/login")
   }, [router])
 
@@ -56,12 +57,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({ ...s, accessToken: newToken }))
   }, [])
 
-  const { apiFetch } = useMemo(
-    () => createApiClient(() => tokenRef.current, handleTokenRefresh, handleAuthFailure),
+  const apiFetch = useCallback(
+    (input: RequestInfo | URL, init?: RequestInit) =>
+      createApiClient(() => tokenRef.current, handleTokenRefresh, handleAuthFailure).apiFetch(input, init),
     [handleTokenRefresh, handleAuthFailure]
   )
 
   const login = useCallback((token: string, isAdmin: boolean) => {
+    tokenRef.current = token
     setState((s) => ({ ...s, accessToken: token, isAdmin }))
   }, [])
 
@@ -71,8 +74,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // best-effort
     }
-    setState({ accessToken: null, isAdmin: false, language: "vn", sessionId: null })
+    setState({ accessToken: null, isAdmin: false, language: "vn", sessionId: null, sessionReady: false })
     tokenRef.current = null
+    window.localStorage.removeItem("smartedu_session")
     router.push("/login")
   }, [router])
 
@@ -82,6 +86,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const setSessionId = useCallback((id: string | null) => {
     setState((s) => ({ ...s, sessionId: id }))
+  }, [])
+
+  const setSessionReady = useCallback((ready: boolean) => {
+    setState((s) => ({ ...s, sessionReady: ready }))
   }, [])
 
   // On mount: try to restore session via the httpOnly refresh cookie
@@ -96,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setState((s) => ({ ...s, accessToken: token, isAdmin }))
         tokenRef.current = token
 
-        if (pathname === "/login" || pathname === "/register") {
+        if (window.location.pathname === "/login" || window.location.pathname === "/register") {
           router.push("/chat")
         }
 
@@ -113,11 +121,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
     restore()
-  }, [])
+  }, [router])
 
   return (
     <AuthContext.Provider
-      value={{ ...state, login, logout, setLanguage, setSessionId, apiFetch }}
+      value={{ ...state, login, logout, setLanguage, setSessionId, setSessionReady, apiFetch }}
     >
       {children}
     </AuthContext.Provider>

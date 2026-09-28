@@ -1,73 +1,57 @@
 "use client"
+
 import { useEffect, useRef } from "react"
 import { useAuth } from "@/contexts/AuthContext"
-
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
+import { listSessions, newSession, resumeSession } from "@/lib/study"
 
 export function SessionManager({ children }: { children: React.ReactNode }) {
-  const { apiFetch, accessToken, setSessionId } = useAuth()
+  const { apiFetch, accessToken, setSessionId, setSessionReady } = useAuth()
+  const inflightRef = useRef<Promise<string> | null>(null)
 
-  const sessionIdRef = useRef<string | null>(null)
-  const tokenRef     = useRef<string | null>(null)
-  const prevTokenRef = useRef<string | null>(null)
-  const startedRef   = useRef(false)
-
-  // always current — read inside event listener closures
-  tokenRef.current = accessToken
-
-  // start once when first authenticated
   useEffect(() => {
-    if (!accessToken || startedRef.current) return
-    startedRef.current = true
+    if (!accessToken) return
+    let cancelled = false
 
-    let mounted = true
-    async function start() {
-      try {
-        const res = await apiFetch(`${API}/system/v0/student/session/start`, { method: "POST" })
-        if (res.ok && mounted) {
-          const data = await res.json()
-          sessionIdRef.current = data.session_id
-          setSessionId(data.session_id)
+    async function restore(): Promise<string> {
+      const fromUrl = window.location.pathname === "/chat"
+        ? new URLSearchParams(window.location.search).get("session") : null
+      const saved = window.localStorage.getItem("smartedu_session")
+      async function firstAvailable(candidates: (string | null)[]) {
+        for (const candidate of new Set(candidates.filter((value): value is string => !!value))) {
+          try { return (await resumeSession(apiFetch, candidate)).session_id }
+          catch { continue }
         }
-      } catch {}
+        return null
+      }
+      let id = await firstAvailable([fromUrl, saved])
+      if (!id) {
+        const recent = await listSessions(apiFetch)
+        id = await firstAvailable(recent.items.map((item) => item.id))
+      }
+      if (!id) id = (await newSession(apiFetch)).session_id
+      return id
     }
-    start()
-    return () => { mounted = false }
-  }, [accessToken, apiFetch, setSessionId])
 
-  // end on tab/window close only
-  useEffect(() => {
-    function sendEnd() {
-      if (!sessionIdRef.current || !tokenRef.current) return
-      fetch(`${API}/system/v0/student/session/end?session_id=${sessionIdRef.current}`, {
-        method: "DELETE",
-        keepalive: true,
-        headers: { Authorization: `Bearer ${tokenRef.current}` },
-      }).catch(() => {})
-    }
-    window.addEventListener("beforeunload", sendEnd)
-    return () => window.removeEventListener("beforeunload", sendEnd)
-  }, [])
+    const pending = inflightRef.current ?? restore()
+    inflightRef.current = pending
+    pending.then((id) => {
+      if (cancelled) return
+      window.localStorage.setItem("smartedu_session", id)
+      setSessionId(id)
+    }).catch(() => {
+      if (!cancelled) setSessionId(null)
+    }).finally(() => {
+      if (inflightRef.current === pending) inflightRef.current = null
+      if (!cancelled) setSessionReady(true)
+    })
+    return () => { cancelled = true }
+  }, [accessToken, apiFetch, setSessionId, setSessionReady])
 
-  // end on logout (accessToken → null)
   useEffect(() => {
-    if (accessToken !== null) {
-      prevTokenRef.current = accessToken
-      return
-    }
-    const lastToken = prevTokenRef.current
-    if (sessionIdRef.current && lastToken) {
-      fetch(`${API}/system/v0/student/session/end?session_id=${sessionIdRef.current}`, {
-        method: "DELETE",
-        keepalive: true,
-        headers: { Authorization: `Bearer ${lastToken}` },
-      }).catch(() => {})
-      sessionIdRef.current = null
-      setSessionId(null)
-    }
-    prevTokenRef.current = null
-    startedRef.current = false  // allow re-start after re-login
-  }, [accessToken, setSessionId])
+    if (accessToken) return
+    inflightRef.current = null
+    setSessionReady(false)
+  }, [accessToken, setSessionReady])
 
   return <>{children}</>
 }

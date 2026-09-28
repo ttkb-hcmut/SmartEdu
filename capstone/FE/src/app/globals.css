@@ -2,6 +2,11 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+svg [role="button"]:focus-visible rect {
+  stroke-width: 3;
+  stroke: var(--se-accent);
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /* ─────────────────────────────────────────────────────────────
@@ -62,7 +67,7 @@
   --radius-full: var(--r-full);
 
   /* Typography */
-  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-sans: Inter, "Segoe UI", system-ui, sans-serif;
   --font-mono: ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
 }
 

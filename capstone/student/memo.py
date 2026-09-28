@@ -33,12 +33,33 @@ class Memo:
         else:
             self.session = Session(id=session_id)
 
+    async def save(self, msg_dict: Dict[str, Any]):
+        if "timestamp" not in msg_dict:
+            msg_dict["timestamp"] = datetime.utcnow().isoformat()
+        chat_msg = ChatMessage(**msg_dict)
+        if not self.session.chats:
+            self.session.chats.append(Chat(messages=[chat_msg]))
+        else:
+            self.session.chats[-1].messages.append(chat_msg)
+        if self.save_callback:
+            res = self.save_callback(self.session_id, self.session)
+            if hasattr(res, "__await__"):
+                await res
+
     ## recent_turns set -> last N turns full, older turns skim. bounds tokens.
-    def get_formatted_history(self, mode: str = "full", recent_turns: Optional[int] = None) -> str:
+    def get_formatted_history(
+        self,
+        mode: str = "full",
+        recent_turns: Optional[int] = None,
+        exclude_chat_id: Optional[str] = None,
+        max_chars: Optional[int] = None,
+    ) -> str:
         if not self.session.chats:
             return "No prior context."
 
-        chats = self.session.chats
+        chats = [chat for chat in self.session.chats if chat.id != exclude_chat_id]
+        if not chats:
+            return "No prior context."
         cutoff = (len(chats) - recent_turns) if recent_turns is not None else 0
 
         formatted_lines = []
@@ -53,4 +74,20 @@ class Memo:
                     else:
                         formatted_lines.append(f"TA: {msg.message}")
 
-        return "\n".join(formatted_lines)
+        history = "\n".join(formatted_lines)
+        if max_chars is None or len(history) <= max_chars:
+            return history
+        if max_chars <= 0:
+            return ""
+
+        kept = []
+        remaining = max_chars
+        for line in reversed(formatted_lines):
+            separator = 1 if kept else 0
+            if len(line) + separator > remaining:
+                if not kept:
+                    kept.append(line[:remaining])
+                break
+            kept.append(line)
+            remaining -= len(line) + separator
+        return "\n".join(reversed(kept))

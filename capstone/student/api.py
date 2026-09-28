@@ -13,8 +13,9 @@ OAuth-like Standard flow:
   Client ──── POST /ta/chat [session_id] ────────────────────────────────────► TA
 """
 
+import asyncio
 import uuid
-from fastapi import APIRouter, Request, HTTPException, Depends, status
+from fastapi import APIRouter, Request, HTTPException, Depends, Query, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 
@@ -198,6 +199,65 @@ async def end_session(
     if owner != current_student.id:
         raise HTTPException(status_code=403, detail="Session does not belong to this student.")
     tracker.drop_session(session_id)
+
+
+@router.get("/sessions")
+async def list_sessions(
+    request: Request,
+    limit: int = Query(default=30, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    q: str = Query(default="", max_length=200),
+    current_student: User = Depends(get_current_student),
+):
+    mongo = request.app.state.student_tracker.mongodb
+    return await asyncio.to_thread(mongo.list_sessions, current_student.id, limit, offset, q)
+
+
+@router.get("/sessions/{session_id}")
+async def read_session(
+    session_id: str,
+    request: Request,
+    current_student: User = Depends(get_current_student),
+):
+    mongo = request.app.state.student_tracker.mongodb
+    session = await asyncio.to_thread(mongo.get_session_data, current_student.id, session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found.")
+    messages = []
+    for chat in session.get("chats", []):
+        visible = [m for m in chat.get("messages", []) if m.get("role") in {"student", "TA"}]
+        latest_ta = next((m for m in reversed(visible) if m["role"] == "TA"), None)
+        visible = [m for m in visible if m["role"] == "student"]
+        if latest_ta:
+            visible.append(latest_ta)
+        last_ta = len(visible) - 1 if latest_ta else -1
+        for index, message in enumerate(visible):
+            messages.append({
+                "id": f"{chat['id']}:{index}",
+                "role": "user" if message["role"] == "student" else "ta",
+                "content": message.get("message", ""),
+                "timestamp": message.get("timestamp"),
+                "ui_action": chat.get("ui_action") if index == last_ta else None,
+            })
+    last_chat = (session.get("chats") or [None])[-1]
+    pending_id = last_chat.get("id") if last_chat and not any(
+        m.get("role") == "TA" for m in last_chat.get("messages", [])
+    ) else None
+    return {"id": session_id, "messages": messages, "pending_chat_id": pending_id}
+
+
+@router.post("/sessions/{session_id}/resume", response_model=SessionResponse)
+async def resume_session(
+    session_id: str,
+    request: Request,
+    current_student: User = Depends(get_current_student),
+):
+    tracker = request.app.state.student_tracker
+    session = await asyncio.to_thread(tracker.mongodb.get_session_data, current_student.id, session_id)
+    if not session or tracker.get_student_id_by_session(session_id) not in {None, current_student.id}:
+        raise HTTPException(status_code=404, detail="Session not found.")
+    await asyncio.to_thread(tracker.create_chat_session, current_student.id, session_id)
+    return SessionResponse(session_id=session_id)
 
 
 @router.post("/admin/reset", status_code=status.HTTP_200_OK)

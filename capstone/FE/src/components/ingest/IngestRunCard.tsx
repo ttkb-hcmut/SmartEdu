@@ -32,18 +32,30 @@ const TERMINAL: ReadonlySet<string> = new Set(["completed", "partial", "failed"]
 
 interface ReportPayload {
   status?: string
-  sources_count?: number
-  chunks_count?: number
-  duration_seconds?: number
+  run_id?: string
+  duration_s?: number
   started_at?: string
   finished_at?: string
-  errors?: string[]
+  stage_timings_ms?: Record<string, number>
+  textbooks?: { file: string; sections: number; passages: number }[]
+  slides?: { file: string; nodes: number; edges: number }[]
+  videos?: { file: string; duration?: number; segments?: number; anchored_segments?: number; novel_candidates?: unknown[] }[]
+  anchors?: number
+  errors?: (string | { file?: string; stage?: string; error: string })[]
 }
 
 export interface ActiveRun {
   courseName: string
   flowRunId: string
   counts: { slides: number; textbooks: number; videos: number }
+  measurement?: {
+    startedAtMs: number
+    acceptedAtMs: number
+    uploadUrlMs: number
+    uploadBatchMs: number
+    submitMs: number
+    files: { name: string; bytes: number; durationMs: number }[]
+  }
 }
 
 interface Props {
@@ -60,9 +72,10 @@ function sanitizeError(raw: string): string {
 }
 
 function fmtDuration(sec: number): string {
-  if (sec < 60) return `${Math.round(sec)}s`
-  const m = Math.floor(sec / 60)
-  const s = Math.round(sec % 60)
+  if (sec < 60) return `${sec.toFixed(3)} s`
+  const rounded = Math.round(sec)
+  const m = Math.floor(rounded / 60)
+  const s = rounded % 60
   return s > 0 ? `${m}m ${s}s` : `${m}m`
 }
 
@@ -108,23 +121,28 @@ export function IngestRunCard({ run }: Props) {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
   const [pollError, setPollError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [observedAtMs, setObservedAtMs] = useState<number | null>(null)
 
   // Ref to track staleness across closures
   const cancelledRef = useRef(false)
+  const terminalObservedRef = useRef(false)
 
   const poll = useCallback(async () => {
     try {
-      const res = await apiFetch(
+      let res = await apiFetch(
         `${API}/system/v0/knowledge/ingest-report?course=${encodeURIComponent(run.courseName)}&run_id=${encodeURIComponent(run.flowRunId)}`
       )
 
       if (cancelledRef.current) return
 
       if (res.status === 404) {
-        // Run hasn't registered in Prefect yet
-        setPhase((prev) => (prev === "accepted" ? "waiting" : prev))
-        setPollError(null)
-        return
+        res = await apiFetch(`${API}/system/v0/knowledge/ingest-report?course=${encodeURIComponent(run.courseName)}`)
+        if (cancelledRef.current) return
+        if (res.status === 404) {
+          setPhase((prev) => (prev === "accepted" ? "waiting" : prev))
+          setPollError(null)
+          return
+        }
       }
       if (!res.ok) {
         setPollError(`Server error (${res.status})`)
@@ -133,12 +151,17 @@ export function IngestRunCard({ run }: Props) {
 
       const data: ReportPayload = await res.json()
       if (cancelledRef.current) return
+      if (data.run_id !== run.flowRunId) return
 
       setReport(data)
       setLastUpdate(new Date())
       setPollError(null)
 
       const status = data.status?.toUpperCase()
+      if (status && TERMINAL.has(status.toLowerCase()) && !terminalObservedRef.current) {
+        terminalObservedRef.current = true
+        setObservedAtMs(performance.timeOrigin + performance.now())
+      }
       if (status === "COMPLETED") setPhase("completed")
       else if (status === "PARTIAL") setPhase("partial")
       else if (status === "FAILED") setPhase("failed")
@@ -153,13 +176,8 @@ export function IngestRunCard({ run }: Props) {
 
   useEffect(() => {
     cancelledRef.current = false
-    // Reset state for a new run
-    setPhase("accepted")
-    setReport(null)
-    setPollError(null)
-
     // First poll immediately
-    poll()
+    const first = setTimeout(poll, 0)
 
     const id = setInterval(() => {
       if (!cancelledRef.current && !TERMINAL.has(phase)) {
@@ -169,6 +187,7 @@ export function IngestRunCard({ run }: Props) {
 
     return () => {
       cancelledRef.current = true
+      clearTimeout(first)
       clearInterval(id)
     }
     // ponytail: intentionally excluding `phase` from deps — the interval
@@ -189,6 +208,29 @@ export function IngestRunCard({ run }: Props) {
       setCopied(true)
       setTimeout(() => setCopied(false), 1500)
     })
+  }
+
+  function reportPayload() {
+    return {
+      run_id: run.flowRunId,
+      course: run.courseName,
+      browser: run.measurement ? {
+        ...run.measurement,
+        observedAtMs,
+        e2eMs: observedAtMs === null ? null : observedAtMs - run.measurement.startedAtMs,
+        pollIntervalMs: POLL_INTERVAL_MS,
+      } : null,
+      report,
+    }
+  }
+
+  function downloadReport() {
+    const url = URL.createObjectURL(new Blob([JSON.stringify(reportPayload(), null, 2)], { type: "application/json" }))
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `ingestion-${run.flowRunId}.json`
+    link.click()
+    URL.revokeObjectURL(url)
   }
 
   return (
@@ -227,7 +269,7 @@ export function IngestRunCard({ run }: Props) {
         </button>
         {PREFECT_UI && (
           <a
-            href={`${PREFECT_UI}/flow-runs/flow-run/${run.flowRunId}`}
+            href={`${PREFECT_UI}/runs/flow-run/${run.flowRunId}`}
             target="_blank"
             rel="noopener noreferrer"
             className="shrink-0 rounded p-0.5 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
@@ -251,15 +293,20 @@ export function IngestRunCard({ run }: Props) {
           className="rounded-md p-3 space-y-1.5 text-xs"
           style={{ backgroundColor: "var(--surface-2)", color: "var(--ink)" }}
         >
-          {report.sources_count != null && (
-            <p>Nguồn đã xử lý: <strong>{report.sources_count}</strong></p>
+          {report.duration_s != null && (
+            <p>Pipeline: <strong>{fmtDuration(report.duration_s)}</strong></p>
           )}
-          {report.chunks_count != null && (
-            <p>Chunks: <strong>{report.chunks_count}</strong></p>
+          {run.measurement && <p>Upload: <strong>{fmtDuration(run.measurement.uploadBatchMs / 1000)}</strong></p>}
+          {run.measurement && observedAtMs !== null && (
+            <p>Đầu–cuối (UI): <strong>{fmtDuration((observedAtMs - run.measurement.startedAtMs) / 1000)}</strong></p>
           )}
-          {report.duration_seconds != null && (
-            <p>Thời lượng: <strong>{fmtDuration(report.duration_seconds)}</strong></p>
-          )}
+          {Object.entries(report.stage_timings_ms ?? {}).map(([name, ms]) => (
+            <p key={name}>{({ textbooks: "Giáo trình", slides: "Slides", anchors: "Liên kết nguồn", videos: "Video" } as Record<string, string>)[name] ?? name}: <strong>{fmtDuration(ms / 1000)}</strong></p>
+          ))}
+          {report.textbooks?.map((item) => <p key={item.file}>{item.file}: {item.sections} sections, {item.passages} passages</p>)}
+          {report.slides?.map((item) => <p key={item.file}>{item.file}: {item.nodes} nodes, {item.edges} edges</p>)}
+          {report.videos?.map((item) => <p key={item.file}>{item.file}: {item.segments ?? 0} segments, {item.anchored_segments ?? 0} anchored</p>)}
+          {report.anchors != null && <p>Concept–passage anchors: {report.anchors}</p>}
           {report.started_at && (
             <p>Bắt đầu: {new Date(report.started_at).toLocaleTimeString()}</p>
           )}
@@ -269,10 +316,17 @@ export function IngestRunCard({ run }: Props) {
           {report.errors && report.errors.length > 0 && (
             <ul className="mt-1 space-y-0.5" style={{ color: "var(--error)" }}>
               {report.errors.map((e, i) => (
-                <li key={i}>⚠ {sanitizeError(e)}</li>
+                <li key={i}>⚠ {sanitizeError(typeof e === "string" ? e : `${e.file ?? e.stage ?? ""}: ${e.error}`)}</li>
               ))}
             </ul>
           )}
+        </div>
+      )}
+
+      {report && TERMINAL.has(phase) && (
+        <div className="flex gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={downloadReport}>Tải report JSON</Button>
+          <Button type="button" variant="outline" size="sm" onClick={() => navigator.clipboard.writeText(JSON.stringify(reportPayload(), null, 2))}>Sao chép report JSON</Button>
         </div>
       )}
 

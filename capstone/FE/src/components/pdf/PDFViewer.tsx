@@ -21,26 +21,38 @@ const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 interface PDFViewerProps {
   course: string
   topic: string
+  rawFile?: string
   page: number
   onPageChange: (page: number) => void
   className?: string
 }
 
-export function PDFViewer({ course, topic, page, onPageChange, className }: PDFViewerProps) {
+export function PDFViewer({ course, topic, rawFile, page, onPageChange, className }: PDFViewerProps) {
   const { apiFetch } = useAuth()
   const [blobUrl, setBlobUrl] = useState<string | null>(null)
   const [numPages, setNumPages] = useState<number>(0)
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
+  const [viewerWidth, setViewerWidth] = useState(392)
+  const viewportRef = useRef<HTMLDivElement>(null)
   const prevBlobRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (!course || !topic) return
-    let cancelled = false
-    setLoading(true)
-    setFetchError(null)
+    const element = viewportRef.current
+    if (!element) return
+    const observer = new ResizeObserver(([entry]) => setViewerWidth(entry.contentRect.width))
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [loading])
 
-    apiFetch(`${API}/system/v0/knowledge/pdf/${encodeURIComponent(course)}/${encodeURIComponent(topic)}`)
+  useEffect(() => {
+    if (!course || (!topic && !rawFile)) return
+    let cancelled = false
+
+    const path = rawFile
+      ? `raw/${encodeURIComponent(course)}/${encodeURIComponent(rawFile)}`
+      : `${encodeURIComponent(course)}/${encodeURIComponent(topic)}`
+    apiFetch(`${API}/system/v0/knowledge/pdf/${path}`)
       .then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         return res.blob()
@@ -65,7 +77,7 @@ export function PDFViewer({ course, topic, page, onPageChange, className }: PDFV
         prevBlobRef.current = null
       }
     }
-  }, [course, topic]) // Re-fetch when topic changes
+  }, [course, topic, rawFile, apiFetch])
 
   // Track current blobUrl for cleanup
   useEffect(() => {
@@ -94,10 +106,13 @@ export function PDFViewer({ course, topic, page, onPageChange, className }: PDFV
   return (
     <div className={cn("flex h-full flex-col overflow-hidden", className)}>
       {/* PDF document */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div ref={viewportRef} className="flex-1 overflow-y-auto px-4 py-4">
         <Document
           file={blobUrl}
-          onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+          onLoadSuccess={({ numPages }) => {
+            setNumPages(numPages)
+            if (page > numPages) onPageChange(numPages)
+          }}
           loading={<PDFSkeleton />}
           error={
             <p className="text-sm" style={{ color: "var(--error)" }}>
@@ -107,7 +122,7 @@ export function PDFViewer({ course, topic, page, onPageChange, className }: PDFV
         >
           <Page
             pageNumber={page}
-            width={360}
+            width={Math.max(100, viewerWidth - 32)}
             renderTextLayer
             renderAnnotationLayer
           />

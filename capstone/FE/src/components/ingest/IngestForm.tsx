@@ -54,7 +54,8 @@ export function IngestForm() {
     )
   }
 
-  async function uploadFile(file: File, url: string): Promise<void> {
+  async function uploadFile(file: File, url: string): Promise<number> {
+    const started = performance.now()
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
       xhr.open("PUT", url)
@@ -70,7 +71,7 @@ export function IngestForm() {
       xhr.addEventListener("load", () => {
         if (xhr.status >= 200 && xhr.status < 300) {
           updateProgress(file.name, { status: "done", progress: 100 })
-          resolve()
+          resolve(performance.now() - started)
         } else {
           updateProgress(file.name, { status: "error", error: `HTTP ${xhr.status}` })
           reject(new Error(`Upload failed: ${xhr.status}`))
@@ -99,6 +100,8 @@ export function IngestForm() {
       return
     }
 
+    const startedAtMs = performance.timeOrigin + performance.now()
+    const started = performance.now()
     setSubmitting(true)
     setProgress(
       allFiles.map((f) => ({ name: f.name, status: "pending", progress: 0 }))
@@ -117,20 +120,25 @@ export function IngestForm() {
       if (!urlRes.ok) throw new Error(`Failed to get upload URLs (${urlRes.status})`)
       const fileMap = new Map(allFiles.map((file) => [file.name, file]))
       const targets = parseTargets(await urlRes.json(), new Set(fileMap.keys()))
+      const uploadUrlMs = performance.now() - started
 
       // Step 2: Upload each file directly to MinIO
       setProgress((prev) =>
         prev.map((f) => ({ ...f, status: "uploading" as const }))
       )
-      await Promise.all(
-        targets.map(({ file_name, url }) => {
+      const uploadStarted = performance.now()
+      const files = await Promise.all(
+        targets.map(async ({ file_name, url }) => {
           const file = fileMap.get(file_name)
           if (!file) throw new Error(`Missing local file for ${file_name}`)
-          return uploadFile(file, url)
+          const durationMs = await uploadFile(file, url)
+          return { name: file.name, bytes: file.size, durationMs }
         })
       )
+      const uploadBatchMs = performance.now() - uploadStarted
 
       // Step 3: Trigger ingestion
+      const submitStarted = performance.now()
       const ingestRes = await apiFetch(`${API}/system/v0/knowledge/ingest-course`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -139,13 +147,14 @@ export function IngestForm() {
           slide_files: slides.map((f) => f.name),
           textbook_files: textbooks.map((f) => f.name),
           video_files: videos.map((f) => f.name),
-          reset: true,
+          reset: false,
         }),
       })
       if (!ingestRes.ok) throw new Error(`Ingest failed (${ingestRes.status})`)
       const ingestBody = await ingestRes.json()
       const flowRunId: string | undefined = ingestBody?.flow_run_id
       if (!flowRunId) throw new Error("Server did not return a flow_run_id")
+      const acceptedAtMs = performance.timeOrigin + performance.now()
 
       setActiveRun({
         courseName: courseName.trim(),
@@ -154,6 +163,11 @@ export function IngestForm() {
           slides: slides.length,
           textbooks: textbooks.length,
           videos: videos.length,
+        },
+        measurement: {
+          startedAtMs, acceptedAtMs, uploadUrlMs, uploadBatchMs,
+          submitMs: performance.now() - submitStarted,
+          files,
         },
       })
       toast.success("Đã tiếp nhận", {

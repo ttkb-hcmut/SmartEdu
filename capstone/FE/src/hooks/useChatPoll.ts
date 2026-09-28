@@ -1,16 +1,17 @@
 "use client"
 
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useAuth } from "@/contexts/AuthContext"
-import { normaliseUiAction, type UiAction } from "@/lib/normalise"
+import { normaliseUiAction, type UiActionPayload } from "@/lib/normalise"
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 export type PollState = "idle" | "polling" | "done" | "fail" | "timeout"
 
 export interface PollResult {
+  taskId: string
   message: string
-  uiAction: UiAction | null
+  uiAction: UiActionPayload | null
 }
 
 export interface AgentThought {
@@ -19,7 +20,13 @@ export interface AgentThought {
   thought?: string
 }
 
-export function useChatPoll() {
+interface TaskStatusResponse {
+  status: string
+  error?: string
+  result?: { message: string; ui_action?: UiActionPayload | null }
+}
+
+export function useChatPoll(onDone?: (result: PollResult) => void) {
   const { apiFetch, sessionId, language } = useAuth()
   const [state, setState] = useState<PollState>("idle")
   const [result, setResult] = useState<PollResult | null>(null)
@@ -27,6 +34,80 @@ export function useChatPoll() {
   const [thought, setThought] = useState<AgentThought | null>(null)
   const [partial, setPartial] = useState<string>("") // live answer text as tokens stream
   const abortRef = useRef<AbortController | null>(null)
+  const mountedRef = useRef(true)
+  const onDoneRef = useRef(onDone)
+  const completedTaskIdsRef = useRef(new Set<string>())
+
+  useEffect(() => { onDoneRef.current = onDone }, [onDone])
+
+  const completeTask = useCallback((taskId: string, message: string, uiAction: UiActionPayload | null) => {
+    if (completedTaskIdsRef.current.has(taskId)) return
+    completedTaskIdsRef.current.add(taskId)
+    const completed = { taskId, message, uiAction: normaliseUiAction(uiAction) }
+    setResult(completed)
+    setThought(null)
+    setState("done")
+    onDoneRef.current?.(completed)
+  }, [])
+
+  const failTask = useCallback((message: string) => {
+    setThought(null)
+    setState("fail")
+    setError(message)
+  }, [])
+
+  const recoverTask = useCallback(async (taskId: string, signal: AbortSignal) => {
+    setState("polling")
+    setError(null)
+    setPartial("")
+    setThought({ agentName: "TA", thought: "Luồng trả lời bị ngắt; đang lấy trạng thái từ máy chủ…" })
+    let consecutiveErrors = 0
+
+    while (mountedRef.current && !signal.aborted) {
+      try {
+        const response = await apiFetch(`${API}/system/v0/ta/chat/status/${encodeURIComponent(taskId)}`, { signal })
+        if (signal.aborted || !mountedRef.current) return
+        if (response.status === 404) {
+          failTask("Không tìm thấy tác vụ trên máy chủ. Hãy tải lại phiên để kiểm tra lịch sử; câu hỏi không bị gửi lại.")
+          return
+        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+
+        const task = await response.json() as TaskStatusResponse
+        if (task.status === "finished" && task.result) {
+          completeTask(taskId, task.result.message, task.result.ui_action ?? null)
+          return
+        }
+        if (task.status === "Fail" || task.status === "error") {
+          failTask(task.error ?? "Tác vụ trợ lý thất bại.")
+          return
+        }
+        if (task.status !== "working") {
+          failTask("Máy chủ trả về trạng thái tác vụ không hợp lệ.")
+          return
+        }
+        consecutiveErrors = 0
+      } catch (err) {
+        if (signal.aborted || (err as Error)?.name === "AbortError") return
+        if (err instanceof Error && err.message.startsWith("Session expired")) {
+          failTask("Phiên đăng nhập hết hạn. Hãy đăng nhập lại để kiểm tra câu trả lời đã lưu.")
+          return
+        }
+        consecutiveErrors += 1
+        if (consecutiveErrors >= 5) {
+          failTask("Mất kết nối khi khôi phục câu trả lời. Hãy tải lại phiên để kiểm tra kết quả; câu hỏi không bị gửi lại.")
+          return
+        }
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+    }
+  }, [apiFetch, completeTask, failTask])
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false; abortRef.current?.abort() }
+  }, [])
 
   const reset = useCallback(() => {
     abortRef.current?.abort()
@@ -40,6 +121,7 @@ export function useChatPoll() {
 
   const streamTask = useCallback(
     async (taskId: string) => {
+      if (!mountedRef.current) return
       const ctrl = new AbortController()
       abortRef.current = ctrl
       let acc = ""
@@ -50,8 +132,7 @@ export function useChatPoll() {
           headers: { Accept: "text/event-stream" },
         })
         if (!res.ok || !res.body) {
-          setState("fail")
-          setError(`Stream failed (${res.status})`)
+          await recoverTask(taskId, ctrl.signal)
           return
         }
 
@@ -79,43 +160,30 @@ export function useChatPoll() {
               acc += evt.text
               setPartial(acc)
             } else if (evt.type === "done") {
-              setResult({
-                message: evt.message ?? acc,
-                uiAction: normaliseUiAction(evt.ui_action ?? null),
-              })
-              setThought(null)
-              setState("done")
+              completeTask(taskId, evt.message ?? acc, evt.ui_action ?? null)
               return
             } else if (evt.type === "error") {
-              setState("fail")
-              setError(evt.error ?? "TA workflow failed.")
+              failTask(evt.error ?? "TA workflow failed.")
               return
             }
           }
         }
 
-        // Stream closed without a terminal event — salvage accumulated text
-        if (acc) {
-          setResult({ message: acc, uiAction: null })
-          setThought(null)
-          setState("done")
-        } else {
-          setState("fail")
-          setError("Stream ended unexpectedly.")
-        }
+        await recoverTask(taskId, ctrl.signal)
       } catch (err) {
         if ((err as Error)?.name === "AbortError") return
-        setState("fail")
-        setError(err instanceof Error ? err.message : "Streaming error")
+        await recoverTask(taskId, ctrl.signal)
       }
     },
-    [apiFetch]
+    [apiFetch, completeTask, failTask, recoverTask]
   )
 
   const submit = useCallback(
     async (userInput: string) => {
       if (!sessionId) return
       abortRef.current?.abort()
+      const ctrl = new AbortController()
+      abortRef.current = ctrl
       setState("polling")
       setResult(null)
       setError(null)
@@ -125,6 +193,7 @@ export function useChatPoll() {
       try {
         const res = await apiFetch(`${API}/system/v0/ta/chat`, {
           method: "POST",
+          signal: ctrl.signal,
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             session_id: sessionId,
@@ -140,8 +209,10 @@ export function useChatPoll() {
         }
 
         const { task_id } = await res.json()
+        if (ctrl.signal.aborted || !mountedRef.current) return
         await streamTask(task_id)
       } catch (err) {
+        if ((err as Error)?.name === "AbortError") return
         setState("fail")
         setError(err instanceof Error ? err.message : "Failed to send message")
       }
@@ -149,5 +220,31 @@ export function useChatPoll() {
     [apiFetch, sessionId, language, streamTask]
   )
 
-  return { state, result, error, thought, partial, submit, reset }
+  const resumeTask = useCallback(async (taskId: string) => {
+    const ctrl = new AbortController()
+    abortRef.current = ctrl
+    try {
+      const res = await apiFetch(`${API}/system/v0/ta/chat/status/${encodeURIComponent(taskId)}`, { signal: ctrl.signal })
+      if (ctrl.signal.aborted || !mountedRef.current) return
+      if (res.status === 404) {
+        failTask("Lượt trả lời này đã gián đoạn. Bạn có thể gửi câu hỏi mới.")
+        return
+      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const task = await res.json() as TaskStatusResponse
+      if (task.status === "finished" && task.result) {
+        completeTask(taskId, task.result.message, task.result.ui_action ?? null)
+      } else if (task.status === "working") {
+        setState("polling")
+        await streamTask(taskId)
+      } else {
+        failTask(task.error ?? "Lượt trả lời đã thất bại.")
+      }
+    } catch (err) {
+      if ((err as Error)?.name === "AbortError") return
+      await recoverTask(taskId, ctrl.signal)
+    }
+  }, [apiFetch, completeTask, failTask, recoverTask, streamTask])
+
+  return { state, result, error, thought, partial, submit, resumeTask, reset }
 }
