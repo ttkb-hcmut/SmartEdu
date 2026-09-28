@@ -23,8 +23,7 @@ docs/*
 !docs/draw/
 !docs/latex/
 !docs/Ref
-!docs/adr/
-!docs/adr/*.md
+!docs/*.pdf
 
 # LaTeX intermediate files
 *.aux
