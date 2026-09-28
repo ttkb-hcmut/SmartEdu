@@ -39,6 +39,8 @@ def serialize_kg_to_dict(graph: KG_Instance) -> Tuple[List[Dict], List[Dict], Li
         edge_props = serialize_data(edge_data.model_dump(exclude={"source", "target"}))
             
         edges_list.append({
+            "source_id": src_id,
+            "target_id": tgt_id,
             "source_name": src_name,
             "target_name": tgt_name,
             "type": rel_type,
@@ -53,6 +55,7 @@ def serialize_kg_to_dict(graph: KG_Instance) -> Tuple[List[Dict], List[Dict], Li
                 n_name = id_to_name.get(node_id)
                 if n_name:
                     cluster_list.append({
+                        "id": node_id,
                         "name": n_name,
                         "cluster_id": cluster_id,
                         "level": getattr(cluster_data, 'level', 0)

@@ -66,7 +66,7 @@ class Ingest_param:
 
     # video: anchor-only substrate (ADR-0006), novelty stored not decided
     segment_top_k: int = 5
-    anchor_gradient_g: float = 1.5          ## cliff ratio, keep successor while s_i > s_prev/g
+    anchor_gradient_g: float = 1.5          ## cliff ratio for anchor breadth only
 
 ### Infratructure Layer
 @dataclass
@@ -130,8 +130,8 @@ from core.schema.retrieval import (
 @dataclass(frozen=True)
 class Retrieve_param:
     preset: RetrievalPreset = RetrievalPreset.FULL
-    policy_id: RetrievalPolicyId = RetrievalPolicyId.BASELINE_V1
-    harness_id: RetrievalHarnessId = RetrievalHarnessId.AGENTIC_V1
+    policy_id: RetrievalPolicyId = RetrievalPolicyId.BASELINE_V3
+    harness_id: RetrievalHarnessId = RetrievalHarnessId.AGENTIC_V2
     course_scope: str = ""
 
     @classmethod

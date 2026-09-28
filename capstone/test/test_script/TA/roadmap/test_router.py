@@ -3,18 +3,26 @@ import types
 import pytest
 
 
-def _stub():
-    for m in [
-        "langgraph.graph", "langchain_core.runnables", "core.schema.wf_state",
-        "TA.helper.schema", "TA.helper.prompt", "TA.helper.few_shot",
-        "TA.helper.utils", "TA.helper.context", "TA.tracing.tracer",
-    ]:
-        if m not in sys.modules:
-            sys.modules[m] = types.ModuleType(m)
+@pytest.fixture(autouse=True)
+def clean_sys_modules():
+    original = dict(sys.modules)
+    yield
+    for k in list(sys.modules):
+        if k not in original:
+            del sys.modules[k]
+        elif sys.modules[k] is not original[k]:
+            sys.modules[k] = original[k]
 
-    lg = sys.modules["langgraph.graph"]
-    lg.END = "END"
-    lg.StateGraph = type("SG", (), {
+
+def _install_stub(name: str, attrs: dict):
+    mod = types.ModuleType(name)
+    for k, v in attrs.items():
+        setattr(mod, k, v)
+    sys.modules[name] = mod
+
+
+def _router():
+    _StateGraph = type("StateGraph", (), {
         "__init__": lambda s, *a, **k: None,
         "add_node": lambda s, *a, **k: None,
         "set_entry_point": lambda s, *a, **k: None,
@@ -22,15 +30,27 @@ def _stub():
         "add_edge": lambda s, *a, **k: None,
         "compile": lambda s: None,
     })
-    ws = sys.modules["core.schema.wf_state"]
-    ws.AgentState = dict
+    _util_names = [
+        "filter_mastery", "safe_parse_structured", "extract_llm_raw_text",
+        "extract_agent_result", "extract_kg_context",
+    ]
+    _install_stub("langgraph.graph", {"END": "END", "StateGraph": _StateGraph})
+    _install_stub("langchain_core.runnables", {"RunnableConfig": dict})
+    _install_stub("core.schema.wf_state", {"AgentState": dict, "AgentOutput": dict, "ConceptNode": dict})
+    _install_stub("TA.helper.schema", {
+        "RoadmapExplore": object, "RoadmapCritique": object, "RoadmapFinal": object,
+    })
+    _install_stub("TA.helper.prompt", {"ROADMAP_PROMPT": {}})
+    _install_stub("TA.helper.few_shot", {"get_language_instruction": lambda *a, **k: ""})
+    _install_stub("TA.helper.utils", {n: (lambda *a, **k: None) for n in _util_names})
+    _install_stub("TA.helper.context", {"extract_ta_context": lambda *a, **k: ""})
+    _install_stub("TA.tracing.tracer", {
+        "AgentTracer": type("AgentTracer", (), {"logging": staticmethod(lambda *a, **k: None)}),
+    })
 
-
-def _router():
-    _stub()
     import importlib
-    import TA.workflow.roadmap as rm
-    importlib.reload(rm)
+    sys.modules.pop("TA.workflow.roadmap", None)
+    rm = importlib.import_module("TA.workflow.roadmap")
     return rm._explore_router, rm.END
 
 

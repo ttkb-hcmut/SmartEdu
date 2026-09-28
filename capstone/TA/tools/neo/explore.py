@@ -6,7 +6,7 @@ from TA.tools.neo.schema import (
     RecommendInput, BackboneInput, RelevanceInput, OptimalPathInput,
     BackboneOutput, HubConnection, RelevanceOutput, ConceptNode
 )
-from TA.tools.tool_config import PREREQUISITE_WEIGHT
+from TA.tools.tool_config import PREREQUISITE_WEIGHT, MAX_HUBS_CAP, MAX_RESULTS_CAP
 from core.repo.graph.cypher.tools.course import (
     CYPHER_recommend_new, CYPHER_recommend_new_course, CYPHER_recommend_new_from_node,
     CYPHER_course_backbone_hub, CYPHER_course_backbone_rel, CYPHER_course_relevance,
@@ -31,6 +31,7 @@ class RecommendNew(NeoTool):
             course_filter = self._norm_name(course_filter)
         if from_node:
             from_node = self._norm_name(from_node)
+        max_results = max(1, min(int(max_results), MAX_RESULTS_CAP))
         print(f"Run {self.name} | course_filter={course_filter}, from_node={from_node}, max={max_results}")
 
         if from_node:
@@ -92,6 +93,7 @@ class CourseBackbone(NeoTool):
     def _run(self, course_name: str, max_hubs: int = 15, config: RunnableConfig = None):
         session_id = (config or {}).get("configurable", {}).get("session_id", "")
         course_name = self._norm_name(course_name)
+        max_hubs = max(1, min(int(max_hubs), MAX_HUBS_CAP))
         print(f"Run {self.name} | course={course_name}, max_hubs={max_hubs}")
 
         hubs = self.run_query(query=CYPHER_course_backbone_hub, params={

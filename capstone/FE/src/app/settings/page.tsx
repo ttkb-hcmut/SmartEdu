@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 import { useTheme } from "next-themes"
 import { toast } from "sonner"
 import { useAuth } from "@/contexts/AuthContext"
@@ -32,8 +32,7 @@ function Section({
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
   const { language, setLanguage, apiFetch } = useAuth()
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false)
 
   async function updateLanguage(lang: "vn" | "eng") {
     setLanguage(lang)

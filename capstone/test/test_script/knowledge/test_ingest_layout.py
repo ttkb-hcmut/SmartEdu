@@ -60,3 +60,20 @@ def test_prefect_import_stay_pipeline():
                 break
 
     assert not leaks, f"Prefect import outside knowledge/pipeline: {leaks}"
+
+
+def test_root_flow_does_not_resolve_heavy_worker_models():
+    flows = APP_ROOT / "knowledge" / "pipeline" / "flows.py"
+    tree = ast.parse(flows.read_text(encoding="utf-8"), filename=str(flows))
+    root = next(node for node in tree.body if isinstance(node, ast.AsyncFunctionDef)
+                and node.name == "course_flow")
+    resolved = {
+        node.func.attr
+        for node in ast.walk(root)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and isinstance(node.func.value, ast.Name)
+        and node.func.value.id == "deps"
+    }
+
+    assert not resolved & {"llm", "embedder", "transcriber"}

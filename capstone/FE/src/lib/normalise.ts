@@ -17,6 +17,31 @@ export interface UiAction {
   page: number
 }
 
+export interface Citation {
+  uri: string
+  document: string | null
+  page: number | null
+}
+
+export interface CitationAction {
+  citations: Citation[]
+}
+
+export function parseDocumentTarget(document: string | null, page: number | null) {
+  if (!document || !Number.isInteger(page) || !page || page < 1) return null
+  const parts = document.split("/")
+  if (parts.length !== 3 || parts.some((part) => !part || part === "." || part === "..")) return null
+  if (parts[1] === "_raw" && parts[2].toLowerCase().endsWith(".pdf")) {
+    return { course: parts[0], topic: null, rawFile: parts[2], page }
+  }
+  if (parts[2] === "page.pdf") {
+    return { course: parts[0], topic: parts[1], rawFile: null, page }
+  }
+  return null
+}
+
+export type UiActionPayload = UiAction | CitationAction
+
 interface RawShapeA {
   navigate_page: number
   document: string
@@ -66,8 +91,19 @@ function parseMinioDest(uri: string): { course: string; topic: string } {
  * Normalises any raw ui_action value from the backend into a UiAction,
  * or returns null if the value is absent or unrecognised.
  */
-export function normaliseUiAction(raw: unknown): UiAction | null {
+export function normaliseUiAction(raw: unknown): UiActionPayload | null {
   if (raw == null) return null
+
+  if (typeof raw === "object" && "citations" in raw && Array.isArray(raw.citations)) {
+    return {
+      citations: raw.citations.filter((item: unknown): item is Citation =>
+        typeof item === "object" && item !== null &&
+        typeof (item as Citation).uri === "string" &&
+        ((item as Citation).document === null || typeof (item as Citation).document === "string") &&
+        ((item as Citation).page === null || Number.isInteger((item as Citation).page))
+      ),
+    }
+  }
 
   if (isShapeA(raw)) {
     const { course, topic } = parseMinioDest(raw.document)

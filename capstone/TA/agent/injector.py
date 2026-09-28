@@ -47,8 +47,37 @@ class AgentInjector:
                 agent.model = llm_instance
                 agent.system_prompt_text = agent_prompt  ## finish nodes stream raw model, agent sys prompt bypassed
                 agents[agent_name] = agent
+                if agent_name == "RAG":
+                    aggregator = create_agent(
+                        model=llm_instance,
+                        tools=agent_tools,
+                        system_prompt=agent_prompt,
+                        middleware=[RetrievalPolicyMiddleware()],
+                        context_schema=RetrievalRunContext,
+                        debug=DEBUG,
+                        name="RAG_Aggregator",
+                    )
+                    aggregator.model = llm_instance
+                    aggregator.system_prompt_text = agent_prompt
+                    agents["RAG_AGGREGATOR"] = aggregator
+                    planner_model = llm_engine._get_llm("retrieval_planner")
+                    agents["RETRIEVAL_PLANNER"] = planner_model
+                    ledger_model = llm_engine._get_llm("retrieval_aggregator")
+                    ledger_aggregator = create_agent(
+                        model=ledger_model,
+                        tools=[tools_factory.get_retrieve_more_tool()],
+                        system_prompt="Retrieval evidence aggregator.",
+                        middleware=[RetrievalPolicyMiddleware()],
+                        context_schema=RetrievalRunContext,
+                        debug=DEBUG,
+                        name="RAG_Ledger_Aggregator",
+                    )
+                    ledger_aggregator.model = ledger_model
+                    ledger_aggregator.system_prompt_text = "Retrieval evidence aggregator."
+                    agents["RAG_LEDGER_AGGREGATOR"] = ledger_aggregator
             else:
                 # Generator and any future raw-LLM agents
                 agents[agent_name] = llm_instance
 
+        agents["RETRIEVAL_ANSWERER"] = llm_engine._get_llm("retrieval_answerer")
         return agents

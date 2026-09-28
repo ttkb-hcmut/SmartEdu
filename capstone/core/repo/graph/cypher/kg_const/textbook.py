@@ -40,3 +40,12 @@ MATCH (p:Passage)
 WHERE p.uri STARTS WITH $prefix
 RETURN p.uri AS uri
 """
+
+CYPHER_list_sections_for_extraction = """
+MATCH (s:Section)-[:HAS_PASSAGE]->(p:Passage)
+WHERE p.uri STARTS WITH $prefix
+WITH s, p ORDER BY p.p_lo
+RETURN s.id AS section_id, s.title AS title, s.order AS order,
+       collect({id: p.id, uri: p.uri, text: p.text}) AS passages
+ORDER BY s.order
+"""

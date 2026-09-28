@@ -97,8 +97,20 @@ class Student_Tracker:
     def get_student_state(self, session_id: str) -> StudentState:
         return self.get_session(session_id).student_state
 
-    def get_chat_history(self, session_id: str, mode: str = "full", recent_turns: Optional[int] = None) -> str:
-        return self.get_session(session_id).memo.get_formatted_history(mode=mode, recent_turns=recent_turns)
+    def get_chat_history(
+        self,
+        session_id: str,
+        mode: str = "full",
+        recent_turns: Optional[int] = None,
+        exclude_chat_id: Optional[str] = None,
+        max_chars: Optional[int] = None,
+    ) -> str:
+        return self.get_session(session_id).memo.get_formatted_history(
+            mode=mode,
+            recent_turns=recent_turns,
+            exclude_chat_id=exclude_chat_id,
+            max_chars=max_chars,
+        )
 
     def get_mastery(self, session_id: str, node_name: str) -> int:
         student_id = self._resolve(session_id)

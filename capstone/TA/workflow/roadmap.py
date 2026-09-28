@@ -9,6 +9,7 @@ from TA.helper.prompt import ROADMAP_PROMPT
 from TA.helper.few_shot import get_language_instruction
 from TA.helper.utils import filter_mastery, safe_parse_structured, extract_llm_raw_text, extract_agent_result, extract_kg_context
 from TA.helper.context import extract_ta_context
+from TA.helper.model_call import is_transient, ta_ainvoke
 
 
 from TA.tracing.tracer import AgentTracer
@@ -211,10 +212,10 @@ async def roadmap_evaluator_logic(state: AgentState, ta_agent, config: RunnableC
     ## -- Direct structured output, no tool loop
     structured_llm = ta_agent.model.with_structured_output(RoadmapCritique)
     try:
-        critique: RoadmapCritique = await structured_llm.ainvoke(
-            [("user", instruction)], config=config
-        )
+        critique: RoadmapCritique = await ta_ainvoke(structured_llm, [("user", instruction)], config)
     except Exception as e:
+        if is_transient(e):
+            raise
         logger.warning(f"[roadmap_evaluator_logic] Structured output failed: {e}. Attempting json_repair.")
         critique = safe_parse_structured(extract_llm_raw_text(e), RoadmapCritique)
 
@@ -265,10 +266,10 @@ async def ta_advice_logic(state: AgentState, ta_agent, config: RunnableConfig):
     ## -- Direct structured output, no tool loop
     structured_llm = ta_agent.model.with_structured_output(RoadmapFinal)
     try:
-        advice: RoadmapFinal = await structured_llm.ainvoke(
-            [("user", instruction)], config=config
-        )
+        advice: RoadmapFinal = await ta_ainvoke(structured_llm, [("user", instruction)], config)
     except Exception as e:
+        if is_transient(e):
+            raise
         logger.warning(f"[ta_advice_logic] Structured output failed: {e}. Attempting json_repair.")
         advice = safe_parse_structured(extract_llm_raw_text(e), RoadmapFinal)
 

@@ -16,7 +16,7 @@ MERGE (e)-[r:ANCHORED_IN]->(p)
 SET r.score=l.score, r.justification=coalesce(l.justification, '')
 """
 
-CYPHER_write_segment_anchors = """
+CYPHER_write_seg_anchors = """
 UNWIND $links AS l
 MATCH (e:Entity {name: l.entity_name})
 MATCH (s:Segment {id: l.segment_id})
@@ -89,4 +89,38 @@ MATCH (s)-[:HAS_PASSAGE]->(p:Passage)
 WITH p, target ORDER BY p.p_lo
 RETURN p.id AS id, p.p_lo AS p_lo, p.p_hi AS p_hi, p.text AS text,
        (p.id = target.id) AS is_target
+"""
+
+CYPHER_graph_expand_passages = """
+MATCH (p1:Passage)<-[:ANCHORED_IN]-(e:Entity)-[:ANCHORED_IN]->(p2:Passage)
+WHERE p1.id IN $seed_uris AND NOT p2.id IN $seed_uris
+WITH p2, e, count{(e)-[:ANCHORED_IN]->()} AS degree
+WHERE degree <= $max_degree
+WITH p2, sum(1.0 / (1.0 + log(degree))) AS score, count(e) AS shared_count, collect(e.name) AS shared_entities
+RETURN p2.id AS id, p2.uri AS uri, p2.text AS text,
+       p2.p_lo AS p_lo, p2.p_hi AS p_hi, score, shared_count, shared_entities
+ORDER BY score DESC
+LIMIT $k
+"""
+
+CYPHER_entity_passage_search = """
+MATCH (e:Entity)-[r:ANCHORED_IN]->(p:Passage)
+WHERE toLower(e.name) IN $entity_names
+WITH p, e, r, count{(e)-[:ANCHORED_IN]->()} AS degree
+WHERE degree <= $max_degree
+WITH p, sum(coalesce(r.score, 1.0) / (1.0 + log(degree))) AS score, collect(e.name) AS matched_entities
+RETURN p.id AS id, p.uri AS uri, p.text AS text,
+       p.p_lo AS p_lo, p.p_hi AS p_hi, score, matched_entities
+ORDER BY score DESC
+LIMIT $k
+"""
+
+CYPHER_resolve_entity_sources = """
+UNWIND $ids AS id
+MATCH (e:Entity {id: id})
+OPTIONAL MATCH (e)-[r:ANCHORED_IN]->(p:Passage)
+WITH id, e, p, r ORDER BY r.score DESC
+WITH id, e, collect(p)[0] AS passage
+RETURN id, e.hard_ref AS hard_ref,
+       passage.uri AS uri, passage.p_lo AS p_lo
 """

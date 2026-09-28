@@ -1,4 +1,5 @@
 from TA.tools.neo.course_tree import _assemble_tree
+from TA.api.route import _roadmap_payload
 
 CONCEPTS = [
     {"name": "Vector", "topic": "Basics", "type": "Concept", "score": 9.0, "description": "d"},
@@ -24,3 +25,16 @@ def test_max_per_topic_caps_selection():
     tree = _assemble_tree("X", many, [], max_per_topic=3, max_orphans=5)
     kept = tree["topics"][0]["concepts"]
     assert len(kept) == 3 and kept[0]["name"] == "C9"
+
+
+def test_roadmap_progress_and_outline_without_personal_tree():
+    tree = _assemble_tree("LA", CONCEPTS, PREREQS, 5, 5)
+    outline = _roadmap_payload(tree, {})
+    assert outline["progress"]["has_personal_path"] is False
+    assert outline["topics"][0]["concepts"][1]["requires"] == ["Vector"]
+    personal = _roadmap_payload(tree, {"nodes": [
+        {"name": "Vector", "status": "mastered", "mastery": 4},
+        {"name": "New concept", "status": "in_progress", "mastery": 2},
+    ]})
+    assert personal["progress"] == {"has_personal_path": True, "mastered": 1, "in_progress": 1, "total": 2}
+    assert personal["orphan_concepts"][-1]["name"] == "New concept"

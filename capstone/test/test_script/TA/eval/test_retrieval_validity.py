@@ -17,13 +17,6 @@ def _artifact(*, chunks=None, error=""):
     }
 
 
-def test_plain_without_retrieval_is_valid():
-    result = validate_retrieval_artifacts(_context("PLAIN"), [])
-
-    assert result.validity is RetrievalValidity.VALID
-    assert result.attempted_calls == 0
-
-
 def test_required_retrieval_without_attempt_is_policy_invalid():
     result = validate_retrieval_artifacts(_context("RAG"), [])
 

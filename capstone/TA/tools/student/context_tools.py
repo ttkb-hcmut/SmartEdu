@@ -53,7 +53,7 @@ class RecallThoughtsInput(BaseModel):
 # Maps agent_type label → node name prefixes stored in SessionContext
 _AGENT_TYPE_NODE_PREFIX = {
     "rag":   ("Fusion", "RAG_Core", "RAG_Deep", "Roadmap_Explore"),
-    "teach": ("Teach_Lecture", "Teach_RAG", "Teach_Lookup"),
+    "teach": ("Teach_Lecture", "Teach_RAG"),
 }
 
 
@@ -188,4 +188,3 @@ class InspectChatHistory(BaseTool):
 
     async def _arun(self, chat_id: str) -> str:
         return self._run(chat_id=chat_id)
-

@@ -8,11 +8,13 @@ from core.schema.wf_state import AgentState, TAOutput
 from core.config import retrieve_param as _default_rp
 from core.schema.retrieval import RetrievalCase, RetrievalCodeState
 from TA.retrieval.policy import resolve_retrieval_context
+from TA.observability import build_node_config_manifest
 from student.Student_Tracker import Student_Tracker
 from student.memo import Chat, ChatMessage
 from collections import OrderedDict
 from datetime import datetime, timezone
 import asyncio
+from time import perf_counter
 
 RECENT_TURNS = 4  # last N turns full, older skim
 
@@ -28,7 +30,6 @@ class TAModule:
         )
         self.engine: SmartEdu = SmartEdu(
             agents=self.agents,
-            teach_tools=self.tools_factory.get_teach_lookup_tools(),
             retrieve_res={"graph_db": graph_db, "milvus_db": milvus_db, "embedder": embedder},
         )
 
@@ -69,7 +70,11 @@ class TAModule:
         tracer = self._get_tracer(session_id)
 
         ## reuse route chat_id -> trace/memo/mongo share one id
-        chat_id = tracer.begin_chat(query=user_input, chat_id=chat_id or None)
+        chat_id = tracer.begin_chat(
+            query=user_input,
+            chat_id=chat_id or None,
+            node_configs=build_node_config_manifest(self.agents, retrieval_context),
+        )
 
         # Bug 3 fix: use session.context directly (loaded from MongoDB on session init)
         student_id = self.student_tracker._resolve(session_id)
@@ -116,7 +121,10 @@ class TAModule:
         intent = ""
         status = "FAIL"
         errors = []
+        workflow_started = 0.0
+        workflow_latency_ms = 0.0
         try:
+            workflow_started = perf_counter()
             final_state = await self.engine.execute(
                 initial_state=initial_state,
                 session_id=session_id,
@@ -130,6 +138,7 @@ class TAModule:
                 emit=emit,
                 retrieval_context=retrieval_context,
             )
+            workflow_latency_ms = (perf_counter() - workflow_started) * 1000
             status = final_state.get("status_flag", "SUCCESS")
             intent = final_state.get("intent", "")
             ui_action = final_state.get("ui_action")
@@ -143,6 +152,8 @@ class TAModule:
                     else last_msg.get("content", "")
                 )
         except Exception as exc:
+            if workflow_started:
+                workflow_latency_ms = (perf_counter() - workflow_started) * 1000
             errors.append(f"{type(exc).__name__}: {exc}")
         finally:
             _current_session_context.reset(_ctx_token)
@@ -159,6 +170,7 @@ class TAModule:
                     status=status,
                     errors=errors,
                     retrieval_context=retrieval_context,
+                    workflow_latency_ms=workflow_latency_ms,
                 )
             except Exception as exc:
                 status = "FAIL"

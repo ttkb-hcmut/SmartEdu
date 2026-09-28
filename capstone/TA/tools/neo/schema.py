@@ -17,11 +17,11 @@ class ExplorerInput(BaseModel):
 class RecommendInput(BaseModel):
     course_filter: Optional[str] = Field(default=None, description="Course/community name to filter recommendations. None = global.")
     from_node: Optional[str] = Field(default=None, description="Current node name to find neighbors from. None = global hub ranking.")
-    max_results: int = Field(default=10, description="Maximum number of hub nodes to return.")
+    max_results: int = Field(default=10, ge=1, le=50, description="Maximum number of hub nodes to return (capped at 50).")
 
 class BackboneInput(BaseModel):
     course_name: str = Field(description="Name of the course/community to extract backbone from.")
-    max_hubs: int = Field(default=10, description="Maximum number of hub nodes to include in the backbone.")
+    max_hubs: int = Field(default=10, ge=1, le=50, description="Maximum number of hub nodes to include in the backbone (capped at 50).")
 
 class RelevanceInput(BaseModel):
     target_course: str = Field(description="Name of the target course to find dependencies for.")

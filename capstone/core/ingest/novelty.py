@@ -2,9 +2,7 @@ from typing import List, Tuple
 
 
 def cliff_partition(scores: List[float], g: float, floor: float) -> Tuple[List[int], bool]:
-    ## BookRAG gradient walk (arXiv:2512.03413 §4.3.2): relative cliff, not absolute threshold.
-    ## scores DESC. keep idx 0, keep successor i while scores[i] > scores[i-1]/g (plateau=anchored-many).
-    ## novel = no kept member >= floor (guards flat-because-junk speech).
+    ## DESC cliff walk selects anchor breadth; novelty reduces to top-score floor
     if not scores:
         return [], True
 

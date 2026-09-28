@@ -9,16 +9,17 @@ interface FileDropzoneProps {
   label: string
   files: File[]
   onFilesChange: (files: File[]) => void
+  extensions?: string[]
 }
 
-export function FileDropzone({ label, files, onFilesChange }: FileDropzoneProps) {
+export function FileDropzone({ label, files, onFilesChange, extensions = [".pdf"] }: FileDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
 
   function addFiles(incoming: FileList | null) {
     if (!incoming) return
     const valid = Array.from(incoming).filter((f) =>
-      f.name.toLowerCase().endsWith(".pdf")
+      extensions.some((ext) => f.name.toLowerCase().endsWith(ext))
     )
     onFilesChange([...files, ...valid])
   }
@@ -58,7 +59,7 @@ export function FileDropzone({ label, files, onFilesChange }: FileDropzoneProps)
       >
         <Upload className="size-5" style={{ color: "var(--ink-muted)" }} />
         <p className="text-sm" style={{ color: "var(--ink-muted)" }}>
-          Kéo thả file PDF vào đây, hoặc{" "}
+          Kéo thả {extensions.join(", ")} vào đây, hoặc{" "}
           <span style={{ color: "var(--se-accent)" }}>nhấn để chọn</span>
         </p>
       </div>
@@ -66,7 +67,7 @@ export function FileDropzone({ label, files, onFilesChange }: FileDropzoneProps)
       <input
         ref={inputRef}
         type="file"
-        accept=".pdf"
+        accept={extensions.join(",")}
         multiple
         className="sr-only"
         onChange={(e) => addFiles(e.target.files)}

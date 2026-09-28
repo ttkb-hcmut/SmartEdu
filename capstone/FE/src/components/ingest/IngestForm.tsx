@@ -4,20 +4,49 @@ import { useState } from "react"
 import { toast } from "sonner"
 import { FileDropzone } from "./FileDropzone"
 import { UploadProgress, type FileProgress } from "./UploadProgress"
+import { IngestRunCard, type ActiveRun } from "./IngestRunCard"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { useAuth } from "@/contexts/AuthContext"
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
+const VIDEO_EXTS = [".mp4", ".mkv", ".webm", ".mp3", ".m4a", ".wav"]
+
+type UploadTarget = {
+  file_name: string
+  url: string
+}
+
+function parseTargets(body: unknown, fileNames: Set<string>): UploadTarget[] {
+  if (!body || typeof body !== "object" || !("targets" in body)) {
+    throw new Error("Invalid upload URL response")
+  }
+  const targets = (body as { targets: unknown }).targets
+  if (!Array.isArray(targets)) throw new Error("Invalid upload URL response")
+  if (!targets.every((target): target is UploadTarget =>
+    !!target && typeof target === "object" &&
+    typeof (target as UploadTarget).file_name === "string" &&
+    typeof (target as UploadTarget).url === "string"
+  )) throw new Error("Invalid upload URL response")
+
+  const names = new Set(targets.map((target) => target.file_name))
+  if (names.size !== targets.length || names.size !== fileNames.size ||
+      [...fileNames].some((name) => !names.has(name))) {
+    throw new Error("Upload URL response does not match selected files")
+  }
+  return targets
+}
 
 export function IngestForm() {
   const { apiFetch } = useAuth()
   const [courseName, setCourseName] = useState("")
   const [slides, setSlides] = useState<File[]>([])
   const [textbooks, setTextbooks] = useState<File[]>([])
+  const [videos, setVideos] = useState<File[]>([])
   const [progress, setProgress] = useState<FileProgress[]>([])
   const [submitting, setSubmitting] = useState(false)
+  const [activeRun, setActiveRun] = useState<ActiveRun | null>(null)
 
   function updateProgress(name: string, patch: Partial<FileProgress>) {
     setProgress((prev) =>
@@ -25,11 +54,12 @@ export function IngestForm() {
     )
   }
 
-  async function uploadFile(file: File, url: string): Promise<void> {
+  async function uploadFile(file: File, url: string): Promise<number> {
+    const started = performance.now()
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
       xhr.open("PUT", url)
-      xhr.setRequestHeader("Content-Type", "application/pdf")
+      xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream")
 
       xhr.upload.addEventListener("progress", (e) => {
         if (e.lengthComputable) {
@@ -41,7 +71,7 @@ export function IngestForm() {
       xhr.addEventListener("load", () => {
         if (xhr.status >= 200 && xhr.status < 300) {
           updateProgress(file.name, { status: "done", progress: 100 })
-          resolve()
+          resolve(performance.now() - started)
         } else {
           updateProgress(file.name, { status: "error", error: `HTTP ${xhr.status}` })
           reject(new Error(`Upload failed: ${xhr.status}`))
@@ -60,12 +90,18 @@ export function IngestForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!courseName.trim()) return
-    const allFiles = [...slides, ...textbooks]
+    const allFiles = [...slides, ...textbooks, ...videos]
     if (allFiles.length === 0) {
-      toast.error("Vui lòng thêm ít nhất một file PDF.")
+      toast.error("Vui lòng thêm ít nhất một file.")
+      return
+    }
+    if (new Set(allFiles.map((file) => file.name)).size !== allFiles.length) {
+      toast.error("Tên file phải duy nhất trong một lần nạp dữ liệu.")
       return
     }
 
+    const startedAtMs = performance.timeOrigin + performance.now()
+    const started = performance.now()
     setSubmitting(true)
     setProgress(
       allFiles.map((f) => ({ name: f.name, status: "pending", progress: 0 }))
@@ -82,22 +118,27 @@ export function IngestForm() {
         }),
       })
       if (!urlRes.ok) throw new Error(`Failed to get upload URLs (${urlRes.status})`)
-      const { targets } = await urlRes.json()
+      const fileMap = new Map(allFiles.map((file) => [file.name, file]))
+      const targets = parseTargets(await urlRes.json(), new Set(fileMap.keys()))
+      const uploadUrlMs = performance.now() - started
 
       // Step 2: Upload each file directly to MinIO
       setProgress((prev) =>
         prev.map((f) => ({ ...f, status: "uploading" as const }))
       )
-      const fileMap = new Map(allFiles.map((f) => [f.name, f]))
-      await Promise.all(
-        (targets as { name: string; url: string }[]).map(({ name, url }) => {
-          const file = fileMap.get(name)
-          if (!file) return Promise.resolve()
-          return uploadFile(file, url)
+      const uploadStarted = performance.now()
+      const files = await Promise.all(
+        targets.map(async ({ file_name, url }) => {
+          const file = fileMap.get(file_name)
+          if (!file) throw new Error(`Missing local file for ${file_name}`)
+          const durationMs = await uploadFile(file, url)
+          return { name: file.name, bytes: file.size, durationMs }
         })
       )
+      const uploadBatchMs = performance.now() - uploadStarted
 
       // Step 3: Trigger ingestion
+      const submitStarted = performance.now()
       const ingestRes = await apiFetch(`${API}/system/v0/knowledge/ingest-course`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -105,18 +146,38 @@ export function IngestForm() {
           course_name: courseName.trim(),
           slide_files: slides.map((f) => f.name),
           textbook_files: textbooks.map((f) => f.name),
-          reset: true,
+          video_files: videos.map((f) => f.name),
+          reset: false,
         }),
       })
       if (!ingestRes.ok) throw new Error(`Ingest failed (${ingestRes.status})`)
+      const ingestBody = await ingestRes.json()
+      const flowRunId: string | undefined = ingestBody?.flow_run_id
+      if (!flowRunId) throw new Error("Server did not return a flow_run_id")
+      const acceptedAtMs = performance.timeOrigin + performance.now()
 
-      toast.success("Đang xử lý tài liệu", {
-        description: "Quá trình nạp dữ liệu đang chạy nền. Kiểm tra server log để theo dõi.",
-        duration: 8000,
+      setActiveRun({
+        courseName: courseName.trim(),
+        flowRunId,
+        counts: {
+          slides: slides.length,
+          textbooks: textbooks.length,
+          videos: videos.length,
+        },
+        measurement: {
+          startedAtMs, acceptedAtMs, uploadUrlMs, uploadBatchMs,
+          submitMs: performance.now() - submitStarted,
+          files,
+        },
+      })
+      toast.success("Đã tiếp nhận", {
+        description: `Flow ${flowRunId.slice(0, 8)}… đang chạy nền.`,
+        duration: 5000,
       })
       setCourseName("")
       setSlides([])
       setTextbooks([])
+      setVideos([])
       setProgress([])
     } catch (err) {
       toast.error("Nạp dữ liệu thất bại", {
@@ -159,6 +220,13 @@ export function IngestForm() {
         onFilesChange={setTextbooks}
       />
 
+      <FileDropzone
+        label="Video / audio"
+        files={videos}
+        onFilesChange={setVideos}
+        extensions={VIDEO_EXTS}
+      />
+
       {progress.length > 0 && (
         <UploadProgress files={progress} />
       )}
@@ -171,6 +239,10 @@ export function IngestForm() {
         {submitting && <Spinner size="sm" className="mr-1.5" />}
         {submitting ? "Đang tải lên…" : "Nạp tài liệu"}
       </Button>
+
+      {activeRun && (
+        <IngestRunCard key={activeRun.flowRunId} run={activeRun} />
+      )}
     </form>
   )
 }

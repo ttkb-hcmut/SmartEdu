@@ -40,7 +40,7 @@ class AgentOutput(BaseModel):
 class TAOutput(BaseModel):
     summary: str = Field(description="Short summary for memo heading")
     message: str = Field(description="Full answer to user query")
-    ui_action: Optional[Dict[str, Any]] = Field(default=None, description="Frontend action, e.g. {'navigate_page': 5, 'document': '...'}")
+    ui_action: Optional[Dict[str, Any]] = Field(default=None, description="Frontend PDF navigation or citation list")
 
 class AgentState(TypedDict):
     messages: Annotated[list, add_messages]
@@ -66,6 +66,7 @@ class AgentState(TypedDict):
     # roadmap workflow control
     error: Optional[str]            # set when a node bails out (e.g. empty explore) so END isn't silent
     roadmap_attempts: int           # explore→evaluate retry counter, capped to bound the loop
+    _error: Optional[str]           # concrete failure cause; undeclared keys get dropped by the graph schema
 
 
 

@@ -1,4 +1,5 @@
 import io
+import json
 import re
 import logging
 import hashlib
@@ -27,6 +28,59 @@ def make_topic_name(file_name: str, heading: Optional[str], chunk_id: str) -> st
     base = clean_topic_slug(heading) or clean_topic_slug(file_name) or "topic"
     h = hashlib.sha1(f"{file_name}/{chunk_id}".encode("utf-8")).hexdigest()[:6]
     return f"{base}_{h}"
+
+
+def validate_file_names(file_names: List[str]) -> None:
+    seen = set()
+    for name in file_names:
+        if not name or not name.strip():
+            raise ValueError("file name is blank")
+        if "/" in name or "\\" in name or any(ord(char) < 32 for char in name):
+            raise ValueError(f"file name is unsafe: {name}")
+        if name in seen:
+            raise ValueError(f"file name is duplicated: {name}")
+        seen.add(name)
+
+
+def resolve_pdf_document(uri: str) -> tuple[str | None, bool]:
+    if not uri:
+        return None, False
+    key = uri.split("/", 3)[-1] if uri.startswith("minio://") else uri
+    parts = key.split("/")
+    if any(part in {"", ".", ".."} for part in parts):
+        return None, False
+    if len(parts) == 4 and parts[2] == "chunks" and parts[3].endswith(".txt"):
+        return "/".join(parts[:2]) + "/page.pdf", True
+    if len(parts) == 3 and parts[2].lower().endswith(".pdf"):
+        if parts[1] == "_raw":
+            return key, False
+        if parts[2] == "page.pdf":
+            return key, True
+    return None, False
+
+
+def resolve_pdf_reference(source: dict) -> tuple[str | None, int | None]:
+    ref = source.get("hard_ref")
+    if isinstance(ref, str):
+        try:
+            ref = json.loads(ref)
+        except (TypeError, json.JSONDecodeError):
+            ref = None
+    document, page = None, None
+    if isinstance(ref, dict) and ref.get("id"):
+        document, local_page = resolve_pdf_document(str(ref["id"]))
+        p_num = ref.get("p_num") or []
+        page = p_num[0] if isinstance(p_num, (list, tuple)) and p_num else p_num
+        if local_page:
+            page = 1
+    if not document or not isinstance(page, int) or page < 1:
+        document, local_page = resolve_pdf_document(
+            str(source.get("document_uri") or source.get("uri") or "")
+        )
+        page = 1 if local_page else source.get("p_lo")
+    if not document or not isinstance(page, int) or page < 1:
+        return None, None
+    return document, page
 
 
 class MinioDB:
@@ -72,6 +126,16 @@ class MinioDB:
         finally:
             response.close()
             response.release_conn()
+
+    def download_object(self, object_name: str, file_path: str) -> None:
+        self.client.fget_object(self.bucket_name, object_name, file_path)
+
+    def object_revision(self, object_name: str) -> str:
+        stat = self.client.stat_object(self.bucket_name, object_name)
+        revision = getattr(stat, "version_id", None) or getattr(stat, "etag", None)
+        if not revision:
+            raise ValueError(f"object has no cacheable revision: {object_name}")
+        return revision
 
     def object_exists(self, object_name: str) -> bool:
         # true if the object is present

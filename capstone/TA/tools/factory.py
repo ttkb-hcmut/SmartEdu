@@ -1,6 +1,6 @@
-from typing import List, Dict
+from typing import List
 from TA.tools.neo.retriever import EntityFinder, RhetoricalRetriever, EdgeExplorer
-from TA.tools.retrieval import SemanticSearch, TextbookSearch
+from TA.tools.retrieval import RetrieveMore, SemanticSearch, TextbookSearch
 from TA.tools.neo.explore import RecommendNew, CourseBackbone, CourseRelevance, OptimalPath
 from TA.tools.neo.course_tree import CourseTree
 from TA.tools.minio.pdf_tools import GetConcept, GetPages, FEToPage
@@ -38,6 +38,12 @@ class ToolFactory:
             TextbookSearch(graph_db=self.graph_db, embedder=self.embedder),
         ]
 
+    def get_retrieve_more_tool(self) -> RetrieveMore:
+        return RetrieveMore(
+            semantic=SemanticSearch(milvus_db=self.milvus_db, embedder=self.embedder),
+            textbook=TextbookSearch(graph_db=self.graph_db, embedder=self.embedder),
+        )
+
     def get_teach_tools(self) -> List:
         """
         TA agent tools (always bound at startup, context injected via ContextVar per-request):
@@ -55,13 +61,6 @@ class ToolFactory:
             RecallThoughts(),
             InspectChatHistory(),
         ]
-
-    def get_teach_lookup_tools(self) -> Dict:
-        """Raw tool instances for deterministic Teach_Lookup node (no LLM)."""
-        return {
-            "get_concept": GetConcept(engine=self.graph_db),
-            "get_pages": GetPages(minio=self.minio),
-        }
 
     def get_tools(self, agent_name: str):
         if agent_name not in self.agent_tools:

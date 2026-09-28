@@ -4,19 +4,28 @@ from time import time
 from typing import List
 import os
 # Core Package
-from docling import document_converter
-from docling.document_converter import DocumentConverter
+from docling.document_converter import DocumentConverter, PdfFormatOption
+from docling.datamodel.base_models import ConversionStatus, InputFormat
+from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.chunking import HierarchicalChunker
 # Project Modules
 from core.schema.graph.type import Ref
 import re
 from core.config import PAGE_PER_PDF
 
+def _convert_pdf(file_path: str):
+    ## page image backlog, long-book RAM spike
+    options = PdfPipelineOptions(ocr_batch_size=1, layout_batch_size=1,
+                                 table_batch_size=1, queue_max_size=4)
+    converter = DocumentConverter(format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=options)})
+    result = converter.convert(file_path)
+    if result.status != ConversionStatus.SUCCESS or result.errors:
+        raise RuntimeError(f"PDF conversion incomplete: {result.status}; {len(result.errors)} errors")
+    return result.document
+
 def extract_pdf(file_path: str, pages_per_batch: int = 15, step = None) -> List[dict]:
     start = time()
-    converter = DocumentConverter()
-    result = converter.convert(file_path)
-    doc = result.document
+    doc = _convert_pdf(file_path)
     if step is None:
         step: int = int(pages_per_batch/3*2+1)
     with open(file_path, "rb") as f:
@@ -87,8 +96,7 @@ def create_refs(chunks: List[dict], storage_type: str = "minio") -> List[Ref]:
 
 def extract_tree(file_path: str) -> dict:
     ## docling authored hierarchy -> {sections tree, fine items} for :Section/:Passage build
-    converter = DocumentConverter()
-    doc = converter.convert(file_path).document
+    doc = _convert_pdf(file_path)
 
     with open(file_path, "rb") as f:
         file_hash = hashlib.md5(f.read()).hexdigest()

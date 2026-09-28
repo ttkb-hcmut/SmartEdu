@@ -27,7 +27,7 @@ services:
       ENGINE_con2: mysql@dbgate-plugin-mysql
       USER_con2: root
       PASSWORD_con2: ${MYSQL_ROOT_PASSWORD}
-      DATABASE_con2: ${MYSQL_DB_NAME}
+      DATABASE_con2: ${MYSQL_DATABASE}
     networks:
       - capstone-net
     depends_on:

@@ -9,7 +9,7 @@ import asyncio
 from core.schema.graph.graph import KG_Instance
 from core.repo.graph.insert import serialize_kg_to_dict
 from core.ingest.segment import group_passages
-from core.repo.storage.minio_repo import make_topic_name
+from core.repo.storage.minio_repo import make_topic_name, validate_file_names
 from knowledge.ingest.anchor import anchor_concepts
 from knowledge.ingest.fetch import fetch_raw_pdf
 from knowledge.ingest.parse import parse_slide_pdf, parse_textbook_chunks, parse_textbook_tree
@@ -196,23 +196,27 @@ class CourseIngestionService:
         self.last_report = report
         return report
 
-    def validate_files(self, course_name: str, pdf_names: List[str],
-                       video_names: List[str] = None):
-        video_names = video_names or []
-        if not pdf_names and not video_names:
+    def f_valid(self, course_name: str, pdfs: List[str], vids: List[str] = None):
+        vids = vids or []
+        if not pdfs and not vids:
             raise HTTPException(status_code=400, detail="File list is empty.")
 
-        video_exts = (".mp4", ".mkv", ".webm", ".mp3", ".m4a", ".wav")
-        checks = [(n, (".pdf",)) for n in pdf_names] + [(n, video_exts) for n in video_names]
+        try:
+            validate_file_names(pdfs + vids)
+        except ValueError as err:
+            raise HTTPException(status_code=400, detail=f"Invalid file name: {err}")
 
-        for name, allowed in checks:
-            if not name.lower().endswith(allowed):
+        vid_ext = (".mp4", ".mkv", ".webm", ".mp3", ".m4a", ".wav")
+        checks = [(n, (".pdf",)) for n in pdfs] + [(n, vid_ext) for n in vids]
+
+        for name, allow in checks:
+            if not name.lower().endswith(allow):
                 raise HTTPException(
                     status_code=400,
                     detail=f"Unsupported file type: {name}."
                 )
 
-            # presence check (object must already exist via presigned PUT)
+            ## obj exist ?
             raw_obj = self.minio_repo.raw_object_name(course_name, name)
             if not self.minio_repo.object_exists(raw_obj):
                 raise HTTPException(

@@ -3,7 +3,7 @@ import time
 import logging
 from langgraph.graph import StateGraph, END
 from langgraph.runtime import Runtime
-from langchain_core.messages import ToolMessage
+from langchain_core.messages import AIMessage, ToolMessage
 from typing import Dict, Any, List, Optional
 
 from core.schema.retrieval import (
@@ -22,6 +22,8 @@ from TA.helper.utils import parse_student_state, safe_parse_structured, extract_
 
 from TA.tracing.tracer import AgentTracer
 from TA.retrieval.policy import get_tool_spec, validate_retrieval_artifacts
+from TA.retrieval.ledger import build_agentic_v3_retrieve_wf
+from TA.retrieval.controller import build_agentic_v4_retrieve_wf
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +76,11 @@ def _rag_envelope(
 
 
 def _retrieval_artifacts(messages, context: RetrievalRunContext) -> List[Dict[str, Any]]:
-    names = {get_tool_spec(tool_id).name for tool_id in context.policy.allowed_tools}
+    names = (
+        {"retrieve_more"}
+        if context.harness.id is RetrievalHarnessId.AGENTIC_V3
+        else {get_tool_spec(tool_id).name for tool_id in context.policy.allowed_tools}
+    )
     artifacts = []
     for message in messages:
         if not isinstance(message, ToolMessage) or message.name not in names:
@@ -180,7 +186,11 @@ def build_agentic_retrieve_wf(agents):
         current = state.get("worker_results", {})
         return {
             "worker_results": {**current, "RAG": rag_result},
-            "status_flag": rag_result["status"],
+            "status_flag": (
+                "FAIL"
+                if validation.validity is RetrievalValidity.INVALID
+                else "SUCCESS"
+            ),
         }
 
     builder.add_node("Agentic_Retrieve", run_agentic)
@@ -317,11 +327,24 @@ def build_fanout_retrieve_wf(resources: Optional[Dict] = None):
 
         if tracer and chat_id:
             tracer.log_step(chat_id=chat_id, node="Fusion",
-                            tool_result={"sources": state.get("_retrieve_flags", {}), "status": status},
+                            tool_result={
+                                "sources": state.get("_retrieve_flags", {}),
+                                "status": status,
+                                "validity": rag_result["validity"],
+                                "attempts": rag_result["retrieval_attempts"],
+                                "errors": rag_result["errors"],
+                            },
                             chunks=merged, latency_ms=(time.time() - start) * 1000)
 
         current = state.get("worker_results", {})
-        return {"worker_results": {**current, "RAG": rag_result}, "status_flag": status}
+        return {
+            "worker_results": {**current, "RAG": rag_result},
+            "status_flag": (
+                "FAIL"
+                if validation.validity is RetrievalValidity.INVALID
+                else "SUCCESS"
+            ),
+        }
 
     def route_components(state):
         flags = state.get("_retrieve_flags") or {}
@@ -350,9 +373,155 @@ def build_fanout_retrieve_wf(resources: Optional[Dict] = None):
     return builder.compile()
 
 
+def build_agentic_v2_retrieve_wf(agents, resources: Optional[Dict] = None):
+    builder = StateGraph(AgentState, context_schema=RetrievalRunContext)
+    seed = build_fanout_retrieve_wf(resources)
+    aggregator = agents.get("RAG_AGGREGATOR")
+
+    async def run_aggregator(state, config, runtime: Runtime[RetrievalRunContext]):
+        started = time.perf_counter()
+        context = runtime.context
+        by_source = state.get("retrieval_artifacts") or {}
+        seed_artifacts = [
+            by_source[name]
+            for name in ("semantic", "textbook")
+            if name in by_source
+        ]
+        artifacts = list(seed_artifacts)
+        execution_error = ""
+        result = {}
+        output = ""
+        query = state.get("user_query", state["messages"][-1].content)
+        seed_content = "\n".join(
+            f"- [{chunk.get('source', artifact.get('source', 'unknown'))}] {chunk.get('text', '')}"
+            for artifact in seed_artifacts
+            for chunk in artifact.get("chunks", [])
+        ) or "- no matching seed evidence"
+        if aggregator is None:
+            execution_error = "RAG aggregator unavailable"
+        elif model_error := _model_contract_error(aggregator, context):
+            execution_error = model_error
+        else:
+            try:
+                result = await aggregator.ainvoke(
+                    {
+                        "messages": [
+                            (
+                                "user",
+                                f"Question: {query}\n\nSeed evidence:\n{seed_content}",
+                            )
+                        ],
+                        "current_node": "Retrieval_Aggregator",
+                        "retrieval_call_count": len(seed_artifacts),
+                    },
+                    config={**config, "recursion_limit": context.harness.recursion_limit},
+                    context=context,
+                )
+                artifacts.extend(_retrieval_artifacts(result.get("messages", []), context))
+                output = next(
+                    (
+                        str(message.content)
+                        for message in reversed(result.get("messages", []))
+                        if isinstance(message, AIMessage) and message.content
+                    ),
+                    "",
+                )
+            except Exception as exc:
+                execution_error = f"{type(exc).__name__}: {exc}"
+                logger.warning("[agentic_v2] aggregator failed: %s", execution_error)
+
+        pools = {source: list(chunks) for source, chunks in (state.get("retrieval_pool") or {}).items()}
+        for artifact in artifacts[len(seed_artifacts):]:
+            pools.setdefault(artifact.get("source", "unknown"), []).extend(artifact.get("chunks", []))
+        merged = rrf_merge(pools, context.harness.rrf_k, context.harness.top_k)
+        validation = validate_retrieval_artifacts(context, artifacts)
+        if execution_error:
+            validation = RetrievalValidation(
+                RetrievalValidity.INVALID,
+                validation.attempted_calls,
+                (*validation.errors, execution_error),
+            )
+        content = "\n".join(f"- [{chunk['source']}] {chunk['text']}" for chunk in merged)
+        rag_result = _rag_envelope(
+            thought=f"seeded {len(seed_artifacts)} calls, aggregated {len(artifacts) - len(seed_artifacts)} calls",
+            entity_ids=[chunk["id"] for chunk in merged if chunk.get("id")],
+            content=content,
+            validation=validation,
+            agent_status="completed" if not execution_error else "failed",
+        )
+
+        tracer, chat_id = _tracer_ctx(config)
+        if tracer and chat_id:
+            extra_artifacts = artifacts[len(seed_artifacts):]
+            aggregator_latency_ms = (time.perf_counter() - started) * 1000
+            tracer.log_step(
+                chat_id=chat_id,
+                node="Retrieval_Aggregator",
+                tool_result={
+                    "seed_calls": len(seed_artifacts),
+                    "aggregator_calls": len(extra_artifacts),
+                    "error": execution_error,
+                },
+                output=output,
+                latency_ms=aggregator_latency_ms,
+            )
+            for artifact in extra_artifacts:
+                tracer.log_step(
+                    chat_id=chat_id,
+                    node=f"Comp_{artifact.get('source', 'Unknown').title()}",
+                    tool_result={
+                        "tool": artifact.get("tool", ""),
+                        "args": artifact.get("args", {}),
+                        "error": artifact.get("error", ""),
+                    },
+                    chunks=artifact.get("chunks", []),
+                    latency_ms=artifact.get("latency_ms", 0.0),
+                )
+            tracer.log_step(
+                chat_id=chat_id,
+                node="Agentic_Retrieve",
+                tool_result={
+                    "status": rag_result["status"],
+                    "validity": rag_result["validity"],
+                    "attempts": rag_result["retrieval_attempts"],
+                    "seed_calls": len(seed_artifacts),
+                    "aggregator_calls": len(extra_artifacts),
+                    "aggregator_latency_ms": aggregator_latency_ms,
+                    "errors": rag_result["errors"],
+                },
+                chunks=merged,
+            )
+
+        session_context = config.get("configurable", {}).get("session_context")
+        if session_context and chat_id and content:
+            session_context.store_tool_result(
+                chat_id=chat_id,
+                tool_name="retrieval_fusion",
+                args={"query": query},
+                output=content,
+                node="Agentic_Retrieve",
+            )
+
+        current = state.get("worker_results", {})
+        return {
+            "worker_results": {**current, "RAG": rag_result},
+            "status_flag": "FAIL" if validation.validity is RetrievalValidity.INVALID else "SUCCESS",
+        }
+
+    builder.add_node("Seed_Retrieval", seed)
+    builder.add_node("Retrieval_Aggregator", run_aggregator)
+    builder.set_entry_point("Seed_Retrieval")
+    builder.add_edge("Seed_Retrieval", "Retrieval_Aggregator")
+    builder.add_edge("Retrieval_Aggregator", END)
+    return builder.compile()
+
+
 def build_retrieve_wf(agents, resources: Optional[Dict] = None):
     builder = StateGraph(AgentState, context_schema=RetrievalRunContext)
     agentic = build_agentic_retrieve_wf(agents)
+    agentic_v2 = build_agentic_v2_retrieve_wf(agents, resources)
+    agentic_v3 = build_agentic_v3_retrieve_wf(agents, resources)
+    agentic_v4 = build_agentic_v4_retrieve_wf(agents, resources)
     fanout = build_fanout_retrieve_wf(resources)
 
     async def select_harness(state, runtime: Runtime[RetrievalRunContext]):
@@ -363,6 +532,9 @@ def build_retrieve_wf(agents, resources: Optional[Dict] = None):
 
     builder.add_node("Retrieve_Harness", select_harness)
     builder.add_node(RetrievalHarnessId.AGENTIC_V1.value, agentic)
+    builder.add_node(RetrievalHarnessId.AGENTIC_V2.value, agentic_v2)
+    builder.add_node(RetrievalHarnessId.AGENTIC_V3.value, agentic_v3)
+    builder.add_node(RetrievalHarnessId.AGENTIC_V4.value, agentic_v4)
     builder.add_node(RetrievalHarnessId.FANOUT_V1.value, fanout)
     builder.set_entry_point("Retrieve_Harness")
     builder.add_conditional_edges(
@@ -370,10 +542,16 @@ def build_retrieve_wf(agents, resources: Optional[Dict] = None):
         route_harness,
         {
             RetrievalHarnessId.AGENTIC_V1.value: RetrievalHarnessId.AGENTIC_V1.value,
+            RetrievalHarnessId.AGENTIC_V2.value: RetrievalHarnessId.AGENTIC_V2.value,
+            RetrievalHarnessId.AGENTIC_V3.value: RetrievalHarnessId.AGENTIC_V3.value,
+            RetrievalHarnessId.AGENTIC_V4.value: RetrievalHarnessId.AGENTIC_V4.value,
             RetrievalHarnessId.FANOUT_V1.value: RetrievalHarnessId.FANOUT_V1.value,
         },
     )
     builder.add_edge(RetrievalHarnessId.AGENTIC_V1.value, END)
+    builder.add_edge(RetrievalHarnessId.AGENTIC_V2.value, END)
+    builder.add_edge(RetrievalHarnessId.AGENTIC_V3.value, END)
+    builder.add_edge(RetrievalHarnessId.AGENTIC_V4.value, END)
     builder.add_edge(RetrievalHarnessId.FANOUT_V1.value, END)
     return builder.compile()
 

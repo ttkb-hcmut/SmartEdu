@@ -8,6 +8,7 @@ services:
       - "4200:4200"
     environment:
       PREFECT_SERVER_API_HOST: 0.0.0.0
+      PREFECT_UI_API_URL: http://localhost:4200/api
       ## sqlite in volume, swap to postgres via PREFECT_API_DATABASE_CONNECTION_URL when multi-machine load demands
     volumes:
       - prefect_data:/root/.prefect

@@ -10,6 +10,7 @@ Run from capstone/ with the app + Ollama + DB stack up:
 """
 import asyncio
 import httpx
+import pytest
 
 from core.config import App_settings
 
@@ -54,6 +55,7 @@ async def _submit_and_wait(client: httpx.AsyncClient, ta_url: str, headers: dict
     raise AssertionError(f"timed out after {POLL_TIMEOUT}s")
 
 
+@pytest.mark.asyncio
 async def test_context_smoke():
     c = App_settings()
     base = f"http://127.0.0.1:{c.port}"
@@ -61,6 +63,10 @@ async def test_context_smoke():
     user, pw = "smoke_student_01", "password123"
 
     async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            await client.get(f"{base}/", timeout=2.0)
+        except (httpx.ConnectError, httpx.ConnectTimeout):
+            pytest.skip(f"Live server at {base} is not reachable")
         try:
             await client.post(f"{student_url}/register", json={"student_id": user, "password": pw})
         except Exception:

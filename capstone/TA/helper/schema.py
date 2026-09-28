@@ -23,6 +23,10 @@ class RouterDecision(BaseModel):
         description="Classified intent of the student query"
     )
 
+
+class BenchmarkAnswer(BaseModel):
+    answer: str = Field(description="Direct short answer grounded only in supplied evidence")
+
 ## -- Roadmap schemas: UI-facing, need ai_message
 
 class RoadmapExplore(BaseResponse):

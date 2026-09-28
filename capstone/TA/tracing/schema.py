@@ -48,6 +48,10 @@ class StepTrace(BaseModel):
     chunks: List[Dict[str, Any]] = Field(default_factory=list, description="Retrieved chunks at this step")
     latency_ms: float = Field(default=0.0, description="Node wall time")
     tokens: Dict[str, int] = Field(default_factory=dict, description="LLM usage if available")
+    execution_config: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Effective model, retry, tool, and harness settings for this node",
+    )
 
 
 class ChatTrace(BaseModel):
@@ -60,7 +64,7 @@ class ChatTrace(BaseModel):
     final_output: str = Field(default="", description="Serialized response returned to user")
     status: str = Field(default="SUCCESS", description="SUCCESS | FAIL")
     retrieve_flags: Dict[str, bool] = Field(default_factory=dict, description="Ablation component flags")
-    preset: str = Field(default="", description="PLAIN | RAG | FULL | CUSTOM")
+    preset: str = Field(default="", description="RAG | FULL | historical value")
     policy_id: str = ""
     policy_digest: str = ""
     harness_id: str = ""
@@ -73,11 +77,15 @@ class ChatTrace(BaseModel):
     code_revision: str = ""
     dirty: bool = False
     errors: List[str] = Field(default_factory=list)
+    workflow_latency_ms: float = 0.0
+    turn_latency_ms: float = 0.0
+    time_to_first_token_ms: Optional[float] = None
+    node_configs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
 
 
 class TraceSession(BaseModel):
     """full state of a session"""
 
-    schema_version: str = Field(default="1.2", description="Migration marker on schema change")
+    schema_version: str = Field(default="1.3", description="Migration marker on schema change")
     session_id: str = Field(default="default")
     chat: List[ChatTrace] = Field(default_factory=list)

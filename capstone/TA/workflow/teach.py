@@ -1,12 +1,16 @@
-import json
 import logging
 from langgraph.graph import StateGraph, END
+from langgraph.runtime import Runtime
 from core.schema.wf_state import AgentState, ConceptNode
+from core.schema.retrieval import RetrievalHarnessId, RetrievalPolicyId, RetrievalRunContext
+from core.config import Retrieve_param
 from TA.helper.schema import TeachEvalOutput, TeachLectureOutput, NextTopicOutput
 import TA.helper.prompt as prompt_lib
 from TA.helper.few_shot import get_language_instruction
-from TA.helper.utils import safe_parse_structured, extract_llm_raw_text, extract_agent_result
-from TA.helper.context import extract_ta_context
+from TA.helper.utils import safe_parse_structured, extract_llm_raw_text
+from TA.helper.context import build_ui_citations, extract_ta_context
+from TA.helper.model_call import is_transient, ta_ainvoke
+from TA.retrieval.policy import resolve_retrieval_context
 from TA.tools.tool_config import PREREQUISITE_WEIGHT
 from core.repo.graph.cypher.tools.course import CYPHER_get_recommendations
 import os
@@ -15,17 +19,14 @@ from TA.tracing.tracer import AgentTracer
 logger = logging.getLogger(__name__)
 
 
-def build_teach_wf(agents):
-    builder = StateGraph(AgentState)
+def build_teach_wf(agents, retrieve_wf, graph_db=None):
+    builder = StateGraph(AgentState, context_schema=RetrievalRunContext)
 
     async def _teach_understand(state, config):
         return await teach_understand(state, agents["TA"], config)
 
-    async def _teach_lookup(state, config):
-        return await teach_lookup(state, config)
-
-    async def _teach_rag(state, config):
-        return await teach_rag(state, agents["RAG"], config)
+    async def _teach_rag(state, config, runtime: Runtime[RetrievalRunContext]):
+        return await teach_rag(state, retrieve_wf, graph_db, config, runtime)
 
     async def _teach_lecture(state, config):
         return await teach_lecture(state, agents["TA"], config)
@@ -37,7 +38,6 @@ def build_teach_wf(agents):
         return await next_topic(state, agents["TA"], config)
 
     builder.add_node("Teach_Understand", _teach_understand)
-    builder.add_node("Teach_Lookup", _teach_lookup)
     builder.add_node("Teach_RAG", _teach_rag)
     builder.add_node("Teach_Lecture", _teach_lecture)
     builder.add_node("Teach_Evaluate", _teach_evaluate)
@@ -49,18 +49,9 @@ def build_teach_wf(agents):
         "Teach_Understand",
         lambda state: state.get("_teach_mode", "continue"),
         {
-            "review": "Teach_Lookup",
-            "continue": "Teach_Lookup",
+            "review": "Teach_RAG",
+            "continue": "Teach_RAG",
             "evaluate": "Teach_Evaluate",
-        },
-    )
-
-    builder.add_conditional_edges(
-        "Teach_Lookup",
-        _route_after_lookup,
-        {
-            "has_content": "Teach_Lecture",
-            "no_content": "Teach_RAG",
         },
     )
 
@@ -72,9 +63,14 @@ def build_teach_wf(agents):
     return builder.compile()
 
 
-def _route_after_lookup(state: AgentState) -> str:
-    ctx = state.get("_teach_context", {})
-    return "has_content" if ctx.get("source") == "PDF" else "no_content"
+def _bounded_history(tracker, session_id: str, chat_id: str) -> str:
+    return tracker.get_chat_history(
+        session_id,
+        mode="skim",
+        recent_turns=4,
+        exclude_chat_id=chat_id,
+        max_chars=4_000,
+    )
 
 
 # ─── Node 1: Intent Classification ─────────────────────────────────────────
@@ -86,7 +82,7 @@ async def teach_understand(state: AgentState, ta_agent, config):
     tracker = config["configurable"]["student_tracker"]
     tracer = config["configurable"].get("tracer")
     chat_id = config["configurable"].get("chat_id", "")
-    history = tracker.get_chat_history(sid)
+    history = _bounded_history(tracker, sid, chat_id)
 
     language = state.get("language", "vn")
     language_instruction = get_language_instruction(language)
@@ -98,9 +94,10 @@ async def teach_understand(state: AgentState, ta_agent, config):
     )
 
     ## -- Simple classification: raw invoke, parse single word
-    res = await ta_agent.ainvoke(
-        [("user", prompt)], config=config
-    )
+    model = ta_agent.model
+    if model.__class__.__module__.startswith("langchain_openrouter"):
+        model = model.bind(max_tokens=512)
+    res = await ta_ainvoke(model, [("user", prompt)], config)
 
     mode = res.content.strip().lower()
     if mode not in ("review", "continue", "evaluate"):
@@ -127,189 +124,91 @@ async def teach_understand(state: AgentState, ta_agent, config):
     return {"_teach_mode": mode}
 
 
-# ─── Node 2: Deterministic PDF Lookup (No LLM) ─────────────────────────────
-
-async def teach_lookup(state: AgentState, config):
-    """ Deterministic PDF lookup, no LLM needed"""
-    sid = config["configurable"]["session_id"]
-    tracker = config["configurable"]["student_tracker"]
-    tracer = config["configurable"].get("tracer")
-    chat_id = config["configurable"].get("chat_id", "")
-    teach_tools = config["configurable"].get("teach_tools", {})
-    session = tracker.get_session(sid)
-    student_state = session.student_state
-
-    current_node = student_state.get("current_pos")
-    mode = state.get("_teach_mode", "continue")
-    active_resource = student_state.get("active_resource")
-
-    no_content = {
-        "_teach_context": {"source": "NO_CONTENT", "content": "", "page": None, "mode": mode}
-    }
-
-    def _log_and_return(result):
-        log_filename = config.get("configurable", {}).get("log_filename") or os.getenv("TEST_LOG_FILENAME")
-        if log_filename:
-            ctx = result.get("_teach_context", {})
-            AgentTracer.logging({
-                "agent_name": "Teach_Lookup",
-                "node": "Teach_Lookup",
-                "prompt": f"Lookup concept: {current_node.name if current_node else 'None'}",
-                "output": {
-                    "source": ctx.get("source", "NO_CONTENT"),
-                    "page": ctx.get("page"),
-                    "storage_uri": ctx.get("storage_uri")
-                }
-            }, type="info", file_name=log_filename)
-        return result
-
-    if not current_node:
-        logger.info("[Teach_Lookup] No current_pos, routing to RAG")
-        return _log_and_return(no_content)
-
-    concept_tool = teach_tools.get("get_concept")
-    pages_tool = teach_tools.get("get_pages")
-
-    if not concept_tool or not pages_tool:
-        logger.warning("[Teach_Lookup] teach_tools not injected, routing to RAG")
-        return _log_and_return(no_content)
-
-    ## -- Step 1: Find pages containing the concept
-    try:
-        concept_result = concept_tool._run(concept=current_node.name)
-        parsed = json.loads(concept_result)
-    except Exception as e:
-        logger.warning(f"[Teach_Lookup] GetConcept failed: {e}")
-        return _log_and_return(no_content)
-
-    if isinstance(parsed, dict) and "error" in parsed:
-        logger.info(f"[Teach_Lookup] Concept '{current_node.name}' not in PDF, routing to RAG")
-        return _log_and_return(no_content)
-
-    if not parsed or not isinstance(parsed, list) or len(parsed) == 0:
-        return _log_and_return(no_content)
-
-    ## -- Step 2: Read page content
-    hard_ref_str = parsed[0].get("hard_ref")
-    if not hard_ref_str:
-        return _log_and_return(no_content)
-
-    try:
-        ref_data = json.loads(hard_ref_str)
-        p_list = ref_data.get("p_num", [])
-        page_num = p_list[0] if isinstance(p_list, list) and p_list else p_list
-        storage_uri = ref_data.get("id")
-    except Exception as e:
-        logger.warning(f"[Teach_Lookup] Failed to parse hard_ref: {e}")
-        return _log_and_return(no_content)
-
-    if not storage_uri or not page_num:
-        return _log_and_return(no_content)
-
-    try:
-        page_content = pages_tool._run(
-            pages=[page_num, page_num + 1],
-            destination=storage_uri,
-        )
-    except Exception as e:
-        logger.warning(f"[Teach_Lookup] GetPages failed: {e}")
-        return _log_and_return(no_content)
-
-    if "error" in page_content.lower() or len(page_content.strip()) < 50:
-        logger.info("[Teach_Lookup] PDF content too short, routing to RAG")
-        return _log_and_return(no_content)
-
-    if tracer and chat_id:
-        tracer.log_step(
-            chat_id=chat_id,
-            node="Teach_Lookup",
-            prompt=f"Lookup concept: {current_node.name}",
-            state=tracker.get_student_state(sid),
-            output=f"PDF source: {ref_data.get('name')}, page {page_num}, {len(page_content)} chars",
-        )
-
-    return _log_and_return({
-        "_teach_context": {
-            "source": "PDF",
-            "content": page_content,
-            "page": page_num,
-            "storage_uri": storage_uri,
-            "mode": mode,
-        },
-        "ui_action": {"navigate_page": page_num, "document": storage_uri},
-    })
-
-
 # ─── Node 3: RAG Fallback ──────────────────────────────────────────────────
 
-async def teach_rag(state: AgentState, rag_agent, config):
-    """ Reuse rag_core from retrieve.py as fallback"""
-    from TA.workflow.retrieve import rag_core
-
+async def teach_rag(state: AgentState, retrieve_wf, graph_db, config, runtime: Runtime[RetrievalRunContext]):
     sid = config["configurable"]["session_id"]
     tracker = config["configurable"]["student_tracker"]
     tracer = config["configurable"].get("tracer")
     chat_id = config["configurable"].get("chat_id", "")
     current_node = tracker.get_student_state(sid).get("current_pos")
     mode = state.get("_teach_mode", "continue")
+    user_query = str(state.get("user_query", "")).strip()
+    continue_only = user_query.casefold() in {"continue", "more", "tiếp tục", "dạy tiếp"}
+    query = (
+        f"Explain the concept of {current_node.name} in detail."
+        if current_node and (not user_query or continue_only)
+        else user_query
+    )
+    request_context = runtime.context
+    teach_context = resolve_retrieval_context(
+        Retrieve_param(
+            preset=request_context.preset,
+            policy_id=RetrievalPolicyId.BASELINE_V5,
+            harness_id=RetrievalHarnessId.AGENTIC_V4,
+            course_scope=request_context.scope.course,
+        ),
+        request_context.case,
+        request_context.code,
+    )
+    rag_result = {}
+    try:
+        retrieved = await retrieve_wf.ainvoke(
+            {**state, "messages": [{"role": "user", "content": query}],
+             "user_query": query, "worker_results": {}},
+            config=config,
+            context=teach_context,
+        )
+        rag_result = retrieved.get("worker_results", {}).get("RAG", {})
+    except Exception:
+        logger.exception("[Teach_RAG] V4 retrieval failed")
 
-    concept_name = current_node.name if current_node else "the current topic"
-
-    mock_message = {"role": "user", "content": f"Explain the concept of {concept_name} in detail."}
-    temp_state = {
-        **state,
-        "messages": state["messages"] + [mock_message],
-        "user_query": f"Explain {concept_name}",
-    }
-
-    rag_result = await rag_core(temp_state, rag_agent, config)
-    rag_content = rag_result.get("worker_results", {}).get("RAG", {}).get("content", "")
-
-    log_filename = config.get("configurable", {}).get("log_filename") or os.getenv("TEST_LOG_FILENAME")
-    if log_filename:
-        AgentTracer.logging({
-            "agent_name": rag_agent.name,
-            "node": "Teach_RAG",
-            "prompt": f"RAG fallback for: {concept_name}",
-            "output": {"content_len": len(rag_content)}
-        }, type="info", file_name=log_filename)
+    grounded = rag_result.get("status") == "SUCCESS" and rag_result.get("answerable")
+    rag_content = rag_result.get("content", "") if grounded else ""
+    citations = await build_ui_citations(rag_result, graph_db) if grounded else []
 
     if tracer and chat_id:
         tracer.log_step(
             chat_id=chat_id,
             node="Teach_RAG",
-            prompt=f"RAG fallback for: {concept_name}",
+            prompt=query,
             state=tracker.get_student_state(sid),
-            output=f"RAG retrieved {len(rag_content)} chars",
+            tool_result={
+                "harness_id": teach_context.harness.id.value,
+                "policy_id": teach_context.policy.id.value,
+                "retrieval_status": rag_result.get("status", "FAIL"),
+                "answerable": bool(grounded),
+            },
+            execution_config={
+                "harness_id": teach_context.harness.id.value,
+                "harness_digest": teach_context.harness.digest,
+                "policy_id": teach_context.policy.id.value,
+                "policy_digest": teach_context.policy.digest,
+            },
+            output=f"Retrieved {len(rag_content)} chars",
         )
-
     return {
-        "worker_results": rag_result.get("worker_results", {}),
+        "worker_results": {**state.get("worker_results", {}), "RAG": rag_result},
         "_teach_context": {
-            "source": "RAG",
+            "source": "RAG" if grounded else "GENERAL",
             "content": rag_content,
             "page": None,
             "mode": mode,
         },
+        "ui_action": {"citations": citations} if citations else None,
     }
-
 
 # ─── Node 4: LLM Lecture Generation ────────────────────────────────────────
 
 async def teach_lecture(state: AgentState, ta_agent, config):
-    """
-    TA agent (tool-calling) reads PDF content then generates lecture.
-    - If Teach_Lookup found a PDF page: inject page ref into prompt, TA calls get_pdf_pages itself
-    - If RAG fallback: content already in _teach_context
-    TA must read the source material via tool before generating lecture.
-    """
+    """Generate a lecture from retrieved evidence or general knowledge."""
     sid = config["configurable"]["session_id"]
     tracker = config["configurable"]["student_tracker"]
     tracer = config["configurable"].get("tracer")
     chat_id = config["configurable"].get("chat_id", "")
     session = tracker.get_session(sid)
     student_state = session.student_state
-    history = tracker.get_chat_history(sid)
+    history = _bounded_history(tracker, sid, chat_id)
 
     ctx = state.get("_teach_context", {})
     source = ctx.get("source", "unknown")
@@ -318,6 +217,7 @@ async def teach_lecture(state: AgentState, ta_agent, config):
     current_node = student_state.get("current_pos")
     previous_nodes = student_state.get("previous_nodes", [])
     current_str = current_node.name if current_node else "None"
+    user_query = str(state.get("user_query", "")).strip()
 
     language = state.get("language", "vn")
     language_instruction = get_language_instruction(language)
@@ -326,17 +226,13 @@ async def teach_lecture(state: AgentState, ta_agent, config):
         f"  {i+1}. {n.name} ({n.type})" for i, n in enumerate(previous_nodes[:3])
     ) or "  (no previous nodes)"
 
-    if source == "PDF":
-        page_num = ctx.get("page")
-        storage_uri = ctx.get("storage_uri", "")
-        # TA receives page ref and must call get_pdf_pages to read before lecturing
-        source_ref = f"PDF page {page_num} at '{storage_uri}'" if page_num else "the PDF document"
-        content_hint = f"Call get_pdf_pages(pages=[{page_num}, {page_num + 1 if page_num else ''}], destination='{storage_uri}') to read the content first."
-    else:
-        # RAG fallback: content already provided
-        rag_content = ctx.get("content", "")
-        source_ref = "RAG knowledge base"
-        content_hint = f"Source content (RAG):\n{rag_content[:2500]}"
+    rag_content = ctx.get("content", "")
+    source_ref = "RAG knowledge base" if source == "RAG" else "general knowledge"
+    content_hint = (
+        f"Source content (RAG):\n{rag_content[:2500]}"
+        if source == "RAG" else
+        "No retrieved source available. Explain from general knowledge; do not claim a PDF source."
+    )
 
     if mode == "review":
         prev_str_long = "\n".join(
@@ -344,6 +240,7 @@ async def teach_lecture(state: AgentState, ta_agent, config):
         ) or "  (no previous nodes)"
         prompt = prompt_lib.TEACH_REVIEW_PROMPT.format(
             language_instruction=language_instruction,
+            query=user_query,
             previous_nodes=prev_str_long,
             current_node=current_str,
             source=source_ref,
@@ -353,6 +250,7 @@ async def teach_lecture(state: AgentState, ta_agent, config):
     else:
         prompt = prompt_lib.TEACH_CONTINUE_PROMPT.format(
             language_instruction=language_instruction,
+            query=user_query,
             previous_nodes=prev_str,
             current_node=current_str,
             source=source_ref,
@@ -360,22 +258,39 @@ async def teach_lecture(state: AgentState, ta_agent, config):
             history=history,
         )
 
+    request_text = user_query or f"Continue learning about {current_str}."
+    lesson_contract = (
+        "Review the requested material and test recall without repeating questions from chat history."
+        if mode == "review" else
+        "For a full lesson, write 4–6 titled sections with substantive explanations. Cover each requested part; use concrete examples, a comparison, a common misconception, and a short recap when relevant. Do not compress this into a benchmark-style short answer. Respect an explicit request for brevity."
+    )
+    prompt += (
+        "\n\nCURRENT TEACHING REQUEST — follow this over older prompt directions:\n"
+        f"{request_text}\n"
+        f"{lesson_contract}\n"
+        "Use the source material already supplied above; do not call PDF lookup tools. "
+        "If the source is general knowledge, do not claim the PDF supports the explanation. "
+        "End with one question that checks understanding."
+    )
+
     ## -- Inject prior TA messages for coherence
     ta_context = extract_ta_context(state)
     if ta_context:
         prompt = f"[Prior TA reasoning]:\n{ta_context}\n\n{prompt}"
 
-    ## -- TA agent invokes as tool-calling agent, reads PDF via get_pdf_pages then lectures
     try:
-        result = await ta_agent.ainvoke(
-            {"messages": [("user", prompt)], "current_node": "Teach_Lecture"},
-            config=config,
-        )
+        lecture_model = ta_agent.model.with_structured_output(TeachLectureOutput)
+        messages = []
+        system_prompt = getattr(ta_agent, "system_prompt_text", "")
+        if system_prompt:
+            messages.append(("system", system_prompt))
+        messages.append(("user", prompt))
+        res = await ta_ainvoke(lecture_model, messages, config)
     except Exception as e:
+        if is_transient(e):
+            raise
         logger.warning(f"[teach_lecture] Agent invoke failed: {e}. Attempting json_repair.")
         res = safe_parse_structured(extract_llm_raw_text(e), TeachLectureOutput)
-    else:
-        res = extract_agent_result(result, TeachLectureOutput, "teach_lecture")
 
     lecture_text = res.lecture
     if res.challenge_question:
@@ -416,7 +331,8 @@ async def teach_evaluate(state: AgentState, ta_agent, config):
     """ No-tool node: raw_model with TeachEvalOutput schema"""
     sid = config["configurable"]["session_id"]
     tracker = config["configurable"]["student_tracker"]
-    history = tracker.get_chat_history(sid)
+    chat_id = config["configurable"].get("chat_id", "")
+    history = _bounded_history(tracker, sid, chat_id)
 
     language = state.get("language", "vn")
     language_instruction = get_language_instruction(language)
@@ -429,10 +345,10 @@ async def teach_evaluate(state: AgentState, ta_agent, config):
     ## -- Direct structured output
     structured_llm = ta_agent.model.with_structured_output(TeachEvalOutput)
     try:
-        eval_res: TeachEvalOutput = await structured_llm.ainvoke(
-            [("user", prompt)], config=config
-        )
+        eval_res: TeachEvalOutput = await ta_ainvoke(structured_llm, [("user", prompt)], config)
     except Exception as e:
+        if is_transient(e):
+            raise
         logger.warning(f"[teach_evaluate] Structured output failed: {e}. Attempting json_repair.")
         eval_res = safe_parse_structured(extract_llm_raw_text(e), TeachEvalOutput)
 
@@ -499,10 +415,10 @@ async def next_topic(state: AgentState, ta_agent, config):
     ## -- Direct structured output
     structured_llm = ta_agent.model.with_structured_output(NextTopicOutput)
     try:
-        topic_res: NextTopicOutput = await structured_llm.ainvoke(
-            [("user", prompt)], config=config
-        )
+        topic_res: NextTopicOutput = await ta_ainvoke(structured_llm, [("user", prompt)], config)
     except Exception as e:
+        if is_transient(e):
+            raise
         logger.warning(f"[next_topic] Structured output failed: {e}. Attempting json_repair.")
         topic_res = safe_parse_structured(extract_llm_raw_text(e), NextTopicOutput)
 

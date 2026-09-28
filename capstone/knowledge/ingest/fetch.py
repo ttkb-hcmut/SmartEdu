@@ -27,5 +27,21 @@ def temp_file(file_bytes: bytes, suffix: str):
             pass
 
 
+@contextmanager
+def temp_raw(minio_repo, course_name: str, file_name: str):
+    suffix = os.path.splitext(file_name)[1] or ".mp4"
+    tmp = tempfile.NamedTemporaryFile(suffix=suffix, delete=False)
+    tmp.close()
+    try:
+        raw_obj = minio_repo.raw_object_name(course_name, file_name)
+        minio_repo.download_object(raw_obj, tmp.name)
+        yield tmp.name
+    finally:
+        try:
+            os.unlink(tmp.name)
+        except OSError:
+            pass
+
+
 def temp_pdf(file_bytes: bytes):
     return temp_file(file_bytes, ".pdf")

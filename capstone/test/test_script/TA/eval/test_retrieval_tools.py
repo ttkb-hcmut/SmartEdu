@@ -32,9 +32,14 @@ class _Embedder:
         return [0.1, 0.2]
 
 
-def _runtime(preset="FULL", course="Bench_MuSiQue"):
+def _runtime(preset="FULL", course="Bench_MuSiQue", *, policy_id=None, harness_id=None):
+    kwargs = {"course_scope": course}
+    if policy_id is not None:
+        kwargs["policy_id"] = policy_id
+    if harness_id is not None:
+        kwargs["harness_id"] = harness_id
     context = resolve_retrieval_context(
-        Retrieve_param.from_preset(preset, course_scope=course)
+        Retrieve_param.from_preset(preset, **kwargs)
     )
     return SimpleNamespace(context=context)
 
@@ -109,3 +114,21 @@ def test_tool_failure_is_returned_as_error_artifact():
     assert content.startswith("ERROR:")
     assert artifact["chunks"] == []
     assert artifact["error"] == "RuntimeError: database unavailable"
+
+
+def test_v4_adapters_request_eight_candidates_per_source():
+    from core.schema.retrieval import RetrievalHarnessId, RetrievalPolicyId
+    from TA.tools.retrieval import SemanticSearch, TextbookSearch
+
+    runtime = _runtime(
+        policy_id=RetrievalPolicyId.BASELINE_V5,
+        harness_id=RetrievalHarnessId.AGENTIC_V4,
+    )
+    milvus = _Milvus()
+    graph = _Graph()
+
+    SemanticSearch(milvus_db=milvus, embedder=_Embedder())._run("q", runtime=runtime)
+    TextbookSearch(graph_db=graph, embedder=_Embedder())._run("q", runtime=runtime)
+
+    assert milvus.calls[0]["top_k"] == 8
+    assert graph.calls[0][1]["top_k"] == 8

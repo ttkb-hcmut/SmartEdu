@@ -10,10 +10,12 @@ import { type PollState } from "@/hooks/useChatPoll"
 interface MessageInputProps {
   onSubmit: (value: string) => void
   pollState: PollState
+  disabled?: boolean
+  disabledReason?: string
   className?: string
 }
 
-export function MessageInput({ onSubmit, pollState, className }: MessageInputProps) {
+export function MessageInput({ onSubmit, pollState, disabled = false, disabledReason = "Đang khôi phục phiên…", className }: MessageInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const isPolling = pollState === "polling"
 
@@ -26,7 +28,7 @@ export function MessageInput({ onSubmit, pollState, className }: MessageInputPro
 
   function submit() {
     const value = textareaRef.current?.value.trim()
-    if (!value || isPolling) return
+    if (!value || isPolling || disabled) return
     onSubmit(value)
     if (textareaRef.current) textareaRef.current.value = ""
   }
@@ -39,8 +41,8 @@ export function MessageInput({ onSubmit, pollState, className }: MessageInputPro
       <textarea
         ref={textareaRef}
         rows={1}
-        placeholder={isPolling ? "Đang xử lý…" : "Nhập câu hỏi… (Enter để gửi)"}
-        disabled={isPolling}
+        placeholder={disabled ? disabledReason : isPolling ? "Đang xử lý…" : "Nhập câu hỏi… (Enter để gửi)"}
+        disabled={isPolling || disabled}
         onKeyDown={handleKeyDown}
         className={cn(
           "flex-1 resize-none rounded-xs border px-3 py-2 text-sm",
@@ -65,7 +67,7 @@ export function MessageInput({ onSubmit, pollState, className }: MessageInputPro
         variant="accent"
         size="icon"
         onClick={submit}
-        disabled={isPolling}
+        disabled={isPolling || disabled}
         aria-label="Gửi tin nhắn"
         className="shrink-0"
       >
