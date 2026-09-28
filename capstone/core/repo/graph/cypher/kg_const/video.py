@@ -4,7 +4,7 @@ SET v.title=$vid.title, v.uri=$vid.uri, v.duration=$vid.duration
 """
 
 CYPHER_write_segs = """
-UNWIND $segments AS s
+UNWIND $segs AS s
 MERGE (n:Segment {id: s.id})
 SET n.t_lo=s.p_num[0], n.t_hi=s.p_num[1], n.text=s.text, n.emb=s.emb,
     n.uri=$uri, n.order=s.order, n.best_score=s.best_score,

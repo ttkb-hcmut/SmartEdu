@@ -42,6 +42,16 @@ student document structure in 'students' collection:
 """
 
 
+def _to_bson(val):
+    if hasattr(val, "model_dump"):
+        return val.model_dump()
+    if isinstance(val, list):
+        return [_to_bson(x) for x in val]
+    if isinstance(val, dict):
+        return {k: _to_bson(v) for k, v in val.items()}
+    return val
+
+
 class Mongo_DB:
     def __init__(self, config: Mongo_conf = Mongo_conf()):
         self.client = MongoClient(config.uri)
@@ -97,7 +107,14 @@ class Mongo_DB:
     def update_student_state(self, student_id: str, state_dict: dict):
         self.students.update_one(
             {"_id": student_id},
-            {"$set": {"state": state_dict}},
+            {"$set": {"state": _to_bson(state_dict)}},
+            upsert=True
+        )
+
+    def update_student_field(self, student_id: str, field_path: str, value):
+        self.students.update_one(
+            {"_id": student_id},
+            {"$set": {field_path: _to_bson(value)}},
             upsert=True
         )
 
@@ -112,10 +129,34 @@ class Mongo_DB:
         self.learning_logs.insert_one(log_entry)
 
     def create_session(self, student_id: str, session_id: str, session_name: str = "New Session"):
+        now = datetime.datetime.utcnow().isoformat()
         self.students.update_one(
             {"_id": student_id, "memo.id": {"$ne": session_id}},
-            {"$push": {"memo": {"id": session_id, "name": session_name, "chats": []}}}
+            {"$push": {"memo": {"id": session_id, "name": session_name, "chats": [], "created_at": now}}}
         )
+
+    def list_sessions(self, student_id: str, limit: int = 30, offset: int = 0, query: str = "") -> dict:
+        doc = self.students.find_one({"_id": student_id}, {"memo": 1}) or {}
+        needle = query.casefold().strip()
+        items = []
+        for session in doc.get("memo", []):
+            chats = session.get("chats", [])
+            first = next((chat.get("invoke", "") for chat in chats if chat.get("invoke")), "")
+            name = session.get("name") or "New Session"
+            if needle and needle not in name.casefold() and needle not in first.casefold():
+                continue
+            updated = session.get("created_at", "")
+            for chat in chats:
+                for message in chat.get("messages", []):
+                    updated = max(updated, str(message.get("timestamp") or ""))
+            items.append({
+                "id": session["id"],
+                "name": first if name == "New Session" and first else name,
+                "preview": first,
+                "updated_at": updated or None,
+            })
+        items.sort(key=lambda item: (item["updated_at"] or "", item["id"]), reverse=True)
+        return {"items": items[offset:offset + limit], "total": len(items)}
 
     def create_chat(self, student_id: str, session_id: str, chat_id: str, invoke_msg: str):
         initial_msg = {
@@ -132,7 +173,16 @@ class Mongo_DB:
     def push_chat_message(self, student_id: str, session_id: str, chat_id: str, entry: Dict[str, Any]):
         entry_with_ts = {**entry, "timestamp": datetime.datetime.utcnow().isoformat()}
         self.students.update_one(
-            {"_id": student_id},
+            {
+                "_id": student_id,
+                "memo": {"$elemMatch": {
+                    "id": session_id,
+                    "chats": {"$elemMatch": {
+                        "id": chat_id,
+                        "messages": {"$not": {"$elemMatch": {"role": entry_with_ts.get("role")}}},
+                    }},
+                }},
+            },
             {"$push": {"memo.$[s].chats.$[c].messages": entry_with_ts}},
             array_filters=[{"s.id": session_id}, {"c.id": chat_id}]
         )
@@ -145,6 +195,13 @@ class Mongo_DB:
             if session.get("id") == session_id:
                 return session
         return {}
+
+    def set_chat_ui_action(self, student_id: str, session_id: str, chat_id: str, ui_action: dict) -> None:
+        self.students.update_one(
+            {"_id": student_id},
+            {"$set": {"memo.$[s].chats.$[c].ui_action": ui_action}},
+            array_filters=[{"s.id": session_id}, {"c.id": chat_id}],
+        )
 
     def push_session_tool_result(
         self, student_id: str, session_id: str, chat_id: str, entry: dict

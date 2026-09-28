@@ -11,18 +11,21 @@ class RetrievalPolicyId(str, Enum):
     BASELINE_V2 = "baseline-v2"
     BASELINE_V3 = "baseline-v3"
     BASELINE_V4 = "baseline-v4"
+    BASELINE_V5 = "baseline-v5"
 
 
 class RetrievalHarnessId(str, Enum):
     AGENTIC_V1 = "agentic-v1"
     AGENTIC_V2 = "agentic-v2"
     AGENTIC_V3 = "agentic-v3"
+    AGENTIC_V4 = "agentic-v4"
     FANOUT_V1 = "fanout-v1"
 
 
 class RetrievalPromptId(str, Enum):
     MULTIHOP_V1 = "multihop-v1"
     MULTIHOP_V2 = "multihop-v2"
+    MULTIHOP_V3 = "multihop-v3"
 
 
 class RetrievalToolId(str, Enum):
@@ -33,6 +36,7 @@ class RetrievalToolId(str, Enum):
 class RetrievalCaseKind(str, Enum):
     BENCHMARK = "benchmark"
     WARMUP = "warmup"
+    LIVE = "live"
 
 
 class RetrievalRoute(str, Enum):
@@ -47,6 +51,11 @@ class RetrievalValidity(str, Enum):
     VALID = "valid"
     INVALID = "invalid"
     POLICY_INVALID = "policy-invalid"
+
+
+class RetrievalOutputMode(str, Enum):
+    STRUCTURED = "structured"
+    RAW_JSON = "raw_json"
 
 
 @dataclass(frozen=True)
@@ -65,6 +74,15 @@ class RetrievalPolicyContract:
     seed_tools: tuple[RetrievalToolId, ...]
     min_tool_calls: int
     empty_hits_valid: bool
+    model_output_mode: RetrievalOutputMode = RetrievalOutputMode.STRUCTURED
+    finalizer_prompt: str = ""
+    answer_prompt: str = ""
+    model_timeout_s: int = 0
+    model_transport_retries: int = 0
+    schema_repair_attempts: int = 0
+    answer_timeout_s: int = 0
+    answer_transport_retries: int = 0
+    answer_context_chars: int = 0
 
 
 @dataclass(frozen=True)
@@ -90,7 +108,7 @@ class RetrievalScope:
 class RetrievalCase:
     run_id: str = ""
     question_id: str = ""
-    kind: RetrievalCaseKind = RetrievalCaseKind.BENCHMARK
+    kind: RetrievalCaseKind = RetrievalCaseKind.LIVE
     forced_route: RetrievalRoute | None = None
 
 

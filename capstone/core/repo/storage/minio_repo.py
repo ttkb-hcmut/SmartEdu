@@ -1,4 +1,5 @@
 import io
+import json
 import re
 import logging
 import hashlib
@@ -39,6 +40,47 @@ def validate_file_names(file_names: List[str]) -> None:
         if name in seen:
             raise ValueError(f"file name is duplicated: {name}")
         seen.add(name)
+
+
+def resolve_pdf_document(uri: str) -> tuple[str | None, bool]:
+    if not uri:
+        return None, False
+    key = uri.split("/", 3)[-1] if uri.startswith("minio://") else uri
+    parts = key.split("/")
+    if any(part in {"", ".", ".."} for part in parts):
+        return None, False
+    if len(parts) == 4 and parts[2] == "chunks" and parts[3].endswith(".txt"):
+        return "/".join(parts[:2]) + "/page.pdf", True
+    if len(parts) == 3 and parts[2].lower().endswith(".pdf"):
+        if parts[1] == "_raw":
+            return key, False
+        if parts[2] == "page.pdf":
+            return key, True
+    return None, False
+
+
+def resolve_pdf_reference(source: dict) -> tuple[str | None, int | None]:
+    ref = source.get("hard_ref")
+    if isinstance(ref, str):
+        try:
+            ref = json.loads(ref)
+        except (TypeError, json.JSONDecodeError):
+            ref = None
+    document, page = None, None
+    if isinstance(ref, dict) and ref.get("id"):
+        document, local_page = resolve_pdf_document(str(ref["id"]))
+        p_num = ref.get("p_num") or []
+        page = p_num[0] if isinstance(p_num, (list, tuple)) and p_num else p_num
+        if local_page:
+            page = 1
+    if not document or not isinstance(page, int) or page < 1:
+        document, local_page = resolve_pdf_document(
+            str(source.get("document_uri") or source.get("uri") or "")
+        )
+        page = 1 if local_page else source.get("p_lo")
+    if not document or not isinstance(page, int) or page < 1:
+        return None, None
+    return document, page
 
 
 class MinioDB:

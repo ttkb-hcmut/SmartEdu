@@ -128,13 +128,21 @@ class MilvusDB:
     def _course_expr(course_scope: str) -> str:
         return f"community == {json.dumps(course_scope, ensure_ascii=False)}"
 
-    def list_ids(self, course_scope: str, limit: int = 10000) -> set[str]:
-        rows = self.collection.query(
+    def list_ids(self, course_scope: str, limit: int | None = None) -> set[str]:
+        ## query caps large result sets, iterator keeps corpus verification complete
+        iterator = self.collection.query_iterator(
+            batch_size=1000,
+            limit=limit if limit is not None else -1,
             expr=self._course_expr(course_scope),
             output_fields=["id"],
-            limit=limit,
         )
-        return {row["id"] for row in rows}
+        ids = set()
+        try:
+            while rows := iterator.next():
+                ids.update(row["id"] for row in rows)
+        finally:
+            iterator.close()
+        return ids
 
     def search_vec(self, vector: List[float], top_k: int = 5, expr: str = None) -> List[Dict]:
         ## search by precomputed embedding — segments carry their own vector, no re-embed

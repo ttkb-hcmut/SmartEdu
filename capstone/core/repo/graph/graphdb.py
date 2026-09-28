@@ -13,6 +13,7 @@ from core.repo.graph.cypher.kg_const.crud import (
 from core.repo.graph.cypher.kg_const.textbook import (
     CYPHER_write_sections, CYPHER_write_passages,
     CYPHER_get_toc_scoped, CYPHER_get_toc, CYPHER_list_passage_uris,
+    CYPHER_list_sections_for_extraction,
 )
 from core.repo.graph.cypher.kg_const.bind import (
     CYPHER_update_links, CYPHER_write_anchors, CYPHER_write_seg_anchors,
@@ -20,6 +21,8 @@ from core.repo.graph.cypher.kg_const.bind import (
     CYPHER_anchor_search, CYPHER_anchor_search_scoped,
     CYPHER_passage_search_vec, CYPHER_passage_search_vec_scoped,
     CYPHER_passage_search_ft, CYPHER_get_passage_context,
+    CYPHER_graph_expand_passages, CYPHER_entity_passage_search,
+    CYPHER_resolve_entity_sources,
 )
 from core.repo.graph.cypher.kg_const.video import (
     CYPHER_write_vid, CYPHER_write_segs,
@@ -71,7 +74,31 @@ class GraphDB:
         start = time()
         with self.driver.session(database=db_name) as session:
             if nodes:
-                session.execute_write(self._insert_nodes, nodes)
+                resolved = session.execute_write(self._insert_nodes, nodes)
+                identities = {item["input_id"]: item for item in resolved}
+                names = {}
+                ## canonical IDs must reach vector store and later anchors
+                for node in nodes:
+                    identity = identities.get(node.get("id"))
+                    if identity:
+                        names[node["name"]] = identity["name"]
+                        node.update(id=identity["id"], name=identity["name"])
+                        if identity["typeNode"]:
+                            node["typeNode"] = identity["typeNode"]
+                for edge in edges:
+                    for end in ("source", "target"):
+                        identity = identities.get(edge.get(end + "_id"))
+                        if identity:
+                            edge[end + "_id"] = identity["id"]
+                            edge[end + "_name"] = identity["name"]
+                        elif edge.get(end + "_name") in names:
+                            edge[end + "_name"] = names[edge[end + "_name"]]
+                for cluster in clusters:
+                    identity = identities.get(cluster.get("id"))
+                    if identity:
+                        cluster.update(id=identity["id"], name=identity["name"])
+                    elif cluster.get("name") in names:
+                        cluster["name"] = names[cluster["name"]]
             if edges:
                 session.execute_write(self._insert_edges, edges)
             if clusters:
@@ -79,9 +106,9 @@ class GraphDB:
         logging.info(f"Graph inserted in {time() - start}")
 
     @staticmethod
-    def _insert_nodes(tx, nodes: List[Dict]) -> None:
+    def _insert_nodes(tx, nodes: List[Dict]) -> List[Dict]:
         nodes = [n for n in nodes if n.get('name') and str(n.get('name')).strip()]
-        tx.run(CYPHER_insert_nodes, nodes=nodes)
+        return tx.run(CYPHER_insert_nodes, nodes=nodes).data()
 
     @staticmethod
     def _insert_edges(tx, edges: List[Dict]):
@@ -101,6 +128,11 @@ class GraphDB:
         with self.driver.session(database=db_name) as session:
             result = session.run(CYPHER_get_entity_by_id, id=node_id).single()
             return result["n"] if result else None
+
+    def resolve_entity_sources(self, ids: List[str]) -> List[Dict]:
+        if not ids:
+            return []
+        return self.run_query(self.db_name, CYPHER_resolve_entity_sources, {"ids": ids})
         
     def update_links(self,chunk_id, heading, storage_uri, links, db_name = "test"):
         with self.driver.session(database=db_name) as session:
@@ -217,6 +249,41 @@ class GraphDB:
         db_name = db_name or self.db_name
         return self.run_query(db_name, CYPHER_get_concept_anchors, {"name": name})
 
+    def graph_expand_passages(
+        self,
+        seed_uris: List[str],
+        top_k: int = 5,
+        max_degree: int = 50,
+        db_name: Optional[str] = None,
+    ) -> List[Dict]:
+        ## 2-hop ANCHORED_IN traversal from seed passages, weighted by entity IDF
+        if not seed_uris:
+            return []
+        db_name = db_name or self.db_name
+        return self.run_query(
+            db_name,
+            CYPHER_graph_expand_passages,
+            {"seed_uris": list(seed_uris), "max_degree": max_degree, "k": top_k},
+        )
+
+    def entity_passage_search(
+        self,
+        entity_names: List[str],
+        top_k: int = 5,
+        max_degree: int = 50,
+        db_name: Optional[str] = None,
+    ) -> List[Dict]:
+        ## direct anchor lookup for named entities extracted from query
+        if not entity_names:
+            return []
+        db_name = db_name or self.db_name
+        names = [n.lower() for n in entity_names if n]
+        return self.run_query(
+            db_name,
+            CYPHER_entity_passage_search,
+            {"entity_names": names, "max_degree": max_degree, "k": top_k},
+        )
+
     def get_passage_context(self, passage_id: str, window: int = 1, db_name=None) -> List[Dict]:
         ## sibling passages in the same section, page-ordered, around the target
         db_name = db_name or self.db_name
@@ -246,6 +313,16 @@ class GraphDB:
             {"prefix": uri_prefix},
         )
         return {row["uri"] for row in rows}
+
+    def list_sections_for_extraction(self, uri_prefix: str, db_name=None) -> List[Dict]:
+        ## section + its passage text, no embs -- concept extraction reads back what
+        ## segment_persist wrote rather than passing 768-float vectors across tasks
+        db_name = db_name or self.db_name
+        return self.run_query(
+            db_name,
+            CYPHER_list_sections_for_extraction,
+            {"prefix": uri_prefix},
+        )
 
     def query(self, q = None, param = {}):
         if q == None or len(q) <=3:
