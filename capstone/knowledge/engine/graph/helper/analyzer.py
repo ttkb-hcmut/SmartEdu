@@ -12,7 +12,7 @@ from core.schema.factory import (
     RhetoricalRole
 )
 from core.schema.graph.graph import *
-from knowledge.engine.graph.helper.normalize import wiki_resolver, nlp_normalize
+from core.util.normalize import wiki_resolver, nlp_normalize, SUBJECT_FILE
 from knowledge.engine.graph.helper.taxonomy import *
     
 
@@ -46,10 +46,7 @@ def edge_type(s: EduNode, t: EduNode):
 
 
 
-import os
-_self_dir = os.path.dirname(os.path.abspath(__file__))
-SUBJECT_FILE = os.path.abspath(os.path.join(_self_dir, "..", "..", "subjects.csv"))
-nlp = spacy.load("en_core_web_sm", disable=["parser", "ner"])
+nlp =spacy.load("en_core_web_sm", disable=["parser", "ner"])
 from collections import Counter
 
 def analyze(skeleton: SkeletonStructure, relations: RelationStructure) -> Tuple[List[Dict[str, Any]], RelationStructure]:

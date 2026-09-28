@@ -10,7 +10,7 @@ from core.llm.config import LLMConfig
 from knowledge.pipeline import deps
 
 
-STAGE_VERSION = "v2"
+STAGE_VERSION = "v3"
 RESULT_STORAGE = "remote-file-system/prefect-sftp-results"
 CACHE_SERIALIZER = CompressedPickleSerializer(compressionlib="zlib")
 
