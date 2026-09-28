@@ -211,6 +211,24 @@ def test_agentic_call_and_answer_latencies_are_exposed():
     assert row["answer_latency_ms"] == 30.0
 
 
+def test_answer_context_recall_scores_the_compiled_context_not_the_full_ledger():
+    chat = ChatTrace(
+        chat_id="c1",
+        query="q",
+        preset="RAG",
+        agent=[StepTrace(
+            node="Agentic_Retrieve",
+            chunks=[_chunk(uri) for uri in GOLD],
+            tool_result={"answer_context_uris": [GOLD[0]]},
+        )],
+    )
+
+    row = evaluate_chat(chat, {"id": "q", "question": "q", "gold_chunk_ids": GOLD})
+
+    assert row["context_recall"] == 1.0
+    assert row["answer_context_recall"] == 0.5
+
+
 def test_render_table_groups_presets():
     rows = [
         {"preset": "PLAIN", "fixture_id": "q1", "context_precision": None,
@@ -283,6 +301,40 @@ def test_quality_table_excludes_failed_and_invalid_rows_from_averages():
     table = render_table(rows, expected_counts={"RAG": 4})
 
     assert "| RAG | 1 | 2 | 0.50 | - | 1.00 |" in table
+
+
+def test_rag_full_headline_uses_only_questions_valid_in_both_arms():
+    from TA.tracing.evaluator import paired_arm_summary
+
+    rows = [
+        {"fixture_id": "q1", "preset": "RAG", "status": "SUCCESS", "retrieval_validity": "valid", "answer_f1": 0.2, "workflow_latency_ms": 10.0, "answer_latency_ms": 4.0},
+        {"fixture_id": "q1", "preset": "FULL", "status": "SUCCESS", "retrieval_validity": "valid", "answer_f1": 0.8, "workflow_latency_ms": 20.0, "answer_latency_ms": 8.0},
+        {"fixture_id": "q2", "preset": "RAG", "status": "SUCCESS", "retrieval_validity": "valid", "answer_f1": 1.0, "workflow_latency_ms": 30.0},
+        {"fixture_id": "q2", "preset": "FULL", "status": "FAIL", "retrieval_validity": "invalid", "answer_f1": 0.0, "workflow_latency_ms": 40.0},
+    ]
+
+    summary = paired_arm_summary(rows, resamples=100, seed=7)
+
+    assert summary["question_ids"] == ["q1"]
+    assert summary["arms"]["RAG"]["answer_f1"] == 0.2
+    assert summary["arms"]["FULL"]["answer_f1"] == 0.8
+    assert summary["arms"]["RAG"]["workflow_latency_ms"] == 10.0
+    assert summary["deltas"]["answer_f1"]["mean_delta"] == pytest.approx(0.6)
+
+
+def test_report_puts_paired_rag_full_score_and_latency_before_diagnostics():
+    rows = [
+        {"fixture_id": "q1", "preset": "RAG", "status": "SUCCESS", "retrieval_validity": "valid", "answer_exact_match": 0.0, "answer_f1": 0.2, "context_recall": 0.5, "complete_chain": 0.0, "workflow_latency_ms": 10.0, "answer_latency_ms": 4.0, "node_configs": {}},
+        {"fixture_id": "q1", "preset": "FULL", "status": "SUCCESS", "retrieval_validity": "valid", "answer_exact_match": 1.0, "answer_f1": 0.8, "context_recall": 1.0, "complete_chain": 1.0, "workflow_latency_ms": 20.0, "answer_latency_ms": 8.0, "node_configs": {}},
+        {"fixture_id": "q2", "preset": "RAG", "status": "SUCCESS", "retrieval_validity": "valid", "answer_f1": 1.0, "node_configs": {}},
+        {"fixture_id": "q2", "preset": "FULL", "status": "FAIL", "retrieval_validity": "invalid", "node_configs": {}},
+    ]
+
+    report = render_report(rows, expected_counts={"RAG": 2, "FULL": 2})
+
+    assert "Paired RAG → FULL headline" in report
+    assert "paired questions: 1" in report
+    assert "mean workflow ms" in report and "mean answer ms" in report
 
 
 def test_paired_summary_uses_only_matched_successful_valid_rows():

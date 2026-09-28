@@ -1,174 +1,963 @@
 {
   "nodes": {
-    "37f0935884df": {
-      "id": "37f0935884df",
-      "name": "Bench_Musique",
+    "944ae50cb4be": {
+      "id": "944ae50cb4be",
+      "name": "",
       "content": "Course-specific concept without wiki page"
     },
-    "Q121058946": {
-      "id": "Q121058946",
-      "name": "Transportation Infrastructure",
-      "content": "Topic: Transportation Infrastructure"
+    "Q340169": {
+      "id": "Q340169",
+      "name": "Communication",
+      "content": "Topic: Communication"
     },
-    "143350f19674": {
-      "id": "143350f19674",
-      "name": "Ottoman History",
-      "content": "Topic: Ottoman History"
+    "Q30642": {
+      "id": "Q30642",
+      "name": "Natural Language Processing",
+      "content": "Topic: Natural Language Processing"
     },
-    "Q20474368": {
-      "id": "Q20474368",
-      "name": "Education In Ottoman Empire",
-      "content": "overview of the education system of the Ottoman Empire\n**ARTICLE: academic journal",
+    "Q6884747": {
+      "id": "Q6884747",
+      "name": "Bag Of Word Model In Computer Vision",
+      "content": "image classification model\n**ARTICLE: article",
       "hard_ref": {
-        "db": "Bench_MuSiQue",
-        "id": "Bench_MuSiQue/section/a1785f35eeab9003",
-        "name": "Ottoman Empire",
-        "summary": "With Constantinople as its capital and control of lands around the Mediterranean basin, the Ottoman Empire was at the centre of interactions between the Eastern and Western worlds for six centuries. F",
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
         "p_num": [
-          0,
-          1
+          1,
+          14
         ]
       }
     },
-    "Q20474368_Statement": {
-      "id": "Q20474368_Statement",
-      "name": "Education In Ottoman Empire_Statement",
-      "content": "With Constantinople as its capital and control of lands around the Mediterranean basin, the Ottoman Empire was at the centre of interactions between the Eastern and Western worlds for six centuries.",
-      "concept_id": "Q20474368",
+    "Q6884747_Statement": {
+      "id": "Q6884747_Statement",
+      "name": "Bag Of Word Model In Computer Vision_Statement",
+      "content": "Bag of Words represents a document as a multiset of its words.",
+      "concept_id": "Q6884747",
       "rrole": "Statement",
-      "score": 0.7
+      "score": 0.9
     },
-    "Q20474368_Problem": {
-      "id": "Q20474368_Problem",
-      "name": "Education In Ottoman Empire_Problem",
-      "content": "Major atrocities were committed by the Ottoman government against Armenians, Assyrians, and Pontic Greeks during the war.",
-      "concept_id": "Q20474368",
+    "Q6884747_Problem": {
+      "id": "Q6884747_Problem",
+      "name": "Bag Of Word Model In Computer Vision_Problem",
+      "content": "Bag of Words ignores word order, leading to loss of syntactic information.",
+      "concept_id": "Q6884747",
       "rrole": "Problem",
-      "score": 0.7
+      "score": 0.85
     },
-    "Q20474368_Objective": {
-      "id": "Q20474368_Objective",
-      "name": "Education In Ottoman Empire_Objective",
-      "content": "The imperial ambition of recovering its lost territories led the Empire to join World War I on the side of Germany and the Central Powers.",
-      "concept_id": "Q20474368",
-      "rrole": "Objective",
-      "score": 0.7
-    },
-    "Q20474368_Application": {
-      "id": "Q20474368_Application",
-      "name": "Education In Ottoman Empire_Application",
-      "content": "The Empire's defeat and Allied occupation led to the emergence of modern states including Turkey, the Balkans, and Middle Eastern nations.",
-      "concept_id": "Q20474368",
-      "rrole": "Application",
-      "score": 0.7
-    },
-    "Q36730": {
-      "id": "Q36730",
-      "name": "Ottoman Turkish",
-      "content": "language that was used in the Ottoman Empire",
+    "Q2594083": {
+      "id": "Q2594083",
+      "name": "Word",
+      "content": "finite formal sequence of symbols in theorical mathematics of formal languages, applied to information science, computer science, and telecommunications",
       "hard_ref": {
-        "db": "Bench_MuSiQue",
-        "id": "Bench_MuSiQue/section/a1785f35eeab9003",
-        "name": "Ottoman Empire",
-        "summary": "With Constantinople as its capital and control of lands around the Mediterranean basin, the Ottoman Empire was at the centre of interactions between the Eastern and Western worlds for six centuries. F",
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
         "p_num": [
-          0,
-          1
+          1,
+          14
         ]
       }
+    },
+    "8021628ffe4a": {
+      "id": "8021628ffe4a",
+      "name": "Co Occurrence Matrix",
+      "content": "Co-occurrence Matrix captures word association frequencies across a corpus.",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
+        "p_num": [
+          1,
+          14
+        ]
+      }
+    },
+    "8021628ffe4a_Statement": {
+      "id": "8021628ffe4a_Statement",
+      "name": "Co Occurrence Matrix_Statement",
+      "content": "Co-occurrence Matrix captures word association frequencies across a corpus.",
+      "concept_id": "8021628ffe4a",
+      "rrole": "Statement",
+      "score": 0.9
+    },
+    "8021628ffe4a_Problem": {
+      "id": "8021628ffe4a_Problem",
+      "name": "Co Occurrence Matrix_Problem",
+      "content": "Co-occurrence Matrix can become extremely large for big vocabularies.",
+      "concept_id": "8021628ffe4a",
+      "rrole": "Problem",
+      "score": 0.85
+    },
+    "Q22906785": {
+      "id": "Q22906785",
+      "name": "Matrix",
+      "content": "networking protocol for real-time communication and data synchronization",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
+        "p_num": [
+          1,
+          14
+        ]
+      }
+    },
+    "c0aa8a4a05ef": {
+      "id": "c0aa8a4a05ef",
+      "name": "Tf Idf",
+      "content": "tf‑idf(i, j) = tf(i, j) × log(N / df(i))",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
+        "p_num": [
+          1,
+          14
+        ]
+      }
+    },
+    "c0aa8a4a05ef_Formula": {
+      "id": "c0aa8a4a05ef_Formula",
+      "name": "Tf Idf_Formula",
+      "content": "tf‑idf(i, j) = tf(i, j) × log(N / df(i))",
+      "concept_id": "c0aa8a4a05ef",
+      "rrole": "Formula",
+      "score": 0.95
+    },
+    "c0aa8a4a05ef_Statement": {
+      "id": "c0aa8a4a05ef_Statement",
+      "name": "Tf Idf_Statement",
+      "content": "TF-IDF reduces the impact of common words and highlights discriminative terms.",
+      "concept_id": "c0aa8a4a05ef",
+      "rrole": "Statement",
+      "score": 0.9
+    },
+    "Q1287034": {
+      "id": "Q1287034",
+      "name": "Hungarian University Of Sports Science",
+      "content": "education organization in Budapest, Hungary",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
+        "p_num": [
+          1,
+          14
+        ]
+      }
+    },
+    "f13310bc3876": {
+      "id": "f13310bc3876",
+      "name": "One Hot Vector",
+      "content": "One-hot Vector for \"man\" in a 9‑word vocabulary is [1,0,0,0,0,0,0,0,0].",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
+        "p_num": [
+          1,
+          14
+        ]
+      }
+    },
+    "f13310bc3876_Statement": {
+      "id": "f13310bc3876_Statement",
+      "name": "One Hot Vector_Statement",
+      "content": "One-hot Vector for \"man\" in a 9‑word vocabulary is [1,0,0,0,0,0,0,0,0].",
+      "concept_id": "f13310bc3876",
+      "rrole": "Statement",
+      "score": 0.9
+    },
+    "f13310bc3876_Problem": {
+      "id": "f13310bc3876_Problem",
+      "name": "One Hot Vector_Problem",
+      "content": "One-hot Vector creates high‑dimensional sparse representations.",
+      "concept_id": "f13310bc3876",
+      "rrole": "Problem",
+      "score": 0.85
+    },
+    "Q1366302": {
+      "id": "Q1366302",
+      "name": "Row",
+      "content": "single, implicitly structured data item in a table in a relational database; every row in a table has the same structure (set of columns)",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
+        "p_num": [
+          1,
+          14
+        ]
+      }
+    },
+    "9a7230d7e1d5": {
+      "id": "9a7230d7e1d5",
+      "name": "Dense Vector",
+      "content": "Dense Vectors may generalize better than explicit counts.",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
+        "p_num": [
+          1,
+          14
+        ]
+      }
+    },
+    "9a7230d7e1d5_Statement": {
+      "id": "9a7230d7e1d5_Statement",
+      "name": "Dense Vector_Statement",
+      "content": "Dense Vectors may generalize better than explicit counts.",
+      "concept_id": "9a7230d7e1d5",
+      "rrole": "Statement",
+      "score": 0.9
+    },
+    "9a7230d7e1d5_Objective": {
+      "id": "9a7230d7e1d5_Objective",
+      "name": "Dense Vector_Objective",
+      "content": "Dense Vectors aim to capture synonymy between words like car and automobile.",
+      "concept_id": "9a7230d7e1d5",
+      "rrole": "Objective",
+      "score": 0.85
+    },
+    "Q3023252": {
+      "id": "Q3023252",
+      "name": "Densetsu Stafy",
+      "content": "2002 video game for Game Boy Advance",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
+        "p_num": [
+          1,
+          14
+        ]
+      }
+    },
+    "84fc37bbf1d1": {
+      "id": "84fc37bbf1d1",
+      "name": "Sparse Vector",
+      "content": "Sparse Vectors are long (|V| = 20 000–50 000) and contain mostly zeros.",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
+        "p_num": [
+          1,
+          14
+        ]
+      }
+    },
+    "84fc37bbf1d1_Statement": {
+      "id": "84fc37bbf1d1_Statement",
+      "name": "Sparse Vector_Statement",
+      "content": "Sparse Vectors are long (|V| = 20 000–50 000) and contain mostly zeros.",
+      "concept_id": "84fc37bbf1d1",
+      "rrole": "Statement",
+      "score": 0.9
+    },
+    "84fc37bbf1d1_Problem": {
+      "id": "84fc37bbf1d1_Problem",
+      "name": "Sparse Vector_Problem",
+      "content": "Sparse Vectors increase memory usage and computational cost.",
+      "concept_id": "84fc37bbf1d1",
+      "rrole": "Problem",
+      "score": 0.85
+    },
+    "Q7573783": {
+      "id": "Q7573783",
+      "name": "Sparse",
+      "content": "static analysis tool for the Linux kernel\n**ARTICLE: Julio Michael Stern's PhD thesis",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
+        "p_num": [
+          1,
+          14
+        ]
+      }
+    },
+    "8034764f27a7": {
+      "id": "8034764f27a7",
+      "name": "Skip Gram",
+      "content": "Skip‑gram trains word vectors by maximizing likelihood of context words given the target.",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
+        "p_num": [
+          1,
+          14
+        ]
+      }
+    },
+    "8034764f27a7_Statement": {
+      "id": "8034764f27a7_Statement",
+      "name": "Skip Gram_Statement",
+      "content": "Skip‑gram trains word vectors by maximizing likelihood of context words given the target.",
+      "concept_id": "8034764f27a7",
+      "rrole": "Statement",
+      "score": 0.9
+    },
+    "8034764f27a7_Problem": {
+      "id": "8034764f27a7_Problem",
+      "name": "Skip Gram_Problem",
+      "content": "Skip‑gram can be slower to train on very large vocabularies.",
+      "concept_id": "8034764f27a7",
+      "rrole": "Problem",
+      "score": 0.8
+    },
+    "Q81113235": {
+      "id": "Q81113235",
+      "name": "Scp Object",
+      "content": "entity as described in the web-based collaborative fiction project SCP Foundation",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
+        "p_num": [
+          1,
+          14
+        ]
+      }
+    },
+    "Q7554146": {
+      "id": "Q7554146",
+      "name": "Softmax Function",
+      "content": "function that maps a k-element real-valued vector to a k-element categorical probability distribution",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
+        "p_num": [
+          1,
+          14
+        ]
+      }
+    },
+    "Q7554146_Formula": {
+      "id": "Q7554146_Formula",
+      "name": "Softmax Function_Formula",
+      "content": "softmax(z_i) = exp(z_i) / Σ_j exp(z_j)",
+      "concept_id": "Q7554146",
+      "rrole": "Formula",
+      "score": 0.95
+    },
+    "Q7554146_Statement": {
+      "id": "Q7554146_Statement",
+      "name": "Softmax Function_Statement",
+      "content": "Softmax Function is used in CBOW and Skip‑gram to model word probabilities.",
+      "concept_id": "Q7554146",
+      "rrole": "Statement",
+      "score": 0.9
+    },
+    "Q22826110": {
+      "id": "Q22826110",
+      "name": "Glove",
+      "content": "unsupervised learning algorithm for obtaining vector representations of words",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
+        "p_num": [
+          1,
+          14
+        ]
+      }
+    },
+    "Q22826110_Statement": {
+      "id": "Q22826110_Statement",
+      "name": "Glove_Statement",
+      "content": "GloVe offers fast training and stable quality on large datasets.",
+      "concept_id": "Q22826110",
+      "rrole": "Statement",
+      "score": 0.9
+    },
+    "Q22826110_Problem": {
+      "id": "Q22826110_Problem",
+      "name": "Glove_Problem",
+      "content": "GloVe requires a lot of memory and is sensitive to learning‑rate initialization.",
+      "concept_id": "Q22826110",
+      "rrole": "Problem",
+      "score": 0.85
+    },
+    "Q29124045": {
+      "id": "Q29124045",
+      "name": "Fasttext",
+      "content": "library for learning of word embeddings and text classification created by Facebook's AI Research (FAIR) lab\n**ARTICLE: scientific article (publication date: 12 December 2016)",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
+        "p_num": [
+          1,
+          14
+        ]
+      }
+    },
+    "Q29124045_Statement": {
+      "id": "Q29124045_Statement",
+      "name": "Fasttext_Statement",
+      "content": "FastText performs well with rare words because it incorporates n‑gram features.",
+      "concept_id": "Q29124045",
+      "rrole": "Statement",
+      "score": 0.9
+    },
+    "Q29124045_Problem": {
+      "id": "Q29124045_Problem",
+      "name": "Fasttext_Problem",
+      "content": "FastText requires more memory due to character‑based storage.",
+      "concept_id": "Q29124045",
+      "rrole": "Problem",
+      "score": 0.85
+    },
+    "Q336": {
+      "id": "Q336",
+      "name": "Science",
+      "content": "systematic endeavor that builds and organizes knowledge, and the set of knowledge produced by this system",
+      "hard_ref": {
+        "db": "minio",
+        "id": "minio://courses/Nlp Verified Measurement 20260927/tmpbh6w7mhp_part_1_62365e/chunks/e6ee8c457037f712c3ce281b66339865_slide0.txt",
+        "name": "tmpbh6w7mhp part 1",
+        "summary": "NATURAL LANGUAGE PROCESSING (PRACTICE) NLP 251 - Lab 5: Word Embeddings Department of Computer Scien ......",
+        "p_num": [
+          1,
+          14
+        ]
+      }
+    },
+    "Q336_Statement": {
+      "id": "Q336_Statement",
+      "name": "Science_Statement",
+      "content": "ELMo provides better semantic representation than static embeddings like Word2vec.",
+      "concept_id": "Q336",
+      "rrole": "Statement",
+      "score": 0.9
+    },
+    "Q336_Problem": {
+      "id": "Q336_Problem",
+      "name": "Science_Problem",
+      "content": "ELMo requires more memory because it stores character‑based representations.",
+      "concept_id": "Q336",
+      "rrole": "Problem",
+      "score": 0.85
     }
   },
   "edges": {
-    "('Q121058946', '37f0935884df', 'PART_OF')": {
-      "source": "Q121058946",
-      "target": "37f0935884df",
+    "('Q340169', '944ae50cb4be', 'PART_OF')": {
+      "source": "Q340169",
+      "target": "944ae50cb4be",
       "relationship": "Source concept is essentially a part of target topic",
       "name": "PART_OF",
       "type": "PART_OF"
     },
-    "('143350f19674', '37f0935884df', 'PART_OF')": {
-      "source": "143350f19674",
-      "target": "37f0935884df",
+    "('Q30642', '944ae50cb4be', 'PART_OF')": {
+      "source": "Q30642",
+      "target": "944ae50cb4be",
       "relationship": "Source concept is essentially a part of target topic",
       "name": "PART_OF",
       "type": "PART_OF"
     },
-    "('Q20474368', '143350f19674', 'PART_OF')": {
-      "source": "Q20474368",
-      "target": "143350f19674",
+    "('Q6884747', 'Q30642', 'PART_OF')": {
+      "source": "Q6884747",
+      "target": "Q30642",
       "relationship": "Source concept is estimately the foundation and root to the target concept",
       "name": "BELONGS_TO",
       "type": "PART_OF"
     },
-    "('Q20474368', 'Q20474368_Statement', 'CONTENT')": {
-      "source": "Q20474368",
-      "target": "Q20474368_Statement",
+    "('Q6884747', 'Q6884747_Statement', 'CONTENT')": {
+      "source": "Q6884747",
+      "target": "Q6884747_Statement",
       "relationship": "This concept contains this knowledge",
       "name": "STATEMENT",
       "type": "CONTENT"
     },
-    "('Q20474368', 'Q20474368_Problem', 'CONTENT')": {
-      "source": "Q20474368",
-      "target": "Q20474368_Problem",
+    "('Q6884747', 'Q6884747_Problem', 'CONTENT')": {
+      "source": "Q6884747",
+      "target": "Q6884747_Problem",
       "relationship": "This concept contains this knowledge",
       "name": "PROBLEM",
       "type": "CONTENT"
     },
-    "('Q20474368', 'Q20474368_Objective', 'CONTENT')": {
-      "source": "Q20474368",
-      "target": "Q20474368_Objective",
-      "relationship": "This concept contains this knowledge",
-      "name": "OBJECTIVE",
-      "type": "CONTENT"
-    },
-    "('Q20474368', 'Q20474368_Application', 'CONTENT')": {
-      "source": "Q20474368",
-      "target": "Q20474368_Application",
-      "relationship": "This concept contains this knowledge",
-      "name": "APPLICATION",
-      "type": "CONTENT"
-    },
-    "('Q36730', '143350f19674', 'PART_OF')": {
-      "source": "Q36730",
-      "target": "143350f19674",
+    "('Q2594083', 'Q30642', 'PART_OF')": {
+      "source": "Q2594083",
+      "target": "Q30642",
       "relationship": "Source concept is estimately the foundation and root to the target concept",
       "name": "BELONGS_TO",
       "type": "PART_OF"
     },
-    "('Q20474368', 'Q36730', 'SEMANTIC')": {
-      "source": "Q20474368",
-      "target": "Q36730",
+    "('8021628ffe4a', 'Q30642', 'PART_OF')": {
+      "source": "8021628ffe4a",
+      "target": "Q30642",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('8021628ffe4a', '8021628ffe4a_Statement', 'CONTENT')": {
+      "source": "8021628ffe4a",
+      "target": "8021628ffe4a_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('8021628ffe4a', '8021628ffe4a_Problem', 'CONTENT')": {
+      "source": "8021628ffe4a",
+      "target": "8021628ffe4a_Problem",
+      "relationship": "This concept contains this knowledge",
+      "name": "PROBLEM",
+      "type": "CONTENT"
+    },
+    "('Q22906785', 'Q30642', 'PART_OF')": {
+      "source": "Q22906785",
+      "target": "Q30642",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('c0aa8a4a05ef', 'Q30642', 'PART_OF')": {
+      "source": "c0aa8a4a05ef",
+      "target": "Q30642",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('c0aa8a4a05ef', 'c0aa8a4a05ef_Formula', 'CONTENT')": {
+      "source": "c0aa8a4a05ef",
+      "target": "c0aa8a4a05ef_Formula",
+      "relationship": "This concept contains this knowledge",
+      "name": "FORMULA",
+      "type": "CONTENT"
+    },
+    "('c0aa8a4a05ef', 'c0aa8a4a05ef_Statement', 'CONTENT')": {
+      "source": "c0aa8a4a05ef",
+      "target": "c0aa8a4a05ef_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q1287034', 'Q30642', 'PART_OF')": {
+      "source": "Q1287034",
+      "target": "Q30642",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('f13310bc3876', 'Q30642', 'PART_OF')": {
+      "source": "f13310bc3876",
+      "target": "Q30642",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('f13310bc3876', 'f13310bc3876_Statement', 'CONTENT')": {
+      "source": "f13310bc3876",
+      "target": "f13310bc3876_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('f13310bc3876', 'f13310bc3876_Problem', 'CONTENT')": {
+      "source": "f13310bc3876",
+      "target": "f13310bc3876_Problem",
+      "relationship": "This concept contains this knowledge",
+      "name": "PROBLEM",
+      "type": "CONTENT"
+    },
+    "('Q1366302', 'Q30642', 'PART_OF')": {
+      "source": "Q1366302",
+      "target": "Q30642",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('9a7230d7e1d5', 'Q30642', 'PART_OF')": {
+      "source": "9a7230d7e1d5",
+      "target": "Q30642",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('9a7230d7e1d5', '9a7230d7e1d5_Statement', 'CONTENT')": {
+      "source": "9a7230d7e1d5",
+      "target": "9a7230d7e1d5_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('9a7230d7e1d5', '9a7230d7e1d5_Objective', 'CONTENT')": {
+      "source": "9a7230d7e1d5",
+      "target": "9a7230d7e1d5_Objective",
+      "relationship": "This concept contains this knowledge",
+      "name": "OBJECTIVE",
+      "type": "CONTENT"
+    },
+    "('Q3023252', 'Q30642', 'PART_OF')": {
+      "source": "Q3023252",
+      "target": "Q30642",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('84fc37bbf1d1', 'Q30642', 'PART_OF')": {
+      "source": "84fc37bbf1d1",
+      "target": "Q30642",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('84fc37bbf1d1', '84fc37bbf1d1_Statement', 'CONTENT')": {
+      "source": "84fc37bbf1d1",
+      "target": "84fc37bbf1d1_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('84fc37bbf1d1', '84fc37bbf1d1_Problem', 'CONTENT')": {
+      "source": "84fc37bbf1d1",
+      "target": "84fc37bbf1d1_Problem",
+      "relationship": "This concept contains this knowledge",
+      "name": "PROBLEM",
+      "type": "CONTENT"
+    },
+    "('Q7573783', 'Q30642', 'PART_OF')": {
+      "source": "Q7573783",
+      "target": "Q30642",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('8034764f27a7', 'Q30642', 'PART_OF')": {
+      "source": "8034764f27a7",
+      "target": "Q30642",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('8034764f27a7', '8034764f27a7_Statement', 'CONTENT')": {
+      "source": "8034764f27a7",
+      "target": "8034764f27a7_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('8034764f27a7', '8034764f27a7_Problem', 'CONTENT')": {
+      "source": "8034764f27a7",
+      "target": "8034764f27a7_Problem",
+      "relationship": "This concept contains this knowledge",
+      "name": "PROBLEM",
+      "type": "CONTENT"
+    },
+    "('Q81113235', 'Q30642', 'PART_OF')": {
+      "source": "Q81113235",
+      "target": "Q30642",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q7554146', 'Q30642', 'PART_OF')": {
+      "source": "Q7554146",
+      "target": "Q30642",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q7554146', 'Q7554146_Formula', 'CONTENT')": {
+      "source": "Q7554146",
+      "target": "Q7554146_Formula",
+      "relationship": "This concept contains this knowledge",
+      "name": "FORMULA",
+      "type": "CONTENT"
+    },
+    "('Q7554146', 'Q7554146_Statement', 'CONTENT')": {
+      "source": "Q7554146",
+      "target": "Q7554146_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q22826110', 'Q30642', 'PART_OF')": {
+      "source": "Q22826110",
+      "target": "Q30642",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q22826110', 'Q22826110_Statement', 'CONTENT')": {
+      "source": "Q22826110",
+      "target": "Q22826110_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q22826110', 'Q22826110_Problem', 'CONTENT')": {
+      "source": "Q22826110",
+      "target": "Q22826110_Problem",
+      "relationship": "This concept contains this knowledge",
+      "name": "PROBLEM",
+      "type": "CONTENT"
+    },
+    "('Q29124045', 'Q30642', 'PART_OF')": {
+      "source": "Q29124045",
+      "target": "Q30642",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q29124045', 'Q29124045_Statement', 'CONTENT')": {
+      "source": "Q29124045",
+      "target": "Q29124045_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q29124045', 'Q29124045_Problem', 'CONTENT')": {
+      "source": "Q29124045",
+      "target": "Q29124045_Problem",
+      "relationship": "This concept contains this knowledge",
+      "name": "PROBLEM",
+      "type": "CONTENT"
+    },
+    "('Q336', 'Q30642', 'PART_OF')": {
+      "source": "Q336",
+      "target": "Q30642",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "BELONGS_TO",
+      "type": "PART_OF"
+    },
+    "('Q336', 'Q336_Statement', 'CONTENT')": {
+      "source": "Q336",
+      "target": "Q336_Statement",
+      "relationship": "This concept contains this knowledge",
+      "name": "STATEMENT",
+      "type": "CONTENT"
+    },
+    "('Q336', 'Q336_Problem', 'CONTENT')": {
+      "source": "Q336",
+      "target": "Q336_Problem",
+      "relationship": "This concept contains this knowledge",
+      "name": "PROBLEM",
+      "type": "CONTENT"
+    },
+    "('Q6884747', 'f13310bc3876', 'SEMANTIC')": {
+      "source": "Q6884747",
+      "target": "f13310bc3876",
+      "relationship": "One-hot encoding is a simple representation used in the Bag‑of‑Words model to indicate the presence of a word in a document.",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('Q6884747', 'c0aa8a4a05ef', 'SEMANTIC')": {
+      "source": "Q6884747",
+      "target": "c0aa8a4a05ef",
+      "relationship": "TF‑IDF is a weighting scheme applied to the raw counts produced by a Bag‑of‑Words representation.",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('Q6884747', '8021628ffe4a', 'SEMANTIC')": {
+      "source": "Q6884747",
+      "target": "8021628ffe4a",
+      "relationship": "A co‑occurrence matrix can be built from the Bag‑of‑Words counts to capture how often words appear together.",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('c0aa8a4a05ef', '84fc37bbf1d1', 'SEMANTIC')": {
+      "source": "c0aa8a4a05ef",
+      "target": "84fc37bbf1d1",
+      "relationship": "TF‑IDF vectors are typically high‑dimensional and contain many zeros, i.e., they are sparse vectors.",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('Q29124045', '9a7230d7e1d5', 'SEMANTIC')": {
+      "source": "Q29124045",
+      "target": "9a7230d7e1d5",
+      "relationship": "FastText learns dense vector representations for words (and sub‑words).",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('Q336', '9a7230d7e1d5', 'SEMANTIC')": {
+      "source": "Q336",
+      "target": "9a7230d7e1d5",
+      "relationship": "ELMo produces dense, context‑dependent vectors for each token in a sentence.",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('Q22826110', '9a7230d7e1d5', 'SEMANTIC')": {
+      "source": "Q22826110",
+      "target": "9a7230d7e1d5",
+      "relationship": "GloVe generates dense word vectors from global word‑co‑occurrence statistics.",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('Q6884747', 'Q2594083', 'SEMANTIC')": {
+      "source": "Q6884747",
+      "target": "Q2594083",
       "relationship": "Source concept is a subtopic of the target concept",
       "name": "PART_OF",
       "type": "SEMANTIC"
     },
-    "('Q36730', 'Q20474368', 'SEMANTIC')": {
-      "source": "Q36730",
-      "target": "Q20474368",
+    "('Q2594083', 'Q6884747', 'SEMANTIC')": {
+      "source": "Q2594083",
+      "target": "Q6884747",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('8021628ffe4a', 'Q22906785', 'SEMANTIC')": {
+      "source": "8021628ffe4a",
+      "target": "Q22906785",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('Q22906785', '8021628ffe4a', 'SEMANTIC')": {
+      "source": "Q22906785",
+      "target": "8021628ffe4a",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('c0aa8a4a05ef', 'Q1287034', 'SEMANTIC')": {
+      "source": "c0aa8a4a05ef",
+      "target": "Q1287034",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('Q1287034', 'c0aa8a4a05ef', 'SEMANTIC')": {
+      "source": "Q1287034",
+      "target": "c0aa8a4a05ef",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('f13310bc3876', 'Q1366302', 'SEMANTIC')": {
+      "source": "f13310bc3876",
+      "target": "Q1366302",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('Q1366302', 'f13310bc3876', 'SEMANTIC')": {
+      "source": "Q1366302",
+      "target": "f13310bc3876",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('9a7230d7e1d5', 'Q3023252', 'SEMANTIC')": {
+      "source": "9a7230d7e1d5",
+      "target": "Q3023252",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('Q3023252', '9a7230d7e1d5', 'SEMANTIC')": {
+      "source": "Q3023252",
+      "target": "9a7230d7e1d5",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('84fc37bbf1d1', 'Q7573783', 'SEMANTIC')": {
+      "source": "84fc37bbf1d1",
+      "target": "Q7573783",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('Q7573783', '84fc37bbf1d1', 'SEMANTIC')": {
+      "source": "Q7573783",
+      "target": "84fc37bbf1d1",
+      "relationship": "Source concept is estimately the foundation and root to the target concept",
+      "name": "INCLUDES",
+      "type": "SEMANTIC"
+    },
+    "('8034764f27a7', 'Q81113235', 'SEMANTIC')": {
+      "source": "8034764f27a7",
+      "target": "Q81113235",
+      "relationship": "Source concept is a subtopic of the target concept",
+      "name": "PART_OF",
+      "type": "SEMANTIC"
+    },
+    "('Q81113235', '8034764f27a7', 'SEMANTIC')": {
+      "source": "Q81113235",
+      "target": "8034764f27a7",
       "relationship": "Source concept is estimately the foundation and root to the target concept",
       "name": "INCLUDES",
       "type": "SEMANTIC"
     }
   },
   "clusters": {
-    "cluster_Q121058946": {
-      "id": "cluster_Q121058946",
-      "label": "Transportation Infrastructure",
+    "cluster_Q340169": {
+      "id": "cluster_Q340169",
+      "label": "Communication",
       "type": "Topic",
-      "anchor_node": "Q121058946"
+      "anchor_node": "Q340169"
     },
-    "cluster_143350f19674": {
-      "id": "cluster_143350f19674",
-      "label": "Ottoman History",
+    "cluster_Q30642": {
+      "id": "cluster_Q30642",
+      "label": "Natural Language Processing",
       "type": "Topic",
-      "anchor_node": "143350f19674",
+      "anchor_node": "Q30642",
       "member_ids": [
-        "Q20474368",
-        "Q20474368_Statement",
-        "Q20474368_Problem",
-        "Q20474368_Objective",
-        "Q20474368_Application",
-        "Q36730"
+        "Q6884747",
+        "Q6884747_Statement",
+        "Q6884747_Problem",
+        "Q2594083",
+        "8021628ffe4a",
+        "8021628ffe4a_Statement",
+        "8021628ffe4a_Problem",
+        "Q22906785",
+        "c0aa8a4a05ef",
+        "c0aa8a4a05ef_Formula",
+        "c0aa8a4a05ef_Statement",
+        "Q1287034",
+        "f13310bc3876",
+        "f13310bc3876_Statement",
+        "f13310bc3876_Problem",
+        "Q1366302",
+        "9a7230d7e1d5",
+        "9a7230d7e1d5_Statement",
+        "9a7230d7e1d5_Objective",
+        "Q3023252",
+        "84fc37bbf1d1",
+        "84fc37bbf1d1_Statement",
+        "84fc37bbf1d1_Problem",
+        "Q7573783",
+        "8034764f27a7",
+        "8034764f27a7_Statement",
+        "8034764f27a7_Problem",
+        "Q81113235",
+        "Q7554146",
+        "Q7554146_Formula",
+        "Q7554146_Statement",
+        "Q22826110",
+        "Q22826110_Statement",
+        "Q22826110_Problem",
+        "Q29124045",
+        "Q29124045_Statement",
+        "Q29124045_Problem",
+        "Q336",
+        "Q336_Statement",
+        "Q336_Problem"
       ]
     }
   }

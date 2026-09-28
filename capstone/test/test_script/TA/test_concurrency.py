@@ -2,9 +2,10 @@ import asyncio
 import uuid
 import sys
 import os
+import pytest
 
 # Add capstone to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
 from core.repo.nosql.mongo_db import Mongo_DB
 from core.repo.sql.sql_db import SQL_DB
@@ -13,6 +14,7 @@ from student.Student_Tracker import Student_Tracker
 from core.config import NeoStudent
 from core.schema.wf_state import ConceptNode
 
+@pytest.mark.asyncio
 async def test_concurrency():
     print("--- Starting Concurrency Test ---")
     mongo = Mongo_DB()

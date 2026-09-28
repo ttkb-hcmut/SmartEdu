@@ -1,128 +1,217 @@
 {
-  "og": "Machine Learning\nChapter 1 - Introduction\nMachine Learning\nWhat is Machine learning?\nMachine Learning\nWhat is Machine learning?\nArthur Samuel (1959): \"Field of study that gives computers the ability to learn without being explicitly programmed\"\nTom Mitchell (1997): \"A computer program is said to learn from experience E with respect to some class of tasks T and performance measure P, if its performance at tasks in T, as measured by P, improves with experience E\".\nMachine Learning\nMachine Learning\nHow to construct programs that automatically improve with experience.\nMachine Learning\nMachine Learning\nHow to construct programs that automatically improve with experience.\nThe scientific study of algorithms and statistical models that computer systems use to perform a specific task without using explicit instructions, relying on patterns and inference instead.\nMachine Learning\nMachine Learning\nHow to construct programs that automatically improve with experience.\nThe scientific study of algorithms and statistical models that computer systems use to perform a specific task without using explicit instructions, relying on patterns and inference instead.\nA subset of artificial intelligence.\nExperience\nPrediction\nMachine Learning\nWhat is learning?\nLearning is an (endless) generalization or induction process.\nTypes of Machine Learning\nSupervised learning: the learner (learning algorithm) are trained on labeled examples, i.e., input where the desired output is known.\nUnsupervised learning: the learner operates on unlabeled examples, i.e., input where the desired output is unknown.\nTypes of Machine Learning\nReinforcement learning: between supervised and unsupervised learning. It is told when an answer is wrong, but not how to correct it.\nEvolutionary learning: biological evolution can be seen as a learning process, to improve survival rates and chance of having offspring.\nTypes of Machine Learning\nThe most common type: supervised learning.\n-Classification: to find the class of an instance given its selected features.\n-Regression: to find a function whose curve passes as close as possible to all of the given data points.\nHow many phase do we have in machine learning?\nMachine Learning\nPhases of Machine Learning\nK-fold cross validation:\n-Randomly partitioned k equal sized sub-samples.\n-k - 1 for training and 1 for testing.\n-k times (folds) of validation and taking the average.",
+  "og": "NATURAL LANGUAGE PROCESSING (PRACTICE)\nNLP 251 - Lab 5: Word Embeddings\nDepartment of Computer Science and Engineering\nReview Knowledge\nBag of Words\nCo-occurrence Matrix\nI like deep learning.\nI like NLP.\nI enjoy flying.\nTF-IDF: Weighing terms in the vector\ntf i , j = number of occurrences of i in j df = number of documents containing i\ni N = total number of documents\nOne-hot Vector\nFor Example:\nMan, woman, boy, girl, prince, princess, queen, king, monarch.\nEach word gets a 1 × 9 vector representation:\nTable: One-hot encoding representation of words.\nWord2vec\nSparse versus dense vectors\ntf-idf (or PMI) vectors are:\nlong ( | V | = 20 , 000 to 50 , 000)\nsparse (most elements are zero)\nWhy dense vectors?\nShort vectors may be easier to use as features in machine learning (fewer weights to tune)\nDense vectors may generalize better than explicit counts\nDense vectors may do better at capturing synonymy:\ncar and automobile are synonyms; but are distinct dimensions\na word with car as a neighbor and a word with automobile as a neighbor should be similar, but aren't\nIn practice, they work better\nAlternative : learn vectors are:\nshort (length 50-1000)\ndense (most elements are non-zero)\nCBOW and Skip-gram\nEfficient Estimation of Word Representations in Vector Space (Tomas et al., 2013)\nCBOW Model\n| V | is the vocabulary size.\ny i ∈ R | V |× 1 is the one-hot representation for the correct word, in the middle (the target word).\nx i ∈ R 1 ×| V | is the one-hot representation for a word.\nCBOW Model - Softmax Function\ny i ∈ R | V |× 1 is the one-hot representation for the correct word, in the middle (the target word).\nWord Vectors\nAfter the training process, each row or column in the matrix W ( 1 ) contains the values of words and Word representation vectors better capture syntactic and semantic aspects, Achieves good results in NLP tasks.\nOther Representation Methods\nGlove\nAdvantages: Fast training, Stable quality on large datasets, Good results even with small datasets and vectors.\nDisadvantages: Requires a lot of memory and Can be affected by the initialization process of the 'learning rate' .\nFastText\nAdvantages: Performs well with rare words due to the use of n-grams\nDisadvantages: Requires more memory due to character-based storage ELMo\nAdvantages: Better semantic representation compared to word2vec and Glove. (Two similar words may have different vectors depending on the context) and Handles rare word issues well due to character-based representation.\nDisadvantages: Requires more memory due to character-based storage.\nTHANKS FOR LISTENING!",
   "meta": {
     "model": "gpt-oss:120b-cloud",
-    "concept_count": 9,
-    "relation_count": 8
+    "concept_count": 13,
+    "relation_count": 14
   },
   "skeleton_phase": {
     "tree": [
       {
-        "name": "Machine Learning",
-        "content": "Machine Learning is the scientific study of algorithms and statistical models enabling computers to learn from data without explicit programming.",
+        "name": "Bag of Words",
+        "content": "Bag of Words is a text representation that counts word occurrences ignoring order and grammar.",
         "details": [
           {
             "role": "Statement",
-            "content": "Machine Learning is a field of study that gives computers the ability to learn without being explicitly programmed.",
+            "content": "Bag of Words represents a document as a multiset of its words.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Problem",
+            "content": "Bag of Words ignores word order, leading to loss of syntactic information.",
+            "confidence": 0.85
+          }
+        ]
+      },
+      {
+        "name": "Co-occurrence Matrix",
+        "content": "Co-occurrence Matrix records how often pairs of words appear together within a context window.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Co-occurrence Matrix captures word association frequencies across a corpus.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Problem",
+            "content": "Co-occurrence Matrix can become extremely large for big vocabularies.",
+            "confidence": 0.85
+          }
+        ]
+      },
+      {
+        "name": "TF-IDF",
+        "content": "TF-IDF weights terms by frequency in a document and inverse document frequency across the corpus.",
+        "details": [
+          {
+            "role": "Formula",
+            "content": "tf‑idf(i, j) = tf(i, j) × log(N / df(i))",
             "confidence": 0.95
           },
           {
             "role": "Statement",
-            "content": "A computer program is said to learn from experience E with respect to some class of tasks T and performance measure P, if its performance at tasks in T, as measured by P, improves with experience E.",
-            "confidence": 0.95
+            "content": "TF-IDF reduces the impact of common words and highlights discriminative terms.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "One-hot Vector",
+        "content": "One-hot Vector encodes each word as a binary vector with a single high dimension.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "One-hot Vector for \"man\" in a 9‑word vocabulary is [1,0,0,0,0,0,0,0,0].",
+            "confidence": 0.9
+          },
+          {
+            "role": "Problem",
+            "content": "One-hot Vector creates high‑dimensional sparse representations.",
+            "confidence": 0.85
+          }
+        ]
+      },
+      {
+        "name": "Dense Vector",
+        "content": "Dense Vector is a low‑dimensional continuous representation where most elements are non‑zero.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Dense Vectors may generalize better than explicit counts.",
+            "confidence": 0.9
           },
           {
             "role": "Objective",
-            "content": "How to construct programs that automatically improve with experience.",
+            "content": "Dense Vectors aim to capture synonymy between words like car and automobile.",
+            "confidence": 0.85
+          }
+        ]
+      },
+      {
+        "name": "Sparse Vector",
+        "content": "Sparse Vector is a high‑dimensional representation with many zero entries, typical of TF‑IDF or one‑hot.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Sparse Vectors are long (|V| = 20 000–50 000) and contain mostly zeros.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Problem",
+            "content": "Sparse Vectors increase memory usage and computational cost.",
+            "confidence": 0.85
+          }
+        ]
+      },
+      {
+        "name": "Word2vec",
+        "content": "Word2vec learns dense word embeddings using shallow neural networks such as CBOW or Skip‑gram.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Word2vec produces short (50–1000) dense vectors for each word.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Application",
+            "content": "Word2vec embeddings improve performance on downstream NLP tasks.",
+            "confidence": 0.85
+          }
+        ]
+      },
+      {
+        "name": "CBOW",
+        "content": "CBOW predicts a target word from its surrounding context using averaged context vectors.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "CBOW uses the one‑hot representation of context words as input x_i.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Objective",
+            "content": "CBOW aims to maximize the probability of the correct target word y_i.",
+            "confidence": 0.85
+          }
+        ]
+      },
+      {
+        "name": "Skip-gram",
+        "content": "Skip‑gram predicts surrounding context words from a single target word using its embedding.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "Skip‑gram trains word vectors by maximizing likelihood of context words given the target.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Problem",
+            "content": "Skip‑gram can be slower to train on very large vocabularies.",
+            "confidence": 0.8
+          }
+        ]
+      },
+      {
+        "name": "Softmax Function",
+        "content": "Softmax Function converts raw scores into a probability distribution over the vocabulary.",
+        "details": [
+          {
+            "role": "Formula",
+            "content": "softmax(z_i) = exp(z_i) / Σ_j exp(z_j)",
             "confidence": 0.95
           },
           {
             "role": "Statement",
-            "content": "Machine Learning is the scientific study of algorithms and statistical models that computer systems use to perform a specific task without using explicit instructions, relying on patterns and inference instead.",
-            "confidence": 0.95
+            "content": "Softmax Function is used in CBOW and Skip‑gram to model word probabilities.",
+            "confidence": 0.9
+          }
+        ]
+      },
+      {
+        "name": "GloVe",
+        "content": "GloVe learns word embeddings by factorizing a global word‑co‑occurrence matrix.",
+        "details": [
+          {
+            "role": "Statement",
+            "content": "GloVe offers fast training and stable quality on large datasets.",
+            "confidence": 0.9
           },
           {
-            "role": "Statement",
-            "content": "Machine Learning is a subset of artificial intelligence.",
-            "confidence": 0.95
+            "role": "Problem",
+            "content": "GloVe requires a lot of memory and is sensitive to learning‑rate initialization.",
+            "confidence": 0.85
           }
         ]
       },
       {
-        "name": "Learning",
-        "content": "Learning is a process of generalization or induction where knowledge is inferred from observed examples and applied to future situations.",
+        "name": "FastText",
+        "content": "FastText extends word embeddings with subword information using character n‑grams.",
         "details": [
           {
             "role": "Statement",
-            "content": "Learning is an (endless) generalization or induction process.",
-            "confidence": 0.95
+            "content": "FastText performs well with rare words because it incorporates n‑gram features.",
+            "confidence": 0.9
+          },
+          {
+            "role": "Problem",
+            "content": "FastText requires more memory due to character‑based storage.",
+            "confidence": 0.85
           }
         ]
       },
       {
-        "name": "Supervised Learning",
-        "content": "Supervised Learning trains a learning algorithm on labeled examples where each input’s desired output is known, enabling prediction for data.",
+        "name": "ELMo",
+        "content": "ELMo generates contextualized word embeddings using deep bidirectional language models.",
         "details": [
           {
             "role": "Statement",
-            "content": "Supervised learning: the learner (learning algorithm) are trained on labeled examples, i.e., input where the desired output is known.",
-            "confidence": 0.95
-          }
-        ]
-      },
-      {
-        "name": "Unsupervised Learning",
-        "content": "Unsupervised Learning operates on unlabeled examples where the desired output is unknown, discovering hidden structure or patterns in data alone.",
-        "details": [
+            "content": "ELMo provides better semantic representation than static embeddings like Word2vec.",
+            "confidence": 0.9
+          },
           {
-            "role": "Statement",
-            "content": "Unsupervised learning: the learner operates on unlabeled examples, i.e., input where the desired output is unknown.",
-            "confidence": 0.95
-          }
-        ]
-      },
-      {
-        "name": "Reinforcement Learning",
-        "content": "Reinforcement Learning lies between supervised and unsupervised learning; it receives feedback when an answer is wrong but not correction method.",
-        "details": [
-          {
-            "role": "Statement",
-            "content": "Reinforcement learning is told when an answer is wrong, but not how to correct it.",
-            "confidence": 0.95
-          }
-        ]
-      },
-      {
-        "name": "Evolutionary Learning",
-        "content": "Evolutionary Learning views biological evolution as a learning process that improves survival rates and the chance of producing offspring over.",
-        "details": [
-          {
-            "role": "Statement",
-            "content": "Evolutionary learning: biological evolution can be seen as a learning process, to improve survival rates and chance of having offspring.",
-            "confidence": 0.95
-          }
-        ]
-      },
-      {
-        "name": "Classification",
-        "content": "Classification determines the class label of an instance based on its selected features, enabling categorical decision making in machine learning.",
-        "details": [
-          {
-            "role": "Statement",
-            "content": "Classification: to find the class of an instance given its selected features.",
-            "confidence": 0.95
-          }
-        ]
-      },
-      {
-        "name": "Regression",
-        "content": "Regression finds a function whose curve passes as close as possible to all given data points, modeling continuous relationships accurately.",
-        "details": [
-          {
-            "role": "Statement",
-            "content": "Regression: to find a function whose curve passes as close as possible to all of the given data points.",
-            "confidence": 0.95
-          }
-        ]
-      },
-      {
-        "name": "K-fold Cross Validation",
-        "content": "K-fold Cross Validation partitions data into k sub‑samples, using k‑1 for training and 1 for testing, then averages results overall.",
-        "details": [
-          {
-            "role": "Statement",
-            "content": "K-fold cross validation: Randomly partitioned k equal sized sub-samples. k - 1 for training and 1 for testing. k times (folds) of validation and taking the average.",
-            "confidence": 0.95
+            "role": "Problem",
+            "content": "ELMo requires more memory because it stores character‑based representations.",
+            "confidence": 0.85
           }
         ]
       }
@@ -131,52 +220,88 @@
   "relation_phase": {
     "edges": [
       {
-        "rel": "Machine Learning includes Supervised Learning as one of its primary categories.",
+        "rel": "One-hot encoding is a simple representation used in the Bag‑of‑Words model to indicate the presence of a word in a document.",
         "name": "INCLUDES",
-        "src": "Machine Learning",
-        "tgt": "Supervised Learning"
+        "src": "Bag of Words",
+        "tgt": "One-hot Vector"
       },
       {
-        "rel": "Machine Learning includes Unsupervised Learning as one of its primary categories.",
+        "rel": "TF‑IDF is a weighting scheme applied to the raw counts produced by a Bag‑of‑Words representation.",
         "name": "INCLUDES",
-        "src": "Machine Learning",
-        "tgt": "Unsupervised Learning"
+        "src": "Bag of Words",
+        "tgt": "TF-IDF"
       },
       {
-        "rel": "Machine Learning includes Reinforcement Learning as one of its primary categories.",
+        "rel": "A co‑occurrence matrix can be built from the Bag‑of‑Words counts to capture how often words appear together.",
         "name": "INCLUDES",
-        "src": "Machine Learning",
-        "tgt": "Reinforcement Learning"
+        "src": "Bag of Words",
+        "tgt": "Co-occurrence Matrix"
       },
       {
-        "rel": "Machine Learning includes Evolutionary Learning as one of its primary categories.",
+        "rel": "TF‑IDF vectors are typically high‑dimensional and contain many zeros, i.e., they are sparse vectors.",
         "name": "INCLUDES",
-        "src": "Machine Learning",
-        "tgt": "Evolutionary Learning"
+        "src": "TF-IDF",
+        "tgt": "Sparse Vector"
       },
       {
-        "rel": "Supervised Learning includes Classification as a typical task.",
+        "rel": "CBOW (Continuous Bag‑of‑Words) is one of the two main architectures used in Word2vec.",
         "name": "INCLUDES",
-        "src": "Supervised Learning",
-        "tgt": "Classification"
+        "src": "Word2vec",
+        "tgt": "CBOW"
       },
       {
-        "rel": "Supervised Learning includes Regression as a typical task.",
+        "rel": "Skip‑gram is the second main architecture of Word2vec, learning to predict context words from a target word.",
         "name": "INCLUDES",
-        "src": "Supervised Learning",
-        "tgt": "Regression"
+        "src": "Word2vec",
+        "tgt": "Skip-gram"
       },
       {
-        "rel": "Machine Learning includes K-fold Cross Validation as a common validation technique.",
+        "rel": "Word2vec learns low‑dimensional dense vector representations for words.",
         "name": "INCLUDES",
-        "src": "Machine Learning",
-        "tgt": "K-fold Cross Validation"
+        "src": "Word2vec",
+        "tgt": "Dense Vector"
       },
       {
-        "rel": "Learning is the broader concept that includes Machine Learning as a specific form of learning.",
+        "rel": "The softmax function is used in Word2vec’s output layer to convert scores into probability distributions over the vocabulary.",
+        "name": "RELATED_TO",
+        "src": "Word2vec",
+        "tgt": "Softmax Function"
+      },
+      {
+        "rel": "Both GloVe and Word2vec are popular static word‑embedding models that produce dense vectors.",
+        "name": "RELATED_TO",
+        "src": "GloVe",
+        "tgt": "Word2vec"
+      },
+      {
+        "rel": "FastText extends the Word2vec approach by incorporating sub‑word (character n‑gram) information.",
+        "name": "RELATED_TO",
+        "src": "FastText",
+        "tgt": "Word2vec"
+      },
+      {
+        "rel": "ELMo provides contextualized embeddings, whereas Word2vec provides static embeddings; both aim to represent word meaning.",
+        "name": "RELATED_TO",
+        "src": "ELMo",
+        "tgt": "Word2vec"
+      },
+      {
+        "rel": "FastText learns dense vector representations for words (and sub‑words).",
         "name": "INCLUDES",
-        "src": "Learning",
-        "tgt": "Machine Learning"
+        "src": "FastText",
+        "tgt": "Dense Vector"
+      },
+      {
+        "rel": "ELMo produces dense, context‑dependent vectors for each token in a sentence.",
+        "name": "INCLUDES",
+        "src": "ELMo",
+        "tgt": "Dense Vector"
+      },
+      {
+        "rel": "GloVe generates dense word vectors from global word‑co‑occurrence statistics.",
+        "name": "INCLUDES",
+        "src": "GloVe",
+        "tgt": "Dense Vector"
       }
     ]
   }

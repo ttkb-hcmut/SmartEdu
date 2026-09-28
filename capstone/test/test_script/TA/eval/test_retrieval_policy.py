@@ -39,7 +39,7 @@ def test_policy_resolves_typed_arm_contract():
     assert context.policy.model_name == "qwen3:8b"
     assert context.policy.temperature == 0.0
     assert context.policy.answer_model_profile == "TA"
-    assert context.policy.answer_model_name == "gemini-3.7-flash"
+    assert context.policy.answer_model_name == "nvidia/nemotron-3-super-120b-a12b:free"
     assert context.policy.answer_temperature == 0.0
     assert context.policy.allowed_tools == (
         RetrievalToolId.SEMANTIC,
@@ -128,9 +128,9 @@ def test_agentic_v3_owns_bounded_ledger_rules_and_strong_models():
 
     assert context.policy.prompt_id is RetrievalPromptId.MULTIHOP_V2
     assert context.policy.model_profile == "retrieval_aggregator"
-    assert context.policy.model_name == "gemini-3.7-flash"
+    assert context.policy.model_name == "nvidia/nemotron-3-super-120b-a12b:free"
     assert context.policy.answer_model_profile == "retrieval_answerer"
-    assert context.policy.answer_model_name == "gemini-3.7-flash"
+    assert context.policy.answer_model_name == "nvidia/nemotron-3-super-120b-a12b:free"
     assert context.policy.min_tool_calls == 0
     assert "To stop, do not call retrieve_more" in context.policy.prompt
     assert "non-empty sources" in context.policy.prompt
@@ -159,7 +159,7 @@ def test_v4_policy_digest_is_arm_independent_and_pinned():
     ]
 
     assert contexts[0].policy.digest == contexts[1].policy.digest
-    assert contexts[0].policy.digest == "b632bcd38275e7ee"
+    assert contexts[0].policy.digest == "663a084ab650f08d"
 
 
 def test_agentic_v4_resolves_typed_controller_contract():
@@ -177,7 +177,7 @@ def test_agentic_v4_resolves_typed_controller_contract():
 
     assert context.policy.prompt_id is RetrievalPromptId.MULTIHOP_V3
     assert context.policy.model_profile == "retrieval_planner"
-    assert context.policy.model_name == "gemini-3.7-flash"
+    assert context.policy.model_name == "nvidia/nemotron-3-super-120b-a12b:free"
     assert context.policy.model_timeout_s == 120
     assert context.policy.model_transport_retries == 1
     assert context.policy.schema_repair_attempts == 1
@@ -194,6 +194,7 @@ def test_agentic_v4_resolves_typed_controller_contract():
     assert context.harness.max_calls_per_round == 1
     assert context.harness.per_source_k == 8
     assert context.harness.max_context_chars == 160_000
+    assert context.policy.answer_context_chars == 48_000
 
 
 def test_v5_policy_digest_is_arm_independent_and_versioned():
@@ -213,10 +214,8 @@ def test_v5_policy_digest_is_arm_independent_and_versioned():
     ]
 
     assert contexts[0].policy.digest == contexts[1].policy.digest
-    # digest shifted deliberately: TYPED_FINALIZER_PROMPT rewritten with explicit
-    # FinalChain field names + JSON example, and TYPED_HOP_PROMPT now enumerates the
-    # legal stop_reason values
-    assert contexts[0].policy.digest == "43b0e66d6a7c0816"
+    # digest shifted deliberately: model contract moved to Nemotron Super free route
+    assert contexts[0].policy.digest == "65a67a98db576aef"
 
 
 def test_policy_digest_is_pinned():
@@ -225,7 +224,7 @@ def test_policy_digest_is_pinned():
 
     context = resolve_retrieval_context(Retrieve_param.from_preset("FULL"))
 
-    assert context.policy.digest == "d84bfe1156723414"
+    assert context.policy.digest == "9091f68db82817bf"
 
 
 def test_resolved_context_is_immutable():

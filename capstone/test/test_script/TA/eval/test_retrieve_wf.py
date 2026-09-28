@@ -149,7 +149,7 @@ class _FakeAggregator:
 
 class _FakeLedgerAggregator:
     name = "RAG_Ledger_Aggregator"
-    model = SimpleNamespace(model="gemini-3.7-flash", temperature=0.0)
+    model = SimpleNamespace(model="nvidia/nemotron-3-super-120b-a12b:free", temperature=0.0)
 
     def __init__(self, artifacts=(), blocked_calls=0):
         self.artifacts = artifacts
@@ -197,7 +197,7 @@ class _StructuredPlanner:
     since with_structured_output's own field names drift from our schema
     (observed live: "type" not "action", singular "source" not "sources")."""
 
-    model = "gemini-3.7-flash"
+    model = "nvidia/nemotron-3-super-120b-a12b:free"
     temperature = 0.0
 
     def __init__(self, decisions, final_chain):
@@ -566,6 +566,41 @@ def test_agentic_v4_runs_typed_grounded_loop_and_preserves_ledger():
     assert "Finalize_Chain" in nodes
 
 
+def test_agentic_v4_envelope_compiles_cited_answer_context_before_ledger_tail():
+    from core.schema.retrieval import RetrievalValidation, RetrievalValidity
+    from TA.retrieval.controller import _envelope
+    from TA.retrieval.schema import ClaimSupport, FinalChain
+
+    context = resolve_retrieval_context(
+        Retrieve_param.from_preset(
+            "RAG",
+            policy_id=RetrievalPolicyId.BASELINE_V5,
+            harness_id=RetrievalHarnessId.AGENTIC_V4,
+        )
+    )
+    chain = FinalChain(
+        claims=[ClaimSupport(claim="bridge", evidence_uris=["bridge"])],
+        answerable=True,
+    )
+    ledger = [
+        {"uri": "seed", "text": "seed evidence"},
+        {"uri": "bridge", "text": "bridge evidence"},
+        {"uri": "tail", "text": "tail evidence"},
+    ]
+
+    result = _envelope(
+        ledger,
+        chain,
+        RetrievalValidation(RetrievalValidity.VALID, 1, ()),
+        context,
+        {},
+    )
+
+    assert result["answer_context"]["uris"] == ["bridge", "seed", "tail"]
+    assert result["content"].splitlines()[0] == "- [bridge] bridge evidence"
+    assert result["content"] != ""
+
+
 def test_agentic_v4_repairs_contextually_invalid_source_before_retrieval():
     from TA.retrieval.schema import FinalChain, HopAction, HopDecision, StopReason
 
@@ -759,7 +794,7 @@ def test_agentic_v4_rejects_second_ungrounded_decision_without_retrieval():
 
 def test_agentic_v4_never_retries_or_finalizes_after_provider_429():
     class _QuotaPlanner:
-        model = "gemini-3.7-flash"
+        model = "nvidia/nemotron-3-super-120b-a12b:free"
         temperature = 0.0
 
         def __init__(self):
@@ -803,6 +838,45 @@ def test_agentic_v4_never_retries_or_finalizes_after_provider_429():
     assert planner.calls == 1
     assert out["worker_results"]["RAG"]["validity"] == "invalid"
     assert any("429" in error for error in out["worker_results"]["RAG"]["errors"])
+
+
+def test_agentic_v4_propagates_hard_provider_budget_before_model_call():
+    from TA.helper.model_call import provider_request_gate
+    from TA.retrieval.schema import FinalChain, HopAction, HopDecision, StopReason
+    from test.eval.provider_budget import ProviderBudgetExceeded
+
+    planner = _StructuredPlanner(
+        decisions=[HopDecision(action=HopAction.STOP, stop_reason=StopReason.CHAIN_COMPLETE)],
+        final_chain=FinalChain(answerable=False, remaining_uncertainty="unused"),
+    )
+    wf = build_retrieve_wf(
+        agents={"RETRIEVAL_PLANNER": planner},
+        resources={"milvus_db": _V4Milvus(), "embedder": _SeedEmbedder()},
+    )
+    context = resolve_retrieval_context(
+        Retrieve_param.from_preset(
+            "RAG",
+            policy_id=RetrievalPolicyId.BASELINE_V5,
+            harness_id=RetrievalHarnessId.AGENTIC_V4,
+        )
+    )
+
+    def exhausted(_profile):
+        raise ProviderBudgetExceeded("provider request budget exhausted")
+
+    with provider_request_gate(exhausted):
+        with pytest.raises(ProviderBudgetExceeded):
+            asyncio.run(wf.ainvoke(
+                {
+                    "messages": [HumanMessage(content="question")],
+                    "user_query": "question",
+                    "worker_results": {},
+                    "language": "eng",
+                },
+                context=context,
+            ))
+
+    assert planner.calls == []
 
 
 def test_agentic_v4_three_hop_chain_keeps_scottish_evidence_for_answerer():

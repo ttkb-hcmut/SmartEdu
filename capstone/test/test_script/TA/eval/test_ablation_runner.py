@@ -12,6 +12,8 @@ from test.eval.run_ablation import (
     load_run_state,
     paired_schedule,
     pending_schedule,
+    provider_request_reservation,
+    provider_requests_used,
     record_run_attempt,
     repeat_fixture,
     run_resumable_schedule,
@@ -21,6 +23,11 @@ from test.eval.run_ablation import (
     validate_run_sessions,
     verify_corpus_ready,
     write_run_manifest,
+)
+from test.eval.provider_budget import (
+    ProviderBudgetExceeded,
+    ProviderBudgetLocked,
+    ProviderRequestLedger,
 )
 
 
@@ -271,6 +278,225 @@ def test_run_state_summary_counts_planned_arms_and_provider_attempts():
     assert summary["expected_counts"] == {"RAG": 2, "FULL": 2}
     assert summary["provider_errors"] == {"session_usage_limit": 1}
     assert summary["partial"] is True
+
+
+def test_provider_request_budget_pauses_between_pairs_and_resets_next_day(
+    monkeypatch, tmp_path,
+):
+    import test.eval.run_ablation as runner
+
+    state = _run_contract()
+    path = tmp_path / "run_state.json"
+    calls = []
+    budget_date = ["2026-09-14"]
+
+    async def counted_run_case(*_args, preset, item, **_kwargs):
+        calls.append((item["id"], preset))
+        return {
+            "status": "SUCCESS",
+            "errors": [],
+            "session_id": "ok-session",
+            "provider_requests": 3,
+        }
+
+    monkeypatch.setattr(runner, "run_case", counted_run_case)
+    monkeypatch.setattr(runner, "local_budget_date", lambda: budget_date[0])
+
+    completed = asyncio.run(run_resumable_schedule(
+        ta=object(),
+        tracker=object(),
+        fixture=[{"id": "q0"}, {"id": "q1"}],
+        track="musique",
+        course="Bench",
+        run_id="run-v4",
+        harness_id=object(),
+        code_state=object(),
+        state=state,
+        state_path=path,
+        max_provider_requests=5,
+    ))
+
+    assert completed is False
+    assert calls == [("q0", "RAG"), ("q0", "FULL")]
+    assert state["pause_reason"] == "provider_request_budget"
+    assert provider_requests_used(state, "2026-09-14") == 6
+
+    budget_date[0] = "2026-09-15"
+    completed = asyncio.run(run_resumable_schedule(
+        ta=object(),
+        tracker=object(),
+        fixture=[{"id": "q0"}, {"id": "q1"}],
+        track="musique",
+        course="Bench",
+        run_id="run-v4",
+        harness_id=object(),
+        code_state=object(),
+        state=state,
+        state_path=path,
+        max_provider_requests=5,
+    ))
+
+    assert completed is True
+    assert calls[-2:] == [("q1", "FULL"), ("q1", "RAG")]
+    assert provider_requests_used(state, "2026-09-15") == 6
+
+
+def test_shared_provider_ledger_persists_claim_before_next_request(tmp_path):
+    ledger = ProviderRequestLedger(tmp_path, max_requests=2, date_factory=lambda: "2026-09-14")
+
+    ledger.claim("google_genai:gemini", {"run_id": "first", "case_key": "q1::RAG"})
+    ledger.claim("google_genai:gemini", {"run_id": "second", "case_key": "q1::FULL"})
+
+    assert ledger.used("google_genai:gemini") == 2
+    with pytest.raises(ProviderBudgetExceeded):
+        ledger.claim("google_genai:gemini", {"run_id": "third"})
+
+
+def test_shared_provider_ledger_admits_only_complete_pair_reservation(tmp_path):
+    ledger = ProviderRequestLedger(tmp_path, max_requests=5, date_factory=lambda: "2026-09-14")
+    ledger.claim("google_genai:gemini", {"run_id": "old"})
+
+    assert ledger.can_reserve({"google_genai:gemini": 4}) is True
+    ledger.claim("google_genai:gemini", {"run_id": "old"})
+    assert ledger.can_reserve({"google_genai:gemini": 4}) is False
+
+
+def test_shared_provider_ledger_rejects_parallel_benchmark_runner(tmp_path):
+    first = ProviderRequestLedger(tmp_path, max_requests=5)
+    second = ProviderRequestLedger(tmp_path, max_requests=5)
+
+    with first.hold_run_lock():
+        with pytest.raises(ProviderBudgetLocked, match="benchmark ledger is locked"):
+            with second.hold_run_lock():
+                pass
+
+
+def test_v4_reservation_covers_all_planner_repairs_retries_and_answer():
+    context = type("Context", (), {
+        "harness": type("Harness", (), {"max_tool_calls": 4})(),
+        "policy": type("Policy", (), {
+            "model_profile": "retrieval_planner",
+            "answer_model_profile": "retrieval_answerer",
+            "schema_repair_attempts": 1,
+            "model_transport_retries": 1,
+            "answer_transport_retries": 1,
+        })(),
+    })()
+
+    reservation = provider_request_reservation(
+        context,
+        {
+            "retrieval_planner": "google_genai:gemini-3.7-flash",
+            "retrieval_answerer": "google_genai:gemini-3.7-flash",
+        },
+    )
+
+    assert reservation == {"google_genai:gemini-3.7-flash": 22}
+
+
+def test_hard_budget_stops_before_starting_an_unreservable_pair(monkeypatch, tmp_path):
+    import test.eval.run_ablation as runner
+
+    state = _run_contract()
+    path = tmp_path / "run_state.json"
+    ledger = ProviderRequestLedger(tmp_path / "ledger", max_requests=5)
+    ledger.claim("google_genai:gemini", {"run_id": "earlier"})
+    calls = []
+
+    async def unexpected_run_case(*_args, **_kwargs):
+        calls.append("called")
+        raise AssertionError("budget gate must run before a pair starts")
+
+    monkeypatch.setattr(runner, "run_case", unexpected_run_case)
+    completed = asyncio.run(run_resumable_schedule(
+        ta=object(),
+        tracker=object(),
+        fixture=[{"id": "q0"}, {"id": "q1"}],
+        track="musique",
+        course="Bench",
+        run_id="run-v4",
+        harness_id=object(),
+        code_state=object(),
+        state=state,
+        state_path=path,
+        provider_ledger=ledger,
+        provider_reservation={"google_genai:gemini": 5},
+    ))
+
+    assert completed is False
+    assert calls == []
+    assert state["pause_reason"] == "provider_request_budget"
+
+
+def test_hard_budget_admits_only_the_missing_arm_on_resume(monkeypatch, tmp_path):
+    import test.eval.run_ablation as runner
+
+    state = _run_contract()
+    state["successful_cases"].append(state["schedule"][0]["case_key"])
+    path = tmp_path / "run_state.json"
+    ledger = ProviderRequestLedger(tmp_path / "ledger", max_requests=5)
+    for _ in range(3):
+        ledger.claim("google_genai:gemini", {"run_id": "earlier"})
+    calls = []
+
+    async def resumed_run_case(*_args, preset, item, **_kwargs):
+        calls.append((item["id"], preset))
+        return {"status": "SUCCESS", "errors": [], "session_id": "ok-session"}
+
+    monkeypatch.setattr(runner, "run_case", resumed_run_case)
+    completed = asyncio.run(run_resumable_schedule(
+        ta=object(),
+        tracker=object(),
+        fixture=[{"id": "q0"}, {"id": "q1"}],
+        track="musique",
+        course="Bench",
+        run_id="run-v4",
+        harness_id=object(),
+        code_state=object(),
+        state=state,
+        state_path=path,
+        provider_ledger=ledger,
+        provider_reservation={"google_genai:gemini": 4},
+        provider_case_reservations={"FULL": {"google_genai:gemini": 2}},
+    ))
+
+    assert completed is False
+    assert calls == [("q0", "FULL")]
+    assert state["pause_reason"] == "provider_request_budget"
+
+
+def test_provider_budget_failure_pauses_without_starting_the_next_case(monkeypatch, tmp_path):
+    import test.eval.run_ablation as runner
+
+    state = _run_contract()
+    path = tmp_path / "run_state.json"
+    calls = []
+
+    async def exhausted_run_case(*_args, preset, item, **_kwargs):
+        calls.append((item["id"], preset))
+        return {
+            "status": "FAIL",
+            "errors": ["ProviderBudgetExceeded: provider request budget exhausted"],
+            "session_id": "blocked-session",
+        }
+
+    monkeypatch.setattr(runner, "run_case", exhausted_run_case)
+    completed = asyncio.run(run_resumable_schedule(
+        ta=object(),
+        tracker=object(),
+        fixture=[{"id": "q0"}, {"id": "q1"}],
+        track="musique",
+        course="Bench",
+        run_id="run-v4",
+        harness_id=object(),
+        code_state=object(),
+        state=state,
+        state_path=path,
+    ))
+
+    assert completed is False
+    assert calls == [("q0", "RAG")]
+    assert state["pause_reason"] == "provider_request_budget"
 
 
 def test_resumable_scheduler_pauses_on_quota_and_resumes_failed_pair(monkeypatch, tmp_path):

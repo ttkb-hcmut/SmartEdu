@@ -160,6 +160,7 @@ def test_dispatch_propagates_a_failed_child_result(monkeypatch):
 
     monkeypatch.setattr(flows, "run_deployment", lambda **_: _Run(), raising=False)
     monkeypatch.setattr(flows.deps, "minio_repo", lambda: _Storage())
+    monkeypatch.setenv("INGEST_RELEASE_REVISION", "sha-1")
 
     try:
         asyncio.run(flows.dispatch_stage("ocr-slide", "Course", "slide.pdf"))

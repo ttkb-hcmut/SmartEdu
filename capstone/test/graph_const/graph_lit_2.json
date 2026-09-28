@@ -3,43 +3,48 @@
   "meta": {
     "model": "qwen3:8b",
     "concept_count": 1,
-    "relation_count": 10
+    "relation_count": 7
   },
   "skeleton_phase": {
     "tree": [
       {
         "name": "Ottoman Empire",
-        "content": "Ottoman Empire was a state at the center of Eastern-Western interactions for six centuries with Constantinople as capital.",
+        "content": "The Ottoman Empire was a major power controlling lands around the Mediterranean basin and Constantinople for six centuries.",
         "details": [
           {
             "role": "Statement",
             "content": "With Constantinople as its capital and control of lands around the Mediterranean basin, the Ottoman Empire was at the centre of interactions between the Eastern and Western worlds for six centuries.",
-            "confidence": 0.7
+            "confidence": 0.9
           },
           {
             "role": "Problem",
-            "content": "The Ottoman Empire gradually declined due to a long period of military setbacks against European powers.",
-            "confidence": 0.7
+            "content": "Following a long period of military setbacks against European powers, the Ottoman Empire gradually declined into the late nineteenth century.",
+            "confidence": 0.85
           },
           {
             "role": "Objective",
-            "content": "The imperial ambition of recovering its lost territories led the Empire to join World War I on the side of Germany and the Central Powers.",
-            "confidence": 0.7
+            "content": "The imperial ambition of recovering its lost territories led the Ottoman Empire to join in World War I on the side of Germany and the Central Powers.",
+            "confidence": 0.8
           },
           {
             "role": "Problem",
-            "content": "Internal dissent, especially the Arab Revolt in Arabian holdings, weakened the Empire during World War I.",
-            "confidence": 0.7
+            "content": "While the Empire was able to largely hold its own during the conflict, it was struggling with internal dissent, especially with the Arab Revolt in its Arabian holdings.",
+            "confidence": 0.8
           },
           {
             "role": "Problem",
-            "content": "Major atrocities were committed by the Ottoman government against Armenians, Assyrians, and Pontic Greeks during the war.",
-            "confidence": 0.7
+            "content": "Starting before the war, but growing increasingly common and violent during it, major atrocities were committed by the Ottoman government against the Armenians, Assyrians and Pontic Greeks.",
+            "confidence": 0.8
+          },
+          {
+            "role": "Solution",
+            "content": "The Empire's defeat and the occupation of part of its territory by the Allied Powers in the aftermath of World War I resulted in the emergence of a new state, Turkey, in the Ottoman Anatolian heartland following the Turkish War of Independence.",
+            "confidence": 0.85
           },
           {
             "role": "Application",
-            "content": "The Empire's defeat and Allied occupation led to the emergence of modern states including Turkey, the Balkans, and Middle Eastern nations.",
-            "confidence": 0.7
+            "content": "The founding of modern Balkan and Middle Eastern states and the partitioning of the Ottoman Empire followed the Empire's defeat and occupation by the Allied Powers.",
+            "confidence": 0.8
           }
         ]
       }
@@ -48,64 +53,46 @@
   "relation_phase": {
     "edges": [
       {
-        "rel": "The Ottoman Empire included Constantinople as its capital and controlled territories around the Mediterranean basin.",
-        "name": "INCLUDES",
-        "src": "Ottoman Empire",
-        "tgt": "Constantinople"
-      },
-      {
-        "rel": "The Ottoman Empire controlled lands around the Mediterranean basin, which were part of its territorial holdings.",
-        "name": "INCLUDES",
-        "src": "Ottoman Empire",
-        "tgt": "Mediterranean basin"
-      },
-      {
-        "rel": "The Ottoman Empire facilitated interactions between the Eastern and Western worlds due to its geographic position.",
+        "rel": "The Ottoman Empire was at the centre of interactions between the Eastern and Western worlds for six centuries due to its capital in Constantinople and control of lands around the Mediterranean basin.",
         "name": "RELATED_TO",
         "src": "Ottoman Empire",
         "tgt": "Eastern and Western worlds"
       },
       {
-        "rel": "Military setbacks against European powers caused the gradual decline of the Ottoman Empire.",
+        "rel": "The Ottoman Empire experienced a long period of military setbacks against European powers, leading to its gradual decline into the late nineteenth century.",
         "name": "CAUSES",
         "src": "Military setbacks against European powers",
-        "tgt": "Decline of the Ottoman Empire"
+        "tgt": "Gradual decline of the Ottoman Empire"
       },
       {
-        "rel": "The Ottoman Empire allied with Germany in the early 20th century to recover lost territories.",
+        "rel": "The Ottoman Empire allied with Germany in the early 20th century to recover its lost territories and join World War I on the side of Germany and the Central Powers.",
         "name": "RELATED_TO",
         "src": "Ottoman Empire",
-        "tgt": "Germany"
+        "tgt": "Germany and the Central Powers"
       },
       {
-        "rel": "The Ottoman Empire's participation in World War I was driven by its ambition to recover lost territories.",
-        "name": "CAUSES",
-        "src": "Imperial ambition of recovering lost territories",
-        "tgt": "Joining World War I"
+        "rel": "The Ottoman Empire struggled with internal dissent, especially with the Arab Revolt in its Arabian holdings during World War I.",
+        "name": "RELATED_TO",
+        "src": "Ottoman Empire",
+        "tgt": "Arab Revolt"
       },
       {
-        "rel": "The Ottoman government's actions led to major atrocities against Armenians, Assyrians, and Pontic Greeks.",
+        "rel": "Major atrocities were committed by the Ottoman government against the Armenians, Assyrians, and Pontic Greeks during World War I.",
         "name": "CAUSES",
-        "src": "Ottoman government's policies",
+        "src": "Ottoman government actions",
         "tgt": "Atrocities against Armenians, Assyrians, and Pontic Greeks"
       },
       {
-        "rel": "The Ottoman Empire's defeat in World War I resulted in the emergence of new states and the partitioning of its territory.",
+        "rel": "The Ottoman Empire's defeat and the occupation of part of its territory by the Allied Powers after World War I led to the emergence of a new state, Turkey, in the Ottoman Anatolian heartland following the Turkish War of Independence.",
         "name": "CAUSES",
-        "src": "Defeat in World War I",
-        "tgt": "Partitioning of the Ottoman Empire"
+        "src": "Defeat and occupation by Allied Powers",
+        "tgt": "Emergence of the state of Turkey"
       },
       {
-        "rel": "The Turkish War of Independence led to the founding of modern Turkey in the Ottoman Anatolian heartland.",
-        "name": "CAUSES",
-        "src": "Turkish War of Independence",
-        "tgt": "Founding of Turkey"
-      },
-      {
-        "rel": "The partitioning of the Ottoman Empire created modern Balkan and Middle Eastern states.",
+        "rel": "The partitioning of the Ottoman Empire resulted in the founding of modern Balkan and Middle Eastern states.",
         "name": "CAUSES",
         "src": "Partitioning of the Ottoman Empire",
-        "tgt": "Founding of Balkan and Middle Eastern states"
+        "tgt": "Founding of modern Balkan and Middle Eastern states"
       }
     ]
   }

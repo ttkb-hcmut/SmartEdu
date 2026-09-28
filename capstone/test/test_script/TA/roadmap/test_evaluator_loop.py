@@ -15,6 +15,17 @@ import importlib
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def clean_sys_modules():
+    original = dict(sys.modules)
+    yield
+    for k in list(sys.modules):
+        if k not in original:
+            del sys.modules[k]
+        elif sys.modules[k] is not original[k]:
+            sys.modules[k] = original[k]
+
+
 def _install_stub(name: str, attrs: dict):
     mod = types.ModuleType(name)
     for k, v in attrs.items():

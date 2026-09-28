@@ -4,10 +4,10 @@ Requires DBs + Ollama up. Judge metrics additionally require
 `deepeval set-ollama --model=<model> --base-url=http://localhost:11434`.
 
 Usage (from capstone/):
-    uv run python test/eval/run_ablation.py --fixture test/eval/fixtures/musique_cs.json \
+    uv run python -m test.eval.run_ablation --fixture test/eval/fixtures/musique_cs.json \
         --presets rag,full --limit 10
-    uv run python test/eval/run_ablation.py --fixture ... --score-only [--judge]
-    uv run python test/eval/run_ablation.py --fixture ... --calibrate
+    uv run python -m test.eval.run_ablation --fixture ... --score-only [--judge]
+    uv run python -m test.eval.run_ablation --fixture ... --calibrate
 """
 
 import argparse
@@ -18,14 +18,17 @@ import random
 import statistics
 import subprocess
 import time
+from contextlib import nullcontext
 from pathlib import Path
 
 from TA.tracing.writer import _DEFAULT_LOG_DIR
+from test.eval.provider_budget import ProviderRequestLedger
 
 BENCH_STUDENT = "bench_student"
 TRACE_DIR = _DEFAULT_LOG_DIR
 RESULTS_DIR = Path("test/eval/results")
 _RUN_CONTRACT_KEYS = (
+    "version",
     "run_id",
     "fixture_digest",
     "corpus_digest",
@@ -64,6 +67,8 @@ def paired_schedule(fixture: list[dict], presets: list[str]) -> list[dict]:
 def classify_provider_error(error) -> dict[str, object]:
     message = " ".join(error) if isinstance(error, (list, tuple)) else str(error or "")
     lowered = message.casefold()
+    if "provider request budget exhausted" in lowered:
+        return {"category": "provider_request_budget", "pause_immediately": True}
     session_limit = "429" in lowered and "session" in lowered and "usage limit" in lowered
     if session_limit:
         return {"category": "session_usage_limit", "pause_immediately": True}
@@ -88,7 +93,7 @@ def build_run_state(
 ) -> dict:
     now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     return {
-        "version": 1,
+        "version": 3,
         "run_id": run_id,
         "fixture_digest": fixture_digest,
         "corpus_digest": corpus_digest,
@@ -99,6 +104,7 @@ def build_run_state(
         "schedule": paired_schedule(fixture, presets),
         "successful_cases": [],
         "failed_attempts": [],
+        "provider_request_attempts": [],
         "pause_reason": "",
         "status": "READY",
         "created_at": now,
@@ -136,8 +142,10 @@ def record_run_attempt(
     errors: list,
     provider_error: dict | None = None,
     latency_s: float | None = None,
+    provider_requests: int = 0,
 ) -> None:
     case_key = case["case_key"]
+    record_provider_requests(state, case, provider_requests)
     if status == "SUCCESS":
         if case_key not in state["successful_cases"]:
             state["successful_cases"].append(case_key)
@@ -151,6 +159,83 @@ def record_run_attempt(
         "latency_s": latency_s,
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     })
+
+
+def local_budget_date() -> str:
+    return time.strftime("%Y-%m-%d")
+
+
+def record_provider_requests(state: dict, case: dict, count: int) -> None:
+    state.setdefault("provider_request_attempts", []).append({
+        "case_key": case["case_key"],
+        "question_id": case["question_id"],
+        "preset": case["preset"],
+        "count": max(0, int(count)),
+        "date": local_budget_date(),
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    })
+
+
+def provider_requests_used(state: dict, date: str | None = None) -> int:
+    target = date or local_budget_date()
+    return sum(
+        int(attempt.get("count", 0))
+        for attempt in state.get("provider_request_attempts", [])
+        if attempt.get("date") == target
+    )
+
+
+def profile_provider_key(profile_name: str) -> str | None:
+    from core.llm.config import config_instance
+
+    profile = config_instance.profiles.get(profile_name)
+    if profile is None:
+        raise ValueError(f"unknown model profile: {profile_name}")
+    if profile.provider == "ollama":
+        return None
+    return f"{profile.provider}:{profile.model_name}"
+
+
+def provider_request_reservation(context, profile_keys: dict[str, str | None]) -> dict[str, int]:
+    policy = context.policy
+    planner_attempts = (
+        (context.harness.max_tool_calls + 1)
+        * (policy.schema_repair_attempts + 1)
+        * (policy.model_transport_retries + 1)
+    )
+    answer_attempts = policy.answer_transport_retries + 1
+    requirements: dict[str, int] = {}
+    for profile_name, attempts in (
+        (policy.model_profile, planner_attempts),
+        (policy.answer_model_profile, answer_attempts),
+    ):
+        provider_key = profile_keys.get(profile_name)
+        if provider_key:
+            requirements[provider_key] = requirements.get(provider_key, 0) + attempts
+    return requirements
+
+
+def combine_provider_reservations(*reservations: dict[str, int]) -> dict[str, int]:
+    total: dict[str, int] = {}
+    for reservation in reservations:
+        for provider_key, attempts in reservation.items():
+            total[provider_key] = total.get(provider_key, 0) + attempts
+    return total
+
+
+def provider_claim_gate(
+    ledger: ProviderRequestLedger,
+    profile_keys: dict[str, str | None],
+    metadata: dict[str, object],
+):
+    def claim(profile_name: str) -> None:
+        if profile_name not in profile_keys:
+            raise RuntimeError(f"provider budget has no profile mapping: {profile_name}")
+        provider_key = profile_keys[profile_name]
+        if provider_key:
+            ledger.claim(provider_key, {**metadata, "profile": profile_name})
+
+    return claim
 
 
 def pending_schedule(state: dict) -> list[dict]:
@@ -175,6 +260,11 @@ def summarize_run_state(state: dict) -> dict:
     return {
         "expected_counts": expected_counts,
         "provider_errors": provider_errors,
+        "provider_requests": sum(
+            int(attempt.get("count", 0))
+            for attempt in state.get("provider_request_attempts", [])
+        ),
+        "provider_requests_today": provider_requests_used(state),
         "partial": state.get("status") != "COMPLETED",
         "median_failed_latency_s": statistics.median(failed_latencies) if failed_latencies else None,
     }
@@ -370,9 +460,11 @@ async def run_case(
     harness_id,
     code_state,
     warmup: bool = False,
+    provider_gate=None,
 ):
     from core.config import Retrieve_param
     from core.schema.retrieval import RetrievalCase, RetrievalCaseKind, RetrievalRoute
+    from TA.helper.model_call import count_provider_requests, provider_request_gate
 
     question_id = f"warmup-{item['id']}" if warmup else item["id"]
     prefix = "WARMUP" if warmup else preset
@@ -386,35 +478,38 @@ async def run_case(
     tracker.create_chat_session(BENCH_STUDENT, sid)
     t0 = time.perf_counter()
     outcome = None
-    try:
-        result = await ta.run(
-            user_input=item["question"],
-            session_id=sid,
-            language="eng",
-            retrieve_param=rp,
-            retrieval_case=RetrievalCase(
-                run_id=run_id,
-                question_id=question_id,
-                kind=RetrievalCaseKind.WARMUP if warmup else RetrievalCaseKind.BENCHMARK,
-                forced_route=RetrievalRoute.RETRIEVE,
-            ),
-            code_state=code_state,
-        )
-        outcome = {
-            "status": result.get("status", "FAIL"),
-            "errors": list(result.get("errors", [])),
-            "session_id": sid,
-            "latency_s": time.perf_counter() - t0,
-        }
-    except Exception as exc:
-        outcome = {
-            "status": "FAIL",
-            "errors": [f"{type(exc).__name__}: {exc}"],
-            "session_id": sid,
-            "latency_s": time.perf_counter() - t0,
-        }
-    finally:
-        tracker.drop_session(sid)
+    with count_provider_requests() as request_counter:
+        with provider_request_gate(provider_gate) if provider_gate else nullcontext():
+            try:
+                result = await ta.run(
+                    user_input=item["question"],
+                    session_id=sid,
+                    language="eng",
+                    retrieve_param=rp,
+                    retrieval_case=RetrievalCase(
+                        run_id=run_id,
+                        question_id=question_id,
+                        kind=RetrievalCaseKind.WARMUP if warmup else RetrievalCaseKind.BENCHMARK,
+                        forced_route=RetrievalRoute.RETRIEVE,
+                    ),
+                    code_state=code_state,
+                )
+                outcome = {
+                    "status": result.get("status", "FAIL"),
+                    "errors": list(result.get("errors", [])),
+                    "session_id": sid,
+                    "latency_s": time.perf_counter() - t0,
+                }
+            except Exception as exc:
+                outcome = {
+                    "status": "FAIL",
+                    "errors": [f"{type(exc).__name__}: {exc}"],
+                    "session_id": sid,
+                    "latency_s": time.perf_counter() - t0,
+                }
+            finally:
+                tracker.drop_session(sid)
+    outcome["provider_requests"] = request_counter["count"]
     label = "WARMUP" if warmup else preset
     if outcome["status"] == "SUCCESS":
         print(f"[{label}] {item['id']} ({outcome['latency_s']:.1f}s)", flush=True)
@@ -435,17 +530,103 @@ async def run_resumable_schedule(
     code_state,
     state: dict,
     state_path: Path,
+    max_provider_requests: int = 0,
+    provider_ledger: ProviderRequestLedger | None = None,
+    provider_reservation: dict[str, int] | None = None,
+    provider_case_reservations: dict[str, dict[str, int]] | None = None,
+    provider_profile_keys: dict[str, str | None] | None = None,
+) -> bool:
+    if provider_ledger is None:
+        return await _run_resumable_schedule(
+            ta=ta,
+            tracker=tracker,
+            fixture=fixture,
+            track=track,
+            course=course,
+            run_id=run_id,
+            harness_id=harness_id,
+            code_state=code_state,
+            state=state,
+            state_path=state_path,
+            max_provider_requests=max_provider_requests,
+        )
+    with provider_ledger.hold_run_lock():
+        return await _run_resumable_schedule(
+            ta=ta,
+            tracker=tracker,
+            fixture=fixture,
+            track=track,
+            course=course,
+            run_id=run_id,
+            harness_id=harness_id,
+            code_state=code_state,
+            state=state,
+            state_path=state_path,
+            max_provider_requests=max_provider_requests,
+            provider_ledger=provider_ledger,
+            provider_reservation=provider_reservation,
+            provider_case_reservations=provider_case_reservations,
+            provider_profile_keys=provider_profile_keys,
+        )
+
+
+async def _run_resumable_schedule(
+    *,
+    ta,
+    tracker,
+    fixture: list[dict],
+    track: str,
+    course: str,
+    run_id: str,
+    harness_id,
+    code_state,
+    state: dict,
+    state_path: Path,
+    max_provider_requests: int = 0,
+    provider_ledger: ProviderRequestLedger | None = None,
+    provider_reservation: dict[str, int] | None = None,
+    provider_case_reservations: dict[str, dict[str, int]] | None = None,
+    provider_profile_keys: dict[str, str | None] | None = None,
 ) -> bool:
     by_id = {item["id"]: item for item in fixture}
     state.update(status="RUNNING", pause_reason="")
     save_run_state(state_path, state)
     transient_failures = 0
     pending = pending_schedule(state)
+    current_question = None
     for index, case in enumerate(pending, start=1):
+        if case["question_id"] != current_question:
+            successful = set(state["successful_cases"])
+            sibling_succeeded = any(
+                scheduled["question_id"] == case["question_id"]
+                and scheduled["case_key"] in successful
+                for scheduled in state["schedule"]
+            )
+            reservation = (
+                (provider_case_reservations or {}).get(case["preset"], provider_reservation or {})
+                if sibling_succeeded
+                else provider_reservation or {}
+            )
+            provider_budget_exhausted = (
+                provider_ledger is not None
+                and not provider_ledger.can_reserve(reservation)
+            )
+            legacy_budget_exhausted = (
+                provider_ledger is None
+                and max_provider_requests > 0
+                and provider_requests_used(state) >= max_provider_requests
+                and not sibling_succeeded
+            )
+            if provider_budget_exhausted or legacy_budget_exhausted:
+                state.update(status="PAUSED", pause_reason="provider_request_budget")
+                save_run_state(state_path, state)
+                return False
+            current_question = case["question_id"]
         print(
             f"[{harness_id}] {index}/{len(pending)} {case['question_id']} {case['preset']}",
             flush=True,
         )
+
         result = await run_case(
             ta=ta,
             tracker=tracker,
@@ -456,6 +637,20 @@ async def run_resumable_schedule(
             run_id=run_id,
             harness_id=harness_id,
             code_state=code_state,
+            provider_gate=(
+                provider_claim_gate(
+                    provider_ledger,
+                    provider_profile_keys or {},
+                    {
+                        "run_id": run_id,
+                        "case_key": case["case_key"],
+                        "question_id": case["question_id"],
+                        "preset": case["preset"],
+                    },
+                )
+                if provider_ledger
+                else None
+            ),
         )
         provider_error = None
         if result["status"] != "SUCCESS":
@@ -468,6 +663,7 @@ async def run_resumable_schedule(
             errors=result["errors"],
             provider_error=provider_error,
             latency_s=result.get("latency_s"),
+            provider_requests=result.get("provider_requests", 0),
         )
         save_run_state(state_path, state)
 
@@ -544,6 +740,8 @@ def score(
         state_summary = summarize_run_state(run_states[harness]) if harness in run_states else {
             "expected_counts": {preset: len(fixture) for preset in presets},
             "provider_errors": {},
+            "provider_requests": 0,
+            "provider_requests_today": 0,
             "partial": partial,
             "median_failed_latency_s": None,
         }
@@ -588,6 +786,11 @@ def score(
         meta = report_meta[harness]
         sections += [
             f"# Harness: {harness}",
+            "",
+            (
+                f"Provider requests (retries included): {meta['provider_requests']} total; "
+                f"{meta['provider_requests_today']} today."
+            ),
             "",
             render_report(
                 group,
@@ -660,6 +863,12 @@ async def main():
     ap.add_argument("--ids", default="", help="comma-separated fixture IDs to run")
     ap.add_argument("--run-id", default="")
     ap.add_argument("--resume", action="store_true")
+    ap.add_argument(
+        "--max-provider-requests",
+        type=int,
+        default=500,
+        help="hard daily external-model request budget (default: 500); pauses before an unreservable pair",
+    )
     ap.add_argument("--score-only", action="store_true")
     ap.add_argument("--judge", action="store_true")
     ap.add_argument("--calibrate", action="store_true")
@@ -685,6 +894,8 @@ async def main():
     unknown_harnesses = set(harness_names) - allowed_harnesses
     if unknown_harnesses:
         raise SystemExit(f"unknown harnesses: {sorted(unknown_harnesses)}")
+    if args.max_provider_requests and set(harness_names) != {"agentic-v4"}:
+        raise SystemExit("--max-provider-requests currently supports agentic-v4 only")
     harness_runs = harness_run_ids(run_id, harness_names)
 
     if args.calibrate:
@@ -695,6 +906,14 @@ async def main():
 
     all_complete = True
     run_states = {}
+    provider_ledger = (
+        ProviderRequestLedger(
+            RESULTS_DIR / "provider_request_ledger",
+            max_requests=args.max_provider_requests,
+        )
+        if args.max_provider_requests
+        else None
+    )
     if not args.score_only:
         from core.config import Retrieve_param
         from core.schema.retrieval import RetrievalHarnessId
@@ -730,6 +949,23 @@ async def main():
                 harness_digests = {context.harness.digest for context in contexts.values()}
                 if len(harness_digests) != 1:
                     raise RuntimeError(f"harness digest differs across arms: {harness_name}")
+                profile_names = {
+                    profile_name
+                    for context in contexts.values()
+                    for profile_name in (
+                        context.policy.model_profile,
+                        context.policy.answer_model_profile,
+                    )
+                }
+                provider_profile_keys = {
+                    profile_name: profile_provider_key(profile_name)
+                    for profile_name in profile_names
+                }
+                case_reservations = {
+                    preset: provider_request_reservation(context, provider_profile_keys)
+                    for preset, context in contexts.items()
+                }
+                pair_reservation = combine_provider_reservations(*case_reservations.values())
                 expected_state = build_run_state(
                     run_id=harness_run_id,
                     fixture=fixture,
@@ -745,10 +981,21 @@ async def main():
                 state = load_run_state(state_path, expected_state, resume=args.resume)
                 run_states[harness_name] = state
                 if fixture and not args.resume:
+                    warmup_preset = "FULL" if "FULL" in contexts else presets[0]
+                    warmup_reservation = provider_request_reservation(
+                        contexts[warmup_preset], provider_profile_keys
+                    )
+                    if provider_ledger and not provider_ledger.can_reserve(
+                        combine_provider_reservations(warmup_reservation, pair_reservation)
+                    ):
+                        state.update(status="PAUSED", pause_reason="provider_request_budget")
+                        save_run_state(state_path, state)
+                        all_complete = False
+                        break
                     warmup_result = await run_case(
                         ta,
                         tracker,
-                        "FULL",
+                        warmup_preset,
                         fixture[0],
                         track,
                         args.course,
@@ -756,6 +1003,29 @@ async def main():
                         harness_id,
                         code_state,
                         warmup=True,
+                        provider_gate=(
+                            provider_claim_gate(
+                                provider_ledger,
+                                provider_profile_keys,
+                                {
+                                    "run_id": harness_run_id,
+                                    "case_key": "__warmup__",
+                                    "question_id": fixture[0]["id"],
+                                    "preset": "WARMUP",
+                                },
+                            )
+                            if provider_ledger
+                            else None
+                        ),
+                    )
+                    record_provider_requests(
+                        state,
+                        {
+                            "case_key": "__warmup__",
+                            "question_id": fixture[0]["id"],
+                            "preset": "WARMUP",
+                        },
+                        warmup_result.get("provider_requests", 0),
                     )
                     if warmup_result["status"] != "SUCCESS":
                         provider_error = classify_provider_error(warmup_result["errors"])
@@ -785,6 +1055,11 @@ async def main():
                     code_state=code_state,
                     state=state,
                     state_path=state_path,
+                    max_provider_requests=args.max_provider_requests,
+                    provider_ledger=provider_ledger,
+                    provider_reservation=pair_reservation,
+                    provider_case_reservations=case_reservations,
+                    provider_profile_keys=provider_profile_keys,
                 )
                 if not complete:
                     all_complete = False

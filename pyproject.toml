@@ -17,6 +17,8 @@ dependencies = [
     "tqdm>=4.67.1",
     "transformers[torch]>=4.57.3",
     "langchain-ollama>=1.0.1",
+    "langchain-google-genai>=2.1.12",
+    "langchain-openrouter>=0.2.8",
     "langchain-core>=1.2.5",
     "en-core-web-sm",
     "moderngl>=5.12.0",
@@ -64,3 +66,7 @@ dev = [
     "deepeval>=4.0.7",
     "pytest>=9.0.3",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["capstone"]
+

@@ -1,44 +1,12 @@
 {
-  "og": "National Highway 01 or NH01, formally called the Ring Road (; ), is an ancient two-lane road network circulating inside Afghanistan, connecting the following major cities (clockwise): Kabul, Maidan Shar, Ghazni, Kandahar, Delaram, Herat, Maymana, Sheberghan, Mazari Sharif, and Puli Khumri. Originally built and renovated by the Mauryan Empire, it was a part of the Grand Trunk Road project and well documented by Greek and Buddhist sources in the 4th century BCE. It was renovated many times, by Sher Shah Suri, Mughal Empire and the British Empire. It has extensions that also connect Jalalabad, Bamyan, Khost, Lashkargah, Zaranj (Route 606), Farah, Islam Qala, Torghundi, and Kunduz. It is part of AH1, the longest route of the Asian Highway Network. National Highway 01 is broken up into four major sections, NH0101-0104, linking the major economic centers of Afghanistan.",
+  "og": "THANKS FOR LISTENING!",
   "meta": {
-    "model": "qwen3:8b",
-    "concept_count": 1,
+    "model": "gpt-oss:120b-cloud",
+    "concept_count": 0,
     "relation_count": 0
   },
   "skeleton_phase": {
-    "tree": [
-      {
-        "name": "National Highway 01",
-        "content": "An ancient two-lane road network in Afghanistan connecting major cities via a ring route.",
-        "details": [
-          {
-            "role": "Statement",
-            "content": "National Highway 01 is formally called the Ring Road and circulates inside Afghanistan.",
-            "confidence": 0.7
-          },
-          {
-            "role": "Statement",
-            "content": "It was originally built and renovated by the Mauryan Empire as part of the Grand Trunk Road project.",
-            "confidence": 0.7
-          },
-          {
-            "role": "Statement",
-            "content": "National Highway 01 has been renovated multiple times by Sher Shah Suri, Mughal Empire, and British Empire.",
-            "confidence": 0.7
-          },
-          {
-            "role": "Application",
-            "content": "It is part of AH1, the longest route of the Asian Highway Network.",
-            "confidence": 0.7
-          },
-          {
-            "role": "Statement",
-            "content": "National Highway 01 connects cities including Kabul, Kandahar, Herat, and Kunduz via extensions.",
-            "confidence": 0.7
-          }
-        ]
-      }
-    ]
+    "tree": []
   },
   "relation_phase": {
     "edges": []
