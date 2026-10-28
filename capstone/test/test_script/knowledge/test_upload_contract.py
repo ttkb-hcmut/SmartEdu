@@ -53,7 +53,30 @@ def test_search_groups_concepts_and_passages_with_pdf_targets():
     assert (result["concepts"][1]["document"], result["concepts"][1]["page"]) == (None, None)
     assert result["concepts"][2]["page"] == 5
     assert result["passages"][0]["page"] == 8
-    module.graph_db.passage_search.assert_called_once_with([0.1], query_text="vector", top_k=5, uri_prefix="Ml/")
+    module.graph_db.passage_search.assert_called_once_with(
+        [0.1], query_text="vector", top_k=5, uri_prefix="Ml/",
+        excluded_uri_prefixes=[],
+    )
+
+
+def test_global_search_excludes_benchmark_corpora():
+    from types import SimpleNamespace
+    from unittest.mock import Mock
+
+    module = SimpleNamespace(embedder=Mock(), milvus_db=Mock(), graph_db=Mock())
+    module.embedder.get_embedding.return_value = [0.1]
+    module.milvus_db.search_vec.return_value = []
+    module.graph_db.passage_search.return_value = []
+
+    route._search_payload(module, "language model", None)
+
+    module.milvus_db.search_vec.assert_called_once_with(
+        [0.1], top_k=5, expr='not (community like "Bench_%")',
+    )
+    module.graph_db.passage_search.assert_called_once_with(
+        [0.1], query_text="language model", top_k=5, uri_prefix=None,
+        excluded_uri_prefixes=["Bench_"],
+    )
 
 
 @pytest.mark.parametrize("query", ["", "x", "x" * 201])

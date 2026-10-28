@@ -67,6 +67,7 @@ def test_semantic_search_injects_scope_and_returns_artifact():
         "embedder": tool.embedder,
         "top_k": 5,
         "course_scope": "Bench_MuSiQue",
+        "expr": None,
     }]
     assert "evidence" in content
     assert artifact["error"] == ""
@@ -97,6 +98,7 @@ def test_textbook_search_uses_exact_course_prefix():
         "query_text": "question",
         "top_k": 5,
         "uri_prefix": "Bench_MuSiQue/",
+        "excluded_uri_prefixes": [],
     })]
     assert artifact["chunks"][0]["source"] == "textbook"
 
@@ -132,3 +134,19 @@ def test_v4_adapters_request_eight_candidates_per_source():
 
     assert milvus.calls[0]["top_k"] == 8
     assert graph.calls[0][1]["top_k"] == 8
+
+
+def test_live_global_tools_exclude_benchmark_corpora():
+    from TA.tools.retrieval import SemanticSearch, TextbookSearch
+
+    runtime = _runtime(course="")
+    milvus = _Milvus()
+    graph = _Graph()
+
+    SemanticSearch(milvus_db=milvus, embedder=_Embedder())._run("q", runtime=runtime)
+    TextbookSearch(graph_db=graph, embedder=_Embedder())._run("q", runtime=runtime)
+
+    assert milvus.calls[0]["course_scope"] == ""
+    assert milvus.calls[0]["expr"] == 'not (community like "Bench_%")'
+    assert graph.calls[0][1]["uri_prefix"] is None
+    assert graph.calls[0][1]["excluded_uri_prefixes"] == ["Bench_"]

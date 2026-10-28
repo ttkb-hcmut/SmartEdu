@@ -20,7 +20,7 @@ from core.schema.wf_state import AgentState, ConceptNode, TAOutput
 from TA.workflow.retrieve import build_retrieve_wf
 from core.schema.retrieval import RetrievalCaseKind, RetrievalRunContext
 from TA.workflow.roadmap import build_roadmap_wf
-from TA.workflow.teach import build_teach_wf
+from TA.workflow.teach import build_teach_wf, _bounded_history
 
 from TA.helper.utils import parse_student_state
 from TA.helper.context import build_ui_citations, extract_ta_context
@@ -234,17 +234,22 @@ class SmartEdu:
         refine_prompt = prompt_lib.RETRIEVE_REFINE_PROMPT.format(
             language_instruction=language_instruction
         )
-        prompt = f"{refine_prompt}\nData: {results}"
-
-        ## -- Inject prior TA messages for coherence
-        ta_context = extract_ta_context(state)
-        if ta_context:
-            prompt = f"[Prior TA reasoning]:\n{ta_context}\n\n{prompt}"
+        prompt = refine_prompt
 
         start_invoke = time.time()
         if runtime.context.case.kind is RetrievalCaseKind.BENCHMARK:
             message = await self._benchmark_answer(ta, state, results, config, runtime)
         else:
+            rag = results.get("RAG", {})
+            history = _bounded_history(tracker, sid, chat_id)
+            prompt += (
+                f"\n\nRECENT CONVERSATION:\n{history}"
+                f"\n\nCURRENT QUESTION:\n{state.get('user_query', '')}"
+                f"\n\nRETRIEVAL STATUS: {rag.get('status', 'FAIL')}"
+                f"\nANSWERABLE: {rag.get('answerable', 'not assessed')}"
+                f"\n\nSOURCE MATERIAL:\n{rag.get('content') or 'No retrieved content.'}"
+            )
+            prompt += f"\n\n{prompt_lib.RETRIEVE_ANSWER_PRIORITY}"
             message = await self._stream_answer(ta, prompt, config)
         ta_output = TAOutput(summary=self._derive_summary(message), message=message)
 
@@ -535,6 +540,19 @@ class SmartEdu:
                 return s[:120]
         return message[:120]
 
+    @staticmethod
+    def _student_message(raw: str) -> str:
+        candidate = raw.strip()
+        if candidate.startswith("```json") and candidate.endswith("```"):
+            candidate = candidate[7:-3].strip()
+        try:
+            payload = json.loads(candidate)
+        except (json.JSONDecodeError, TypeError):
+            return raw
+        if isinstance(payload, dict) and isinstance(payload.get("message"), str):
+            return payload["message"].strip()
+        return raw
+
     async def _stream_answer(self, ta, prompt: str, config: RunnableConfig) -> str:
         """raw model stream, no tool loop (finish prompts self-contained); sys prompt bypassed by agent so prepend"""
         emit = config.get("configurable", {}).get("emit")
@@ -552,7 +570,7 @@ class SmartEdu:
                         parts.append(text)
                         if emit:
                             await emit({"type": "token", "text": text})
-                return "".join(parts)
+                return self._student_message("".join(parts))
             except Exception as e:
                 ## retry only before any token reached the client, else the stream would repeat
                 if parts or attempt == 2 or not is_transient(e):

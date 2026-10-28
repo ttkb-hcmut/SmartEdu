@@ -27,13 +27,12 @@ class LLMConfig:
             reasoning="low",
         ),
         "ta": LLMProfile(
-            model_name="nvidia/nemotron-3-super-120b-a12b:free",
-            provider="openrouter",
-            temperature=0.67,
-            num_ctx=4096,
+            model_name="gpt-oss:120b-cloud",
+            temperature=0.2,
+            num_ctx=8192,
             num_predict=4096,
             keep_alive="1h",
-            openrouter_provider={"allow_fallbacks": True, "require_parameters": True},
+            reasoning="low",
         ),
         "evaluator": LLMProfile(
             model_name="qwen3:8b", 

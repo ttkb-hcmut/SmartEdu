@@ -8,7 +8,13 @@ from typing import Any, Literal, Optional, Type
 from langchain.tools import BaseTool, ToolRuntime
 from pydantic import BaseModel, Field
 
-from core.schema.retrieval import RetrievalHarnessId, RetrievalRunContext, RetrievalToolId
+from core.schema.retrieval import (
+    BENCHMARK_COURSE_PREFIX,
+    RetrievalCaseKind,
+    RetrievalHarnessId,
+    RetrievalRunContext,
+    RetrievalToolId,
+)
 from TA.retrieval.policy import get_tool_spec
 
 logger = logging.getLogger(__name__)
@@ -28,6 +34,12 @@ def _is_valid_entity(name: str) -> bool:
 
 
 _SPACY_NLP = None
+
+
+def _live_global_exclusions(context: RetrievalRunContext) -> list[str]:
+    if context.case.kind == RetrievalCaseKind.LIVE and not context.scope.course:
+        return [BENCHMARK_COURSE_PREFIX]
+    return []
 
 
 def _get_spacy():
@@ -162,11 +174,16 @@ class SemanticSearch(BaseTool):
         start = perf_counter()
         try:
             context = runtime.context
+            excluded = _live_global_exclusions(context)
             rows = self.milvus_db.search(
                 query=query,
                 embedder=self.embedder,
                 top_k=_source_k(context),
                 course_scope=context.scope.course,
+                expr=(
+                    f'not (community like "{BENCHMARK_COURSE_PREFIX}%")'
+                    if excluded else None
+                ),
             )
             chunks = [_chunk(row, RetrievalToolId.SEMANTIC.value) for row in rows]
             content = "\n".join(f"- [{item['score']:.4f}] {item['text']}" for item in chunks)
@@ -202,11 +219,13 @@ class TextbookSearch(BaseTool):
             context = runtime.context
             scope = context.scope.course.rstrip("/")
             k = _source_k(context)
+            excluded = _live_global_exclusions(context)
             rows = self.graph_db.passage_search(
                 self.embedder.get_embedding(query),
                 query_text=query,
                 top_k=k,
                 uri_prefix=f"{scope}/" if scope else None,
+                excluded_uri_prefixes=excluded,
             )
             chunks = [_chunk(row, RetrievalToolId.TEXTBOOK.value) for row in rows]
 
@@ -218,6 +237,7 @@ class TextbookSearch(BaseTool):
                         seed_uris,
                         top_k=k,
                         max_degree=50,
+                        excluded_uri_prefixes=excluded,
                     )
                     graph_chunks = [_chunk(row, "graph_traversal") for row in graph_rows]
                 except Exception as g_exc:
@@ -240,6 +260,7 @@ class TextbookSearch(BaseTool):
                                 ent_names,
                                 top_k=k,
                                 max_degree=50,
+                                excluded_uri_prefixes=excluded,
                             )
                             entity_chunks = [_chunk(row, "graph_entity") for row in ent_rows]
                 except Exception as e_exc:

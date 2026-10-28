@@ -28,6 +28,9 @@ class RetrievalPromptId(str, Enum):
     MULTIHOP_V3 = "multihop-v3"
 
 
+BENCHMARK_COURSE_PREFIX = "Bench_"
+
+
 class RetrievalToolId(str, Enum):
     SEMANTIC = "semantic"
     TEXTBOOK = "textbook"

@@ -66,7 +66,7 @@ def build_teach_wf(agents, retrieve_wf, graph_db=None):
 def _bounded_history(tracker, session_id: str, chat_id: str) -> str:
     return tracker.get_chat_history(
         session_id,
-        mode="skim",
+        mode="full",
         recent_turns=4,
         exclude_chat_id=chat_id,
         max_chars=4_000,
@@ -259,24 +259,17 @@ async def teach_lecture(state: AgentState, ta_agent, config):
         )
 
     request_text = user_query or f"Continue learning about {current_str}."
-    lesson_contract = (
-        "Review the requested material and test recall without repeating questions from chat history."
-        if mode == "review" else
-        "For a full lesson, write 4–6 titled sections with substantive explanations. Cover each requested part; use concrete examples, a comparison, a common misconception, and a short recap when relevant. Do not compress this into a benchmark-style short answer. Respect an explicit request for brevity."
-    )
     prompt += (
         "\n\nCURRENT TEACHING REQUEST — follow this over older prompt directions:\n"
         f"{request_text}\n"
-        f"{lesson_contract}\n"
+        "Answer the request directly. For a full lesson, develop the ideas in a useful order; "
+        "for a follow-up, focus on the remaining confusion. Explain mechanisms and use examples when helpful. "
+        "Adapt structure and depth to the request; honor explicit brevity or detail. "
         "Use the source material already supplied above; do not call PDF lookup tools. "
         "If the source is general knowledge, do not claim the PDF supports the explanation. "
-        "End with one question that checks understanding."
+        "Leave challenge_question empty unless the student requests practice or review. "
+        "If needed, put one check question only in challenge_question, never in lecture."
     )
-
-    ## -- Inject prior TA messages for coherence
-    ta_context = extract_ta_context(state)
-    if ta_context:
-        prompt = f"[Prior TA reasoning]:\n{ta_context}\n\n{prompt}"
 
     try:
         lecture_model = ta_agent.model.with_structured_output(TeachLectureOutput)
@@ -293,8 +286,9 @@ async def teach_lecture(state: AgentState, ta_agent, config):
         res = safe_parse_structured(extract_llm_raw_text(e), TeachLectureOutput)
 
     lecture_text = res.lecture
-    if res.challenge_question:
-        lecture_text += f"\n\n**C\u00e2u h\u1ecfi ki\u1ec3m tra:** {res.challenge_question}"
+    challenge = res.challenge_question.strip()
+    if challenge and " ".join(challenge.casefold().split()) not in " ".join(lecture_text.casefold().split()):
+        lecture_text += f"\n\n**C\u00e2u h\u1ecfi ki\u1ec3m tra:** {challenge}"
 
     log_filename = config.get("configurable", {}).get("log_filename") or os.getenv("TEST_LOG_FILENAME")
     if log_filename:

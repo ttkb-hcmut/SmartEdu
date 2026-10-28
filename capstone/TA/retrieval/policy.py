@@ -141,7 +141,7 @@ def _policy_payload() -> dict:
         "model_name": "qwen3:8b",
         "temperature": 0.0,
         "answer_model_profile": "TA",
-        "answer_model_name": "nvidia/nemotron-3-super-120b-a12b:free",
+        "answer_model_name": "gpt-oss:120b-cloud",
         "answer_temperature": 0.0,
         "toolsets": {
             preset.value: [tool.value for tool in tools]
@@ -320,7 +320,7 @@ def resolve_retrieval_context(
             "model_name": "qwen3:8b",
             "temperature": 0.0,
             "answer_model_profile": "TA",
-            "answer_model_name": "nvidia/nemotron-3-super-120b-a12b:free",
+            "answer_model_name": "gpt-oss:120b-cloud",
             "answer_temperature": 0.0,
             "min_tool_calls": _MINIMUM_CALLS[preset],
         }

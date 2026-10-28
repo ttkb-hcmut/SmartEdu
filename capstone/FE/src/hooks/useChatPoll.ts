@@ -199,6 +199,9 @@ export function useChatPoll(onDone?: (result: PollResult) => void) {
             session_id: sessionId,
             user_input: userInput,
             language,
+            retrieval_preset: "full",
+            retrieval_policy: "baseline-v5",
+            retrieval_harness: "agentic-v4",
           }),
         })
 

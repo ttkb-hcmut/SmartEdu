@@ -7,6 +7,7 @@ from typing import List, Optional
 
 from core.dependencies import get_ingestion_service, get_knowledge_module
 from core.repo.storage.minio_repo import resolve_pdf_reference, validate_file_names
+from core.schema.retrieval import BENCHMARK_COURSE_PREFIX
 from knowledge.pipeline.readiness import capability_status, required_capabilities
 from knowledge.pipeline.submit import course_submit
 from knowledge.service.pdf_loader import topic_pdf_bytes
@@ -155,10 +156,14 @@ async def ingest_report(
 def _search_payload(module, query: str, course: str | None) -> dict:
     vector = module.embedder.get_embedding(query)
     scope = _canon_course(course) if course else None
-    expr = module.milvus_db._course_expr(scope) if scope else None
+    expr = (
+        module.milvus_db._course_expr(scope)
+        if scope else f'not (community like "{BENCHMARK_COURSE_PREFIX}%")'
+    )
     concept_rows = module.milvus_db.search_vec(vector, top_k=5, expr=expr)
     passage_rows = module.graph_db.passage_search(
         vector, query_text=query, top_k=5, uri_prefix=f"{scope}/" if scope else None,
+        excluded_uri_prefixes=[] if scope else [BENCHMARK_COURSE_PREFIX],
     )
     source_rows = module.graph_db.resolve_entity_sources(
         [row["id"] for row in concept_rows if row.get("id")]
