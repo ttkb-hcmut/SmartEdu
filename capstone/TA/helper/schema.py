@@ -49,8 +49,8 @@ class RoadmapFinal(BaseResponse):
 
 class TeachLectureOutput(BaseResponse):
     """UI-facing: lecture field IS the narrative."""
-    lecture: str = Field(description="The lecture content to present to the student")
-    challenge_question: str = Field(default="", description="A Socratic question to test understanding")
+    lecture: str = Field(description="The answer or lesson for the student's current request; exclude the optional check question")
+    challenge_question: str = Field(default="", description="Empty unless the student requests practice or review; when needed, one check question not repeated in lecture")
 
 class TeachEvalOutput(BaseResponse):
     """UI-facing via finish node."""

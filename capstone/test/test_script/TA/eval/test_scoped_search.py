@@ -27,7 +27,9 @@ def test_scoped_passage_search_uses_exact_query_without_probe():
     graph.passage_search([0.1], top_k=5, uri_prefix="Bench/")
 
     assert calls[0][1] == CYPHER_passage_search_vec_scoped
-    assert calls[0][2] == {"k": 5, "emb": [0.1], "prefix": "Bench/"}
+    assert calls[0][2] == {
+        "k": 5, "emb": [0.1], "prefix": "Bench/", "excluded_prefixes": [],
+    }
     assert "probe" not in calls[0][2]
 
 
@@ -38,6 +40,15 @@ def test_unscoped_passage_search_keeps_ann_query():
 
     assert calls[0][1] == CYPHER_passage_search_vec
     assert calls[0][2]["probe"] == 5
+
+
+def test_unscoped_passage_search_overfetches_before_excluding_benchmark():
+    graph, calls = _graph()
+
+    graph.passage_search([0.1], top_k=5, excluded_uri_prefixes=["Bench_"])
+
+    assert calls[0][2]["probe"] == 100
+    assert calls[0][2]["excluded_prefixes"] == ["Bench_"]
 
 
 def test_scoped_anchor_search_uses_exact_query():

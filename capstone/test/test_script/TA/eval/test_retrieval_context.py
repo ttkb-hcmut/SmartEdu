@@ -7,10 +7,12 @@ import pytest
 from fastapi import HTTPException
 
 from core.config import Retrieve_param
+from core.llm.config import LLMConfig
 from core.schema.retrieval import (
-    RetrievalCase, RetrievalCaseKind, RetrievalHarnessId, RetrievalPolicyId, RetrievalRoute,
+    RetrievalCase, RetrievalCaseKind, RetrievalHarnessId, RetrievalPolicyId, RetrievalPreset, RetrievalRoute,
     RetrievalValidation, RetrievalValidity,
 )
+from TA.api.route import ChatRequest, _run_ta_task
 from TA.workflow.smart_edu import SmartEdu
 from TA.retrieval.policy import resolve_retrieval_context
 from TA.helper.schema import BenchmarkAnswer, TeachLectureOutput
@@ -198,7 +200,7 @@ def test_teach_history_helper_uses_same_bounded_recent_context_contract():
     assert _bounded_history(tracker, "session", "chat") == "bounded"
     assert tracker.args == ("session",)
     assert tracker.kwargs == {
-        "mode": "skim",
+        "mode": "full",
         "recent_turns": 4,
         "exclude_chat_id": "chat",
         "max_chars": 4_000,
@@ -527,7 +529,12 @@ def test_teach_without_current_concept_retrieves_student_question():
     assert result["_teach_context"]["source"] == "GENERAL"
 
 
-def test_teach_keeps_specific_question_and_passes_it_into_full_lesson_prompt(monkeypatch):
+@pytest.mark.parametrize("lecture,challenge", [
+    ("Lesson", ""),
+    ("Lesson", "What differs?"),
+    ("Lesson\nWhat differs?", "What differs?"),
+])
+def test_teach_keeps_specific_question_and_passes_it_into_full_lesson_prompt(monkeypatch, lecture, challenge):
     query = "Compare classification and regression with examples."
     monkeypatch.setattr(
         teach_module.prompt_lib,
@@ -563,7 +570,7 @@ def test_teach_keeps_specific_question_and_passes_it_into_full_lesson_prompt(mon
                 agent.prompt = messages[-1][1]
                 assert messages[0] == ("system", "TA teaching system prompt")
                 return TeachLectureOutput(
-                    thought="", lecture="Lesson", challenge_question="What differs?"
+                    thought="", lecture=lecture, challenge_question=challenge
                 )
 
         model = Model()
@@ -580,7 +587,7 @@ def test_teach_keeps_specific_question_and_passes_it_into_full_lesson_prompt(mon
     asyncio.run(teach_rag(state, Retrieve(), None, config, runtime))
 
     agent = Agent()
-    asyncio.run(teach_lecture({
+    result = asyncio.run(teach_lecture({
         **state,
         "_teach_mode": "continue",
         "_teach_context": {"source": "GENERAL", "content": "", "mode": "continue"},
@@ -590,6 +597,9 @@ def test_teach_keeps_specific_question_and_passes_it_into_full_lesson_prompt(mon
     assert "full lesson" in agent.prompt.lower()
     assert "classification" in agent.prompt.lower()
     assert "regression" in agent.prompt.lower()
+    assert "4–6" not in agent.prompt
+    assert "Leave challenge_question empty unless" in agent.prompt
+    assert result["messages"][0]["content"].count("What differs?") == bool(challenge)
 
 
 def test_teach_finalizer_preserves_the_complete_lesson():
@@ -733,6 +743,7 @@ def test_default_case_is_live_and_streams_instead_of_benchmark_answer():
     assert RetrievalCase().kind is RetrievalCaseKind.LIVE
     tracker = SimpleNamespace(
         get_session=lambda _sid: SimpleNamespace(student_state={}),
+        get_chat_history=lambda *_args, **_kwargs: "Student: Explain regression.\nTA: Squared residuals penalize large errors.",
         mongodb=SimpleNamespace(),
     )
     engine = object.__new__(SmartEdu)
@@ -745,8 +756,85 @@ def test_default_case_is_live_and_streams_instead_of_benchmark_answer():
         "session_id": "s", "student_id": "u", "student_tracker": tracker, "chat_id": "c",
     }}
     runtime = SimpleNamespace(context=resolve_retrieval_context(Retrieve_param.from_preset("FULL")))
-    result = asyncio.run(engine.ta_retrieve_finish({"worker_results": {}}, config, runtime))
+    result = asyncio.run(engine.ta_retrieve_finish({
+        "user_query": "Why square those errors?",
+        "worker_results": {"RAG": {
+            "status": "SUCCESS", "answerable": True,
+            "content": "A residual is the difference between prediction and target.",
+            "thought": "INTERNAL_CHAIN_DO_NOT_SHOW", "entity_ids": ["INTERNAL_ENTITY_ID"],
+        }},
+    }, config, runtime))
     assert result["messages"][0].content == "Streamed lesson"
+    prompt = engine._stream_answer.await_args.args[1]
+    assert "Why square those errors?" in prompt
+    assert "Squared residuals penalize large errors." in prompt
+    assert "difference between prediction and target" in prompt
+    assert "Answer directly in focused, grammatical Vietnamese" in prompt
+    assert "translate ordinary words such as \"fluent\"" in prompt
+    assert "Do not repeat the question as a heading" in prompt
+    assert "ignore unrelated hits" in prompt
+    assert "grammatical Vietnamese" in prompt
+    assert "at most one relevant example from the source" in prompt
+    assert "SUCCESS" in prompt
+    assert "INTERNAL_CHAIN_DO_NOT_SHOW" not in prompt
+    assert "INTERNAL_ENTITY_ID" not in prompt
+
+
+def test_live_ta_answer_uses_cloud_gpt_oss_without_changing_retrieval_model():
+    profiles = LLMConfig().profiles
+    policy = resolve_retrieval_context(Retrieve_param.from_preset("FULL")).policy
+
+    assert profiles["ta"].model_name == "gpt-oss:120b-cloud"
+    assert policy.answer_model_name == profiles["ta"].model_name
+    assert policy.model_name == profiles["rag"].model_name == "qwen3:8b"
+
+
+def test_chat_request_passes_citation_retrieval_context_to_ta():
+    request = ChatRequest(
+        session_id="session",
+        user_input="Why does a language model help text generation?",
+        retrieval_preset="full",
+        retrieval_policy="baseline-v5",
+        retrieval_harness="agentic-v4",
+    )
+    calls = {}
+
+    class FakeTA:
+        async def run(self, **kwargs):
+            calls.update(kwargs)
+            return {"status": "SUCCESS", "message": "Answer", "ui_action": None}
+
+    app_state = SimpleNamespace(
+        ta_tasks={"task": {"queue": asyncio.Queue()}},
+        TA=FakeTA(),
+    )
+    params = Retrieve_param(
+        preset=request.retrieval_preset,
+        policy_id=request.retrieval_policy,
+        harness_id=request.retrieval_harness,
+    )
+
+    asyncio.run(_run_ta_task(
+        app_state, "task", request.user_input, request.session_id, retrieval_params=params,
+    ))
+
+    assert calls["retrieve_param"] == params
+    assert calls["retrieve_param"].policy_id is RetrievalPolicyId.BASELINE_V5
+    assert calls["retrieve_param"].harness_id is RetrievalHarnessId.AGENTIC_V4
+
+
+def test_live_answer_unwraps_ta_output_envelope_before_showing_student():
+    class Model:
+        async def astream(self, *_args, **_kwargs):
+            yield SimpleNamespace(content='{"summary":"internal","message":"Giải thích tự nhiên.",')
+            yield SimpleNamespace(content='"ui_action":null}')
+
+    engine = object.__new__(SmartEdu)
+    ta = SimpleNamespace(model=Model(), system_prompt_text="system")
+
+    result = asyncio.run(engine._stream_answer(ta, "prompt", {"configurable": {}}))
+
+    assert result == "Giải thích tự nhiên."
 
 
 def test_teach_understand_retries_provider_overloaded(monkeypatch):

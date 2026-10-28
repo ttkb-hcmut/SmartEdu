@@ -11,6 +11,8 @@ from student.auth import get_current_student, User
 from student.memo import generate_uuidv7
 from TA.tools.neo.course_tree import CourseTree
 from TA.helper.model_call import is_transient
+from core.config import Retrieve_param, retrieve_param as _default_retrieve_param
+from core.schema.retrieval import RetrievalHarnessId, RetrievalPolicyId, RetrievalPreset
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -23,6 +25,9 @@ class ChatRequest(BaseModel):
     session_id: str      # Chat Session UUID — opaque, issued by POST /student/session/start
     user_input: str
     language: str = "vn"  # "vn" | "eng" — bilingual toggle
+    retrieval_preset: RetrievalPreset | None = None
+    retrieval_policy: RetrievalPolicyId | None = None
+    retrieval_harness: RetrievalHarnessId | None = None
 
 
 class ChatResponse(BaseModel):
@@ -69,7 +74,14 @@ def _require_task_owner(entry: dict, current_student: User) -> None:
         raise HTTPException(status_code=404, detail="Task not found.")
 
 
-async def _run_ta_task(app_state, task_id: str, user_input: str, session_id: str, language: str = "vn"):
+async def _run_ta_task(
+    app_state,
+    task_id: str,
+    user_input: str,
+    session_id: str,
+    language: str = "vn",
+    retrieval_params: Retrieve_param | None = None,
+):
     queue: asyncio.Queue = app_state.ta_tasks[task_id]["queue"]
 
     async def emit(event: dict):
@@ -87,7 +99,15 @@ async def _run_ta_task(app_state, task_id: str, user_input: str, session_id: str
 
     try:
         ta_module = app_state.TA
-        result = await ta_module.run(user_input=user_input, session_id=session_id, update_callback=update_status, language=language, chat_id=task_id, emit=emit)
+        result = await ta_module.run(
+            user_input=user_input,
+            session_id=session_id,
+            update_callback=update_status,
+            language=language,
+            chat_id=task_id,
+            emit=emit,
+            retrieve_param=retrieval_params,
+        )
         current_status = app_state.ta_tasks.get(task_id, {})
         if result.get("status") != "SUCCESS":
             busy = any(is_transient(RuntimeError(err)) for err in result.get("errors", []))
@@ -158,6 +178,15 @@ async def chat_with_ta(
         chat_id = task_id  # They are the same
         tracker.mongodb.create_chat(current_student.id, session_id, chat_id, payload.user_input)
 
+        retrieval_params = None
+        if any((payload.retrieval_preset, payload.retrieval_policy, payload.retrieval_harness)):
+            retrieval_params = Retrieve_param(
+                preset=payload.retrieval_preset or _default_retrieve_param.preset,
+                policy_id=payload.retrieval_policy or _default_retrieve_param.policy_id,
+                harness_id=payload.retrieval_harness or _default_retrieve_param.harness_id,
+                course_scope=_default_retrieve_param.course_scope,
+            )
+
         # Mark as processing before scheduling so the status endpoint never sees a missing key.
         # Queue created here (not in the task) so /chat/stream never races a missing queue.
         request.app.state.ta_tasks[task_id] = {
@@ -169,7 +198,10 @@ async def chat_with_ta(
         }
 
         asyncio.create_task(
-            _run_ta_task(request.app.state, task_id, payload.user_input, session_id, payload.language)
+            _run_ta_task(
+                request.app.state, task_id, payload.user_input, session_id, payload.language,
+                retrieval_params,
+            )
         )
         logger.info("TA task %s scheduled for session %s.", task_id, session_id)
         return ChatAcceptedResponse(task_id=task_id)
@@ -244,13 +276,16 @@ async def stream_chat(task_id: str, request: Request, current_student: User = De
         )
 
     async def gen():
+        started = time.monotonic()
         while True:
             try:
-                event = await asyncio.wait_for(queue.get(), timeout=180)
+                event = await asyncio.wait_for(queue.get(), timeout=25)
             except asyncio.TimeoutError:
-                ## graph hung; bail so the generator never zombies
-                yield f"data: {json.dumps({'type': 'error', 'error': 'TA timed out.'})}\n\n"
-                return
+                if time.monotonic() - started >= 600:
+                    yield f"data: {json.dumps({'type': 'error', 'error': 'TA timed out.'})}\n\n"
+                    return
+                yield ": keep-alive\n\n"
+                continue
             yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
             if event.get("type") in ("done", "error"):
                 return

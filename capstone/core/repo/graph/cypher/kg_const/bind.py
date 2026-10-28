@@ -58,7 +58,8 @@ LIMIT $k
 
 CYPHER_passage_search_vec = """
 CALL db.index.vector.queryNodes('passage_vec_index', $probe, $emb) YIELD node, score
-WHERE $prefix IS NULL OR node.uri STARTS WITH $prefix
+WHERE ($prefix IS NULL OR node.uri STARTS WITH $prefix)
+  AND NONE(prefix IN $excluded_prefixes WHERE node.uri STARTS WITH prefix)
 RETURN node.id AS id, node.text AS text, node.uri AS uri,
        node.p_lo AS p_lo, node.p_hi AS p_hi, score
 LIMIT $k
@@ -67,6 +68,7 @@ LIMIT $k
 CYPHER_passage_search_vec_scoped = """
 MATCH (node:Passage)
 WHERE node.uri STARTS WITH $prefix AND node.emb IS NOT NULL
+  AND NONE(excluded IN $excluded_prefixes WHERE node.uri STARTS WITH excluded)
 WITH node, vector.similarity.cosine(node.emb, $emb) AS score
 WHERE score IS NOT NULL
 RETURN node.id AS id, node.text AS text, node.uri AS uri,
@@ -77,7 +79,8 @@ LIMIT $k
 
 CYPHER_passage_search_ft = """
 CALL db.index.fulltext.queryNodes('passage_text_index', $q) YIELD node, score
-WHERE $prefix IS NULL OR node.uri STARTS WITH $prefix
+WHERE ($prefix IS NULL OR node.uri STARTS WITH $prefix)
+  AND NONE(excluded IN $excluded_prefixes WHERE node.uri STARTS WITH excluded)
 RETURN node.id AS id, node.text AS text, node.uri AS uri,
        node.p_lo AS p_lo, node.p_hi AS p_hi, score
 LIMIT $k
@@ -94,6 +97,7 @@ RETURN p.id AS id, p.p_lo AS p_lo, p.p_hi AS p_hi, p.text AS text,
 CYPHER_graph_expand_passages = """
 MATCH (p1:Passage)<-[:ANCHORED_IN]-(e:Entity)-[:ANCHORED_IN]->(p2:Passage)
 WHERE p1.id IN $seed_uris AND NOT p2.id IN $seed_uris
+  AND NONE(prefix IN $excluded_prefixes WHERE p2.uri STARTS WITH prefix)
 WITH p2, e, count{(e)-[:ANCHORED_IN]->()} AS degree
 WHERE degree <= $max_degree
 WITH p2, sum(1.0 / (1.0 + log(degree))) AS score, count(e) AS shared_count, collect(e.name) AS shared_entities
@@ -106,6 +110,7 @@ LIMIT $k
 CYPHER_entity_passage_search = """
 MATCH (e:Entity)-[r:ANCHORED_IN]->(p:Passage)
 WHERE toLower(e.name) IN $entity_names
+  AND NONE(prefix IN $excluded_prefixes WHERE p.uri STARTS WITH prefix)
 WITH p, e, r, count{(e)-[:ANCHORED_IN]->()} AS degree
 WHERE degree <= $max_degree
 WITH p, sum(coalesce(r.score, 1.0) / (1.0 + log(degree))) AS score, collect(e.name) AS matched_entities

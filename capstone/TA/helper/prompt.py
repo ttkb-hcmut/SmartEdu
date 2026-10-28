@@ -39,20 +39,27 @@ retrieve, roadmap, teaching, confirm, or unknown.
 _RETRIEVE_REFINE_PROMPT = """
 {language_instruction}
 
-You received retrieval results from the RAG agent. Synthesize them into a pedagogical answer.
-(Style — tone, trilingual terms, Markdown, closing next step — is set by your system prompt.)
-
-INPUT:
-- worker_results["RAG"]: entity_ids, content, status
-- student_state: current position and mastery
-
-TASK:
-1. If RAG found content (status=SUCCESS):
-   - Present the factual answer clearly, grounded in the retrieved content.
-2. If RAG found nothing (status=FAIL or content is empty):
-   - Tell the student the topic was not found and invite them to rephrase. Do NOT fabricate.
+You received candidate retrieval results from the RAG agent. Answer the CURRENT QUESTION first in a focused, natural response.
+Treat retrieval hits as candidates, not as a checklist: keep only the smallest set of passages that directly answers the current question and ignore unrelated retrieval hits, even when they share keywords.
+Use RECENT CONVERSATION to resolve references and avoid repeating explanations.
+Explain why/how when asked, using an example or formula only when it clarifies the requested point. Adapt depth to the request; honor explicit brevity and do not turn a focused question into a broad survey.
+For an explicit short-answer request, use one to three sentences; avoid headings, bullets, examples and extra advice unless needed to answer.
+Use SOURCE MATERIAL as evidence, not as a template to copy. Do not print internal IDs, reasoning chains or diagnostics.
+Use only claims supported by SOURCE MATERIAL. If it does not directly answer the question or identify the requested page, say that the retrieved material cannot verify it; do not fill the gap from general knowledge.
+When retrieval failed, is unanswerable or has no content, say the available sources do not establish the answer.
+When only part is supported, explain that part and state what is missing. Never invent sources or page numbers.
+Use readable prose and structure only where helpful; do not force a closing question or next step.
 
 Reply with the Markdown answer only, no JSON wrapper.
+"""
+
+RETRIEVE_ANSWER_PRIORITY = """
+MANDATORY FOR THIS LIVE QUESTION (overrides any conflicting style guidance above):
+- Answer directly in focused, grammatical Vietnamese. Keep English only for named standard technical terms or acronyms; translate ordinary words such as "fluent" as "mượt mà/trôi chảy".
+- Do not repeat the question as a heading.
+- Treat retrieval hits as candidates. Use only passages that directly answer the question; ignore unrelated hits even when they share keywords.
+- For a focused why-question, give the main reason and at most one relevant example from the source; do not expand into adjacent topics.
+- Do not add unsupported details or a closing question.
 """
 
 _DEEP_CHECK_PROMPT = """
@@ -263,14 +270,12 @@ SOURCE MATERIAL ({source}):
 CHAT HISTORY:
 {history}
 
-CONTEXT: You may receive prior TA reasoning below. Use it to avoid repeating content.
-
 YOUR TASK:
 1. Address the student's request while reviewing what they learned across previous nodes and the current node.
-2. If source is a PDF page reference, call `get_pdf_pages` first to read the actual content.
+2. Read the supplied source material directly; do not call PDF lookup tools.
 3. Use the SOURCE MATERIAL as the primary reference — do NOT fabricate or claim it supports facts it does not contain.
-4. Ask simple recall questions to test retention, one per key concept.
-5. Use chat history to avoid repeating questions already asked; use VN-EN-VN trilingual terminology for technical terms.
+4. If the student requests practice or review questions, place one useful check question in challenge_question only, never in lecture. Otherwise leave challenge_question empty.
+5. Use chat history to address remaining confusion and avoid repeating questions already asked. Add English terminology only when useful.
 
 STYLE: Encouraging but rigorous. Prioritize understanding over memorization."""
 
@@ -288,17 +293,13 @@ SOURCE MATERIAL ({source}):
 CHAT HISTORY:
 {history}
 
-CONTEXT: You may receive prior TA reasoning below. Use it to build on previous lectures.
-
 YOUR TASK:
-1. ALWAYS read source material first:
-   - If content starts with "Call get_pdf_pages(...)", execute that tool call to get the actual text.
-   - If content starts with "Source content (RAG):", use the provided text directly.
+1. Read the supplied source material directly; do not call PDF lookup tools.
 2. Teach the student's request directly; use the current node as context, not as a replacement for the request.
-3. For a full lesson, use 4–6 titled sections with substantive explanations. Cover each part requested, and include concrete examples, a comparison, a common misconception, and a brief recap when relevant. Do not compress it into a benchmark-style short answer. Respect an explicit request for brevity.
+3. For a full lesson, develop the requested ideas in a useful order. Explain mechanisms and use examples or formulas where they help. Let the topic determine the structure and length; honor explicit brevity or detail.
 4. Keep source-backed facts faithful to the supplied material. If no retrieval source is available, teach from general knowledge without claiming PDF support.
-5. Connect to previous nodes when relevant and use VN-EN-VN trilingual terminology for key concepts.
-6. End with one question that checks understanding; call `recall_tool_results` only if prior-step context is needed.
+5. Use chat history to resolve follow-up questions and build on what the student already understands. Add English terminology only when useful.
+6. Leave challenge_question empty unless the student requests practice or review. When needed, put the question only in challenge_question, never in lecture.
 
 STYLE: Clear, structured, pedagogical. Match Bloom's level:
 - Level 1-2: Focus on definitions and recall

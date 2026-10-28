@@ -31,7 +31,18 @@ def test_rrf_cross_pool_agreement_wins():
                         "textbook": [_c("b", "textbook"), _c("c", "textbook")]},
                        rrf_k=60, top_k=5)
     assert [c["uri"] for c in merged][0] == "b"
-    assert len(merged) == 3  # deduped by uri
+    assert len(merged) == 3  # deduped by passage ID
+
+
+def test_rrf_keeps_distinct_passages_from_the_same_pdf():
+    passages = [
+        {"id": "passage-1", "uri": "course/_raw/book.pdf", "text": "relevant", "source": "textbook"},
+        {"id": "passage-2", "uri": "course/_raw/book.pdf", "text": "other page", "source": "textbook"},
+    ]
+
+    merged = rrf_merge({"textbook": passages}, rrf_k=60, top_k=5)
+
+    assert [chunk["id"] for chunk in merged] == ["passage-1", "passage-2"]
 
 
 def test_rrf_empty_pools():
@@ -45,8 +56,9 @@ def test_rrf_caps_at_top_k():
 
 
 def test_norm_chunk_uri_falls_back_to_id():
-    n = _norm_chunk({"id": "x1", "text": "t", "score": "0.5"}, "rag")
+    n = _norm_chunk({"id": "x1", "text": "t", "score": "0.5", "p_lo": 258, "p_hi": 259}, "rag")
     assert n["uri"] == "x1" and n["score"] == 0.5 and n["source"] == "rag"
+    assert n["p_lo"] == 258 and n["p_hi"] == 259
 
 
 # ── graph routing per preset (components no-op without resources) ─────

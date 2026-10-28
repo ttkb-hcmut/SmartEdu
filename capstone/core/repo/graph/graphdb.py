@@ -220,20 +220,28 @@ class GraphDB:
         return rows[0] if rows else None
 
     def passage_search(self, emb: List[float], query_text: str = "", top_k: int = 5,
-                       db_name=None, uri_prefix: Optional[str] = None) -> List[Dict]:
+                       db_name=None, uri_prefix: Optional[str] = None,
+                       excluded_uri_prefixes: Optional[List[str]] = None) -> List[Dict]:
         ## hybrid textbook retrieval: vector ANN + fulltext, RRF merge
         db_name = db_name or self.db_name
         vec_query = CYPHER_passage_search_vec_scoped if uri_prefix else CYPHER_passage_search_vec
-        vec_params = {"k": top_k, "emb": emb, "prefix": uri_prefix}
+        excluded = list(excluded_uri_prefixes or [])
+        vec_params = {
+            "k": top_k, "emb": emb, "prefix": uri_prefix,
+            "excluded_prefixes": excluded,
+        }
         if not uri_prefix:
-            vec_params["probe"] = top_k
+            vec_params["probe"] = max(top_k, top_k * 20 if excluded else top_k)
         vec_rows = self.run_query(db_name, vec_query, vec_params)
         ft_rows = []
         if query_text:
             ft_rows = self.run_query(
                 db_name,
                 CYPHER_passage_search_ft,
-                {"q": query_text, "k": top_k, "prefix": uri_prefix},
+                {
+                    "q": query_text, "k": top_k, "prefix": uri_prefix,
+                    "excluded_prefixes": excluded,
+                },
             )
         ## RRF, raw merge lets Lucene beat cosine
         merged: Dict[str, Dict] = {}
@@ -255,6 +263,7 @@ class GraphDB:
         top_k: int = 5,
         max_degree: int = 50,
         db_name: Optional[str] = None,
+        excluded_uri_prefixes: Optional[List[str]] = None,
     ) -> List[Dict]:
         ## 2-hop ANCHORED_IN traversal from seed passages, weighted by entity IDF
         if not seed_uris:
@@ -263,7 +272,10 @@ class GraphDB:
         return self.run_query(
             db_name,
             CYPHER_graph_expand_passages,
-            {"seed_uris": list(seed_uris), "max_degree": max_degree, "k": top_k},
+            {
+                "seed_uris": list(seed_uris), "max_degree": max_degree, "k": top_k,
+                "excluded_prefixes": list(excluded_uri_prefixes or []),
+            },
         )
 
     def entity_passage_search(
@@ -272,6 +284,7 @@ class GraphDB:
         top_k: int = 5,
         max_degree: int = 50,
         db_name: Optional[str] = None,
+        excluded_uri_prefixes: Optional[List[str]] = None,
     ) -> List[Dict]:
         ## direct anchor lookup for named entities extracted from query
         if not entity_names:
@@ -281,7 +294,10 @@ class GraphDB:
         return self.run_query(
             db_name,
             CYPHER_entity_passage_search,
-            {"entity_names": names, "max_degree": max_degree, "k": top_k},
+            {
+                "entity_names": names, "max_degree": max_degree, "k": top_k,
+                "excluded_prefixes": list(excluded_uri_prefixes or []),
+            },
         )
 
     def get_passage_context(self, passage_id: str, window: int = 1, db_name=None) -> List[Dict]:

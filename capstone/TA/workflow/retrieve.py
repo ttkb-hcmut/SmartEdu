@@ -7,6 +7,8 @@ from langchain_core.messages import AIMessage, ToolMessage
 from typing import Dict, Any, List, Optional
 
 from core.schema.retrieval import (
+    BENCHMARK_COURSE_PREFIX,
+    RetrievalCaseKind,
     RetrievalHarnessId,
     RetrievalRunContext,
     RetrievalToolId,
@@ -28,6 +30,12 @@ from TA.retrieval.controller import build_agentic_v4_retrieve_wf
 logger = logging.getLogger(__name__)
 
 
+def _live_global_exclusions(context: RetrievalRunContext) -> List[str]:
+    if context.case.kind == RetrievalCaseKind.LIVE and not context.scope.course:
+        return [BENCHMARK_COURSE_PREFIX]
+    return []
+
+
 def _tracer_ctx(config):
     c = config.get("configurable", {})
     return c.get("tracer"), c.get("chat_id", "")
@@ -40,6 +48,8 @@ def _norm_chunk(r: Dict, source: str) -> Dict:
         "text": r.get("text", ""),
         "score": float(r.get("score", 0.0) or 0.0),
         "source": source,
+        "p_lo": r.get("p_lo"),
+        "p_hi": r.get("p_hi"),
     }
 
 
@@ -48,11 +58,11 @@ def rrf_merge(pools: Dict[str, List[Dict]], rrf_k: int, top_k: int) -> List[Dict
     seen: Dict[str, Dict] = {}
     for chunks in pools.values():
         for rank, c in enumerate(chunks):
-            key = str(c["uri"])
+            key = str(c.get("id") or c["uri"])
             scores[key] = scores.get(key, 0.0) + 1.0 / (rrf_k + rank + 1)
             seen.setdefault(key, c)
-    merged = sorted(seen.values(), key=lambda c: scores[str(c["uri"])], reverse=True)[:top_k]
-    return [{**c, "score": scores[str(c["uri"])]} for c in merged]
+    merged = sorted(seen.values(), key=lambda c: scores[str(c.get("id") or c["uri"])], reverse=True)[:top_k]
+    return [{**c, "score": scores[str(c.get("id") or c["uri"])]} for c in merged]
 
 
 def _rag_envelope(
@@ -226,11 +236,16 @@ def build_fanout_retrieve_wf(resources: Optional[Dict] = None):
         if milvus and embedder:
             try:
                 scope = runtime.context.scope.course
+                excluded = _live_global_exclusions(runtime.context)
                 hits = milvus.search(
                     query=query,
                     embedder=embedder,
                     top_k=runtime.context.harness.per_source_k,
                     course_scope=scope,
+                    expr=(
+                        f'not (community like "{BENCHMARK_COURSE_PREFIX}%")'
+                        if excluded else None
+                    ),
                 )
                 chunks = [_norm_chunk(h, "semantic") for h in hits]
             except Exception as e:
@@ -269,9 +284,11 @@ def build_fanout_retrieve_wf(resources: Optional[Dict] = None):
                 emb = embedder.get_embedding(query)
                 scope = runtime.context.scope.course
                 prefix = f"{scope}/" if scope else None
+                excluded = _live_global_exclusions(runtime.context)
                 hits = graph_db.passage_search(emb, query_text=query,
                                                top_k=runtime.context.harness.per_source_k,
-                                               uri_prefix=prefix)
+                                               uri_prefix=prefix,
+                                               excluded_uri_prefixes=excluded)
                 chunks = [_norm_chunk(h, "textbook") for h in hits]
             except Exception as e:
                 logger.warning(f"[comp_textbook] search failed: {e}")
